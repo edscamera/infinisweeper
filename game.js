@@ -15,10 +15,53 @@ window.addEventListener("load", () => {
     Input.initialize();
 });
 
-const bombChance = 0.20625;
+const bombChance = 0.25;
 let score = 0;
 let flags = 0;
 let lose = false;
+
+class PoppedTile {
+    static tiles = [];
+    constructor(x, y, type) {
+        this.type = type;
+        this.x = x;
+        this.y = y;
+        this.rotation = 0;
+        this.rotationVel = 0;
+        this.velocity = {
+            "x": (Math.random() - 0.5) * 10,
+            "y": -Math.random() * 10,
+        };
+        this.size = camera.tilesize;
+        PoppedTile.tiles.push(this);
+    }
+    update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.velocity.y += 0.2;
+        this.rotation += this.rotationVel;
+        this.rotationVel += 0.005 * Math.sign(this.velocity.x);
+    }
+    draw() {
+        g.save();
+        g.translate(this.x - camera.x * camera.tilesize + this.size / 2, this.y - camera.y * camera.tilesize + this.size / 2);
+        g.rotate(this.rotation);
+        if (this.type === 0) {
+            g.fillStyle = "#AAD650";
+            g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        }
+        if (this.type === 1) {
+            g.fillStyle = "#A2D048";
+            g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        }
+        if (this.type === 2) {
+            g.drawImage(img.flag_icon, -this.size / 2, -this.size / 2, this.size, this.size);
+        }
+        g.restore();
+        this.size *= 0.99;
+        if (this.size <= 1) PoppedTile.tiles.splice(PoppedTile.tiles.indexOf(this), 1);
+    }
+}
 
 const img = {
     "flag_icon": "./flag_icon.png",
@@ -57,7 +100,7 @@ const getMinesweeperMap = (x, y) => {
     if (!minesweeperMap.hasOwnProperty(address)) {
         minesweeperMap[address] = {
             "c": 1,
-            "#": Math.random() > (1 - bombChance) ? -1 : 0,
+            "#": (noise.simplex2(x, y) + 1) / 2 > (1 - bombChance) ? -1 : 0,
         };
         for (let yy = y - 1; yy <= y + 1; yy++) {
             for (let xx = x - 1; xx <= x + 1; xx++) {
@@ -89,19 +132,20 @@ const draw = () => {
                 g.strokeStyle = "#86AE3A";
                 g.lineWidth = camera.tilesize / (64 / 15) / 2;
                 g.beginPath();
-                if (getMinesweeperMap(x + 1, y)["c"] > 0) {
+                const condition = (x, y) => (getMinesweeperMap(x, y)["c"] === 0 && getMinesweeperMap(x, y)["#"] === -1) || getMinesweeperMap(x, y)["c"] > 0
+                if (condition(x + 1, y)) {
                     g.moveTo((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2, (y - camera.y) * camera.tilesize);
                     g.lineTo((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2, (y - camera.y + 1) * camera.tilesize);
                 }
-                if (getMinesweeperMap(x - 1, y)["c"] > 0) {
+                if (condition(x - 1, y)) {
                     g.moveTo((x - camera.x) * camera.tilesize + g.lineWidth / 2, (y - camera.y) * camera.tilesize);
                     g.lineTo((x - camera.x) * camera.tilesize + g.lineWidth / 2, (y - camera.y + 1) * camera.tilesize);
                 }
-                if (getMinesweeperMap(x, y + 1)["c"] > 0) {
+                if (condition(x, y + 1)) {
                     g.moveTo((x - camera.x) * camera.tilesize, (y - camera.y + 1) * camera.tilesize - g.lineWidth / 2);
                     g.lineTo((x - camera.x + 1) * camera.tilesize, (y - camera.y + 1) * camera.tilesize - g.lineWidth / 2);
                 }
-                if (getMinesweeperMap(x, y - 1)["c"] > 0) {
+                if (condition(x, y - 1)) {
                     g.moveTo((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize + g.lineWidth / 2);
                     g.lineTo((x - camera.x + 1) * camera.tilesize, (y - camera.y) * camera.tilesize + g.lineWidth / 2);
                 }
@@ -175,6 +219,7 @@ const draw = () => {
             "func": () => camera.y -= 0.2,
         }
     ]
+    PoppedTile.tiles.forEach(tile => tile.draw());
     Particle.particles.forEach(p => p.draw());
     g.fillStyle = "#000";
     btns.forEach(btn => {
@@ -187,6 +232,7 @@ const draw = () => {
 
 const update = () => {
     Particle.particles.forEach(p => p.update());
+    PoppedTile.tiles.forEach(tile => tile.update());
     if (lose) return;
     if (Input.keyDown["ArrowRight"]) {
         camera.x += 0.5;
@@ -233,6 +279,7 @@ window.addEventListener("mouseup", (evt) => {
             minesweeperMap[`${x},${y}`]["c"] = 2;
             flags++;
         } else if (getMinesweeperMap(x, y)["c"] >= 2) {
+            new PoppedTile(x * camera.tilesize, y * camera.tilesize, 2);
             minesweeperMap[`${x},${y}`]["c"] = 1;
             flags--;
         }
@@ -253,6 +300,8 @@ window.addEventListener("mouseup", (evt) => {
                     getMinesweeperMap(xx, yy);
                     if (minesweeperMap[`${xx},${yy}`]["c"] === 1) {
                         minesweeperMap[`${xx},${yy}`]["c"] = minesweeperMap[`${xx},${yy}`]["#"] === -1 ? 1 : 0;
+                        
+                        if (minesweeperMap[`${xx},${yy}`]["c"] === 0) new PoppedTile(xx * camera.tilesize, yy * camera.tilesize, Math.abs((xx + yy) % 2));
                         if (minesweeperMap[`${xx},${yy}`]["#"] !== -1) {
                             leftToEmpty.push([xx, yy]);
                             score++;
@@ -266,13 +315,17 @@ window.addEventListener("mouseup", (evt) => {
         while (leftToEmpty.length > 0) {
             const x2 = Math.floor(leftToEmpty[0][0]);
             const y2 = Math.floor(leftToEmpty[0][1]);
-            if (minesweeperMap[`${x2},${y2}`]["c"] === 1) score++;
+            if (minesweeperMap[`${x2},${y2}`]["c"] === 1) {
+                score++;
+                new PoppedTile(x2 * camera.tilesize, y2 * camera.tilesize, Math.abs((x2 + y2) % 2));
+            }
             minesweeperMap[`${x2},${y2}`]["c"] = 0;
             for (let xoffset = -1; xoffset <= 1; xoffset++) {
                 for (let yoffset = -1; yoffset <= 1; yoffset++) {
                     if (getMinesweeperMap(x2 + xoffset, y2 + yoffset)["c"] === 1 && getMinesweeperMap(x2, y2)["#"] === 0) leftToEmpty.push([x2 + xoffset, y2 + yoffset]);
                 }
             }
+
             leftToEmpty = leftToEmpty.slice(1);
             cycles++;
             if (cycles > 1500) break;
@@ -355,6 +408,8 @@ class Particle {
         this.size = size;
         this.x = x;
         this.y = y;
+        this.rotation = 0;
+        this.rotationVel = 0;
         this.velocity = {
             "x": Math.cos(Math.PI * 2 * Math.random()) * (Math.random() * velocity - velocity / 2),
             "y": Math.sin(Math.PI * 2 * Math.random()) * (Math.random() * velocity - velocity / 2),
@@ -368,9 +423,25 @@ class Particle {
         this.x += this.velocity.x;
         this.y += this.velocity.y;
         this.velocity.y += 0.7;
+        this.rotation += this.rotationVel;
+        this.rotationVel += 0.005;
+        if (this.x < 0 || this.x > CANVAS.width || this.y > CANVAS.height) Particle.particles.splice(Particle.particles.indexOf(this), 1);
     }
     draw() {
         g.fillStyle = this.color;
-        g.fillRect(this.x, this.y, this.size, this.size);
+        g.save();
+        g.translate(this.x, this.y);
+        g.rotate(this.rotation);
+        g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        g.restore();
     }
+}
+
+function prng(a, seed) {
+    return (function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    })()
 }
