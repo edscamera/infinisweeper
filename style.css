@@ -1,0 +1,27 @@
+html {
+    overflow: hidden;
+}
+
+body {
+    margin: 0px;
+}
+
+#topLeft {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+}
+
+#topLeft button {
+    background-color: #E4C29E;
+    border: 2px solid;
+    padding: 5px;
+    font-family: roboto;
+    border-color: #b99e81;
+    margin-bottom: 5px;
+    width: 90px;
+}
+
+#topLeft button:hover {
+    background-color: #D7B998;
+}

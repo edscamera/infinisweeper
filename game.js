@@ -15,7 +15,8 @@ window.addEventListener("load", () => {
     Input.initialize();
 });
 
-const bombChance = 0.25;
+let seed = (Math.random() - 0.5) * 2500;
+const bombChance = 0.15;
 let score = 0;
 let flags = 0;
 let lose = false;
@@ -81,7 +82,7 @@ window.addEventListener("resize", () => {
     draw();
 });
 
-const minesweeperMap = {};
+let minesweeperMap = {};
 const updateTile = (x, y) => {
     if (!minesweeperMap.hasOwnProperty([`${x},${y}`])) return;
     if (minesweeperMap[`${x},${y}`]["#"] === -1) return;
@@ -100,7 +101,8 @@ const getMinesweeperMap = (x, y) => {
     if (!minesweeperMap.hasOwnProperty(address)) {
         minesweeperMap[address] = {
             "c": 1,
-            "#": (noise.simplex2(x, y) + 1) / 2 > (1 - bombChance) ? -1 : 0,
+            //"#": (noise.simplex2(x, y) + 1) / 2 > (1 - bombChance) ? -1 : 0,
+            "#": prng(parseFloat(x) * 1000 + parseFloat(y), parseFloat(seed)) > (1 - bombChance) ? -1 : 0,
         };
         for (let yy = y - 1; yy <= y + 1; yy++) {
             for (let xx = x - 1; xx <= x + 1; xx++) {
@@ -152,10 +154,10 @@ const draw = () => {
                 g.stroke();
 
                 g.fillStyle = "#86AE3A";
-                if (getMinesweeperMap(x - 1, y - 1)["#"] === -1 && getMinesweeperMap(x - 1, y - 1)["c"] > 0) g.fillRect((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, g.lineWidth, g.lineWidth);
-                if (getMinesweeperMap(x + 1, y + 1)["#"] === -1 && getMinesweeperMap(x + 1, y + 1)["c"] > 0) g.fillRect((x - camera.x + 1) * camera.tilesize - g.lineWidth, (y - camera.y + 1) * camera.tilesize - g.lineWidth, g.lineWidth, g.lineWidth);
-                if (getMinesweeperMap(x + 1, y - 1)["#"] === -1 && getMinesweeperMap(x + 1, y - 1)["c"] > 0) g.fillRect((x - camera.x + 1) * camera.tilesize - g.lineWidth, (y - camera.y) * camera.tilesize, g.lineWidth, g.lineWidth);
-                if (getMinesweeperMap(x - 1, y + 1)["#"] === -1 && getMinesweeperMap(x - 1, y + 1)["c"] > 0) g.fillRect((x - camera.x) * camera.tilesize, (y - camera.y + 1) * camera.tilesize - g.lineWidth, g.lineWidth, g.lineWidth);
+                if (condition(x - 1, y - 1)) g.fillRect((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, g.lineWidth, g.lineWidth);
+                if (condition(x + 1, y + 1)) g.fillRect((x - camera.x + 1) * camera.tilesize - g.lineWidth, (y - camera.y + 1) * camera.tilesize - g.lineWidth, g.lineWidth, g.lineWidth);
+                if (condition(x + 1, y - 1)) g.fillRect((x - camera.x + 1) * camera.tilesize - g.lineWidth, (y - camera.y) * camera.tilesize, g.lineWidth, g.lineWidth);
+                if (condition(x - 1, y + 1)) g.fillRect((x - camera.x) * camera.tilesize, (y - camera.y + 1) * camera.tilesize - g.lineWidth, g.lineWidth, g.lineWidth);
 
                 g.fillStyle = "#000";
                 switch (getMinesweeperMap(x, y)["#"]) {
@@ -248,11 +250,11 @@ const update = () => {
     }
 };
 
-window.addEventListener("contextmenu", (evt) => evt.preventDefault());
+CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
 let clicks = 0;
 mousedown = false;
 dragging = false;
-window.addEventListener("mousedown", (evt) => {
+CANVAS.addEventListener("mousedown", (evt) => {
     mousedown = true;
     yeOlX = Input.mouse.position.x;
     yeOlY = Input.mouse.position.y;
@@ -261,13 +263,13 @@ window.addEventListener("mousedown", (evt) => {
         if (mousedown && difference > 5) dragging = true;
     }, 50);
 });
-window.addEventListener("mousemove", (evt) => {
+CANVAS.addEventListener("mousemove", (evt) => {
     if (dragging && !lose) {
         camera.x -= evt.movementX / camera.tilesize;
         camera.y -= evt.movementY / camera.tilesize;
     }
 });
-window.addEventListener("mouseup", (evt) => {
+CANVAS.addEventListener("mouseup", (evt) => {
     mousedown = false;
     if (dragging) return dragging = false;
     if (lose) return;
@@ -300,7 +302,7 @@ window.addEventListener("mouseup", (evt) => {
                     getMinesweeperMap(xx, yy);
                     if (minesweeperMap[`${xx},${yy}`]["c"] === 1) {
                         minesweeperMap[`${xx},${yy}`]["c"] = minesweeperMap[`${xx},${yy}`]["#"] === -1 ? 1 : 0;
-                        
+
                         if (minesweeperMap[`${xx},${yy}`]["c"] === 0) new PoppedTile(xx * camera.tilesize, yy * camera.tilesize, Math.abs((xx + yy) % 2));
                         if (minesweeperMap[`${xx},${yy}`]["#"] !== -1) {
                             leftToEmpty.push([xx, yy]);
@@ -438,10 +440,45 @@ class Particle {
 }
 
 function prng(a, seed) {
-    return (function() {
-      var t = a += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    a = parseFloat(a);
+    seed = parseFloat(seed);
+    a *= seed;
+    return (function () {
+        var t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
     })()
+}
+
+const saveData = (elm) => {
+    elm.innerText = "Copying...";
+    if (!navigator.clipboard) {
+        elm.innerText = "Save Game";
+        return alert("There was an error copying save data.\n\nNo Clipboard Detected");
+    }
+    data = `${seed}`;
+    Object.keys(minesweeperMap).forEach(key => {
+        if (minesweeperMap[key]["c"] != 1) data += `,${key},${minesweeperMap[key]["c"]}`;
+    });
+    navigator.clipboard.writeText(data).then(() => {
+        elm.innerText = "Copied!";
+        setTimeout(() => elm.innerText = "Save Game", 1000);
+    }, (err) => {
+        alert(`There was an error copying save data.\n\n${err}`);
+        elm.innerText = "Save Game";
+    });
+}
+const loadData = (elm) => {
+    data = prompt("Enter save data:");
+    data = data.split(",");
+    seed = parseFloat(data.shift());
+    minesweeperMap = {};
+    console.log(minesweeperMap);
+    for (let i = 0; i < data.length / 3; i++) {
+        getMinesweeperMap(data[i * 3], data[i * 3 + 1], seed);
+        minesweeperMap[`${data[i * 3]},${data[i * 3 + 1]}`]["c"] = data[i * 3 + 2];
+        if (data[i * 3 + 2] > 1) flags++;
+        else score++;
+    }
 }
