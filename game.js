@@ -2,24 +2,12 @@ const CANVAS = document.createElement("canvas");
 const g = CANVAS.getContext("2d");
 document.body.appendChild(CANVAS);
 
-window.addEventListener("load", () => {
-    CANVAS.width = window.innerWidth;
-    CANVAS.height = window.innerHeight;
-    window.setInterval(() => {
-        g.fillStyle = "#fff";
-        g.fillRect(0, 0, CANVAS.width, CANVAS.height);
-
-        update();
-        draw();
-    }, 1000 / 60);
-    Input.initialize();
-});
-
 let seed = (Math.random() - 0.5) * 2500;
-const bombChance = 0.15;
+const bombChance = 0.2;
 let score = 0;
 let flags = 0;
 let lose = false;
+let minesweeperMap = {};
 
 class PoppedTile {
     static tiles = [];
@@ -82,7 +70,6 @@ window.addEventListener("resize", () => {
     draw();
 });
 
-let minesweeperMap = {};
 const updateTile = (x, y) => {
     if (!minesweeperMap.hasOwnProperty([`${x},${y}`])) return;
     if (minesweeperMap[`${x},${y}`]["#"] === -1) return;
@@ -193,6 +180,14 @@ const draw = () => {
             }
         }
     }
+    if (clicks === 0) {
+        for (let x = 0; x < CANVAS.width / camera.tilesize; x++) {
+            for (let y = 0; y < CANVAS.height / camera.tilesize; y++) {
+                g.fillStyle = Math.abs((x + y) % 2) !== ((parseFloat(target.split(",")[0]) + parseFloat(target.split(",")[1])) % 2) ? "#AAD650" : "#A2D048";
+                g.fillRect(x * camera.tilesize, y * camera.tilesize, camera.tilesize, camera.tilesize);
+            }
+        }
+    }
 
     g.font = "32px roboto";
     const btns = [
@@ -263,7 +258,20 @@ CANVAS.addEventListener("mousedown", (evt) => {
         if (mousedown && difference > 5) dragging = true;
     }, 50);
 });
+let target = null;
 CANVAS.addEventListener("mousemove", (evt) => {
+    if (clicks === 0) {
+        while (target == null) {
+            Object.keys(minesweeperMap).every(key => {
+                if (minesweeperMap[key]["#"] === 0) target = key;
+                return minesweeperMap[key]["#"] !== 0;
+            });
+            camera.x += CANVAS.width / camera.tilesize;
+        }
+        camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
+        camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
+    }
+    
     if (dragging && !lose) {
         camera.x -= evt.movementX / camera.tilesize;
         camera.y -= evt.movementY / camera.tilesize;
@@ -285,34 +293,13 @@ CANVAS.addEventListener("mouseup", (evt) => {
             minesweeperMap[`${x},${y}`]["c"] = 1;
             flags--;
         }
+        saveData(null);
     }
 
     if (evt.button === 0) {
         clicks++;
-
         let leftToEmpty = [[x, y]];
         if (minesweeperMap[`${x},${y}`]["c"] >= 2) return;
-
-        if (clicks === 1) {
-            leftToEmpty = [];
-            minesweeperMap[`${x},${y}`]["#"] = 0;
-            for (let yy = y - 1; yy <= y + 1; yy++) {
-                for (let xx = x - 1; xx <= x + 1; xx++) {
-                    updateTile(xx, yy);
-                    getMinesweeperMap(xx, yy);
-                    if (minesweeperMap[`${xx},${yy}`]["c"] === 1) {
-                        minesweeperMap[`${xx},${yy}`]["c"] = minesweeperMap[`${xx},${yy}`]["#"] === -1 ? 1 : 0;
-
-                        if (minesweeperMap[`${xx},${yy}`]["c"] === 0) new PoppedTile(xx * camera.tilesize, yy * camera.tilesize, Math.abs((xx + yy) % 2));
-                        if (minesweeperMap[`${xx},${yy}`]["#"] !== -1) {
-                            leftToEmpty.push([xx, yy]);
-                            score++;
-                        }
-                    }
-                }
-            }
-        }
-
         let cycles = 0;
         while (leftToEmpty.length > 0) {
             const x2 = Math.floor(leftToEmpty[0][0]);
@@ -330,7 +317,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
 
             leftToEmpty = leftToEmpty.slice(1);
             cycles++;
-            if (cycles > 1500) break;
+            if (cycles > 10000) break;
         }
         if (cycles > 30) {
             const shake = setInterval(() => {
@@ -340,8 +327,11 @@ CANVAS.addEventListener("mouseup", (evt) => {
             setTimeout(() => clearInterval(shake), 400);
         }
 
+        saveData(null);
+
         if (minesweeperMap[`${x},${y}`]["#"] === -1) {
-            Particle.explosion((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, 50, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50)
+            localStorage.setItem(storageKey, "None");
+            Particle.explosion((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, 50, 20, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50)
             lose = true;
             window.bombs = [];
             for (let x = Math.floor(camera.x); x < camera.x + CANVAS.width / camera.tilesize; x++) {
@@ -360,7 +350,7 @@ window.setInterval(() => {
         const x = myBomb[0];
         const y = myBomb[1];
         minesweeperMap[`${x},${y}`]["c"] = 0;
-        Particle.explosion((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, 50, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
+        Particle.explosion((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, 50, 20, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
         window.bombs.splice(window.bombs.indexOf(myBomb), 1);
     }
 }, 50);
@@ -439,6 +429,19 @@ class Particle {
     }
 }
 
+window.addEventListener("load", () => {
+    CANVAS.width = window.innerWidth;
+    CANVAS.height = window.innerHeight;
+    window.setInterval(() => {
+        g.fillStyle = "#fff";
+        g.fillRect(0, 0, CANVAS.width, CANVAS.height);
+
+        update();
+        draw();
+    }, 1000 / 60);
+    Input.initialize();
+});
+
 function prng(a, seed) {
     a = parseFloat(a);
     seed = parseFloat(seed);
@@ -452,15 +455,19 @@ function prng(a, seed) {
 }
 
 const saveData = (elm) => {
-    elm.innerText = "Copying...";
-    if (!navigator.clipboard) {
-        elm.innerText = "Save Game";
-        return alert("There was an error copying save data.\n\nNo Clipboard Detected");
+    if (elm) {
+        elm.innerText = "Copying...";
+        if (!navigator.clipboard) {
+            elm.innerText = "Save Game";
+            return alert("There was an error copying save data.\n\nNo Clipboard Detected");
+        }
     }
     data = `${seed}`;
     Object.keys(minesweeperMap).forEach(key => {
         if (minesweeperMap[key]["c"] != 1) data += `,${key},${minesweeperMap[key]["c"]}`;
     });
+    if (!elm) return localStorage.setItem(storageKey, data);
+    localStorage.setItem(storageKey, data);
     navigator.clipboard.writeText(data).then(() => {
         elm.innerText = "Copied!";
         setTimeout(() => elm.innerText = "Save Game", 1000);
@@ -469,16 +476,27 @@ const saveData = (elm) => {
         elm.innerText = "Save Game";
     });
 }
-const loadData = (elm) => {
-    data = prompt("Enter save data:");
+const loadData = (elm, dt) => {
+    data = dt ?? prompt("Enter save data:");
     data = data.split(",");
     seed = parseFloat(data.shift());
     minesweeperMap = {};
-    console.log(minesweeperMap);
     for (let i = 0; i < data.length / 3; i++) {
         getMinesweeperMap(data[i * 3], data[i * 3 + 1], seed);
         minesweeperMap[`${data[i * 3]},${data[i * 3 + 1]}`]["c"] = data[i * 3 + 2];
         if (data[i * 3 + 2] > 1) flags++;
         else score++;
     }
+    clicks = 1;
+}
+
+const storageKey = "edwardscamera.infinite-minesweeper";
+switch (localStorage.getItem(storageKey)) {
+    case null: localStorage.setItem(storageKey, "None"); break;
+    
+}
+if ([null, undefined, "null"].includes(localStorage.getItem(storageKey))) {
+    localStorage.setItem(storageKey, "None");
+} else if (localStorage.getItem(storageKey) !== "None") {
+    loadData(null, localStorage.getItem(storageKey));
 }
