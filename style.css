@@ -1,27 +1,51 @@
-html {
-    overflow: hidden;
-}
-
-body {
+html { overflow: hidden; }
+body { 
     margin: 0px;
+    font-family: roboto;
 }
 
-#topLeft {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-}
-
-#topLeft button {
-    background-color: #E4C29E;
-    border: 2px solid;
+button {
+    width: 150px;
     padding: 5px;
     font-family: roboto;
-    border-color: #b99e81;
-    margin-bottom: 5px;
-    width: 90px;
+    background-color: #E4C29E;
+    border: 2px solid #B99E81;
+    user-select: none;
+}
+button:hover { background-color: #D7B998; }
+
+#GUI > div {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
 }
 
-#topLeft button:hover {
-    background-color: #D7B998;
+.titleContainer {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.titleContainer > h1 { margin-bottom: 50%; }
+.scoreContainer {
+    position: fixed;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.9);
+    bottom: 0px;
+    left: 0px;
+}
+.scoreContainer > div {
+    padding: 5px;
+    font-size: 24px;
+}
+#lossScreen {
+    display: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 15px;
 }
