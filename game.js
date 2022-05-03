@@ -1,3 +1,4 @@
+localStorage.clear();
 const CANVAS = document.createElement("canvas");
 const g = CANVAS.getContext("2d");
 document.body.appendChild(CANVAS);
@@ -60,6 +61,7 @@ Object.keys(img).forEach(key => img[key] = Object.assign(document.createElement(
 
 const camera = {
     "tilesize": 64,
+    "canMove": false,
     "x": 0,
     "y": 0,
 };
@@ -183,7 +185,7 @@ const draw = () => {
     if (clicks === 0) {
         for (let x = 0; x < CANVAS.width / camera.tilesize; x++) {
             for (let y = 0; y < CANVAS.height / camera.tilesize; y++) {
-                g.fillStyle = Math.abs((x + y) % 2) !== ((parseFloat(target.split(",")[0]) + parseFloat(target.split(",")[1])) % 2) ? "#AAD650" : "#A2D048";
+                if (target) g.fillStyle = Math.abs((x + y) % 2) !== ((parseFloat(target.split(",")[0]) + parseFloat(target.split(",")[1])) % 2) ? "#AAD650" : "#A2D048";
                 g.fillRect(x * camera.tilesize, y * camera.tilesize, camera.tilesize, camera.tilesize);
             }
         }
@@ -218,19 +220,35 @@ const draw = () => {
     ]
     PoppedTile.tiles.forEach(tile => tile.draw());
     Particle.particles.forEach(p => p.draw());
-    g.fillStyle = "#000";
-    btns.forEach(btn => {
-        g.fillText(btn.t, btn.x, btn.y);
-        if (!lose && (btn.x - Input.mouse.position.x) ** 2 + (btn.y - Input.mouse.position.y) ** 2 < 50 ** 2) btn.func();
-    });
-    g.fillText(`Score: ${score}`, 15, CANVAS.height - 20);
-    g.fillText(`Flags:${flags}`, 15, CANVAS.height - 64)
+    
+    if (camera.canMove) {
+        g.fillStyle = "#000";
+        btns.forEach(btn => {
+            g.fillText(btn.t, btn.x, btn.y);
+            if (!lose && (btn.x - Input.mouse.position.x) ** 2 + (btn.y - Input.mouse.position.y) ** 2 < 50 ** 2) btn.func();
+        });
+        g.fillText(`Score: ${score}`, 15, CANVAS.height - 20);
+        g.fillText(`Flags:${flags}`, 15, CANVAS.height - 64);
+    }
+
+    while (target == null || minesweeperMap[target]["#"] !== 0) {
+        for(let i = 0; i < Object.keys(minesweeperMap).length; i++) {
+            const key = Object.keys(minesweeperMap)[i];
+            if (minesweeperMap[key]["#"] === 0) {
+                target = key;
+                console.log(key, minesweeperMap[key]["#"]);
+                break;
+            }
+        };
+        camera.x += CANVAS.width / camera.tilesize;
+    };
 };
 
 const update = () => {
     Particle.particles.forEach(p => p.update());
     PoppedTile.tiles.forEach(tile => tile.update());
-    if (lose) return;
+    
+    if (lose || !camera.caMove) return;
     if (Input.keyDown["ArrowRight"]) {
         camera.x += 0.5;
     }
@@ -260,14 +278,7 @@ CANVAS.addEventListener("mousedown", (evt) => {
 });
 let target = null;
 CANVAS.addEventListener("mousemove", (evt) => {
-    if (clicks === 0) {
-        while (target == null) {
-            Object.keys(minesweeperMap).every(key => {
-                if (minesweeperMap[key]["#"] === 0) target = key;
-                return minesweeperMap[key]["#"] !== 0;
-            });
-            camera.x += CANVAS.width / camera.tilesize;
-        }
+    if (clicks === 0 && target) {
         camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
         camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
     }
@@ -298,6 +309,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
 
     if (evt.button === 0) {
         clicks++;
+        camera.canMove = true;
         let leftToEmpty = [[x, y]];
         if (minesweeperMap[`${x},${y}`]["c"] >= 2) return;
         let cycles = 0;
@@ -488,6 +500,7 @@ const loadData = (elm, dt) => {
         else score++;
     }
     clicks = 1;
+    camera.canMove = true;
 }
 
 const storageKey = "edwardscamera.infinite-minesweeper";
