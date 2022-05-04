@@ -2,7 +2,6 @@ const CANVAS = document.createElement("canvas");
 const g = CANVAS.getContext("2d");
 document.body.appendChild(CANVAS);
 
-let GAME_STATE = "title";
 let seed = (Math.random() - 0.5) * 2500;
 const bombChance = 0.2;
 let score = 0;
@@ -102,7 +101,7 @@ const getMinesweeperMap = (x, y) => {
 };
 
 const draw = () => {
-    switch(GAME_STATE) {
+    switch (GAME_STATE) {
         case "title":
             const tileWidth = Math.ceil(CANVAS.width / camera.tilesize) + 1;
             const tileHeight = Math.ceil(CANVAS.height / camera.tilesize) + 1;
@@ -199,7 +198,7 @@ const draw = () => {
             if (clicks === 0) {
                 // Get address of block with # of 0
                 while (target == null || minesweeperMap[target]["#"] !== 0) {
-                    for(let i = 0; i < Object.keys(minesweeperMap).length; i++) {
+                    for (let i = 0; i < Object.keys(minesweeperMap).length; i++) {
                         const key = Object.keys(minesweeperMap)[i];
                         if (minesweeperMap[key]["#"] === 0) {
                             target = key;
@@ -235,7 +234,7 @@ const update = () => {
     if (GAME_STATE === "game") {
         Particle.particles.forEach(p => p.update());
         PoppedTile.tiles.forEach(tile => tile.update());
-        
+
         if (lose || !camera.canMove) return;
         if (Input.keyDown["ArrowRight"]) {
             camera.x += 0.5;
@@ -265,7 +264,7 @@ CANVAS.addEventListener("mousedown", (evt) => {
         difference = ((yeOlX - Input.mouse.position.x) ** 2 + (yeOlY - Input.mouse.position.y) ** 2);
         if (mousedown) {
             if (difference > 25) dragging = true;
-        } 
+        }
     }, 50);
 });
 let target = null;
@@ -443,10 +442,6 @@ window.addEventListener("load", () => {
         draw();
 
         frameCount++;
-        Array.from(document.querySelector("#GUI").children).forEach(mode => {
-            mode.style.display = "none";
-            if (mode.getAttribute("GAME_STATE") === GAME_STATE) mode.style.display = "block";
-        });
     }, 1000 / 60);
     Input.initialize();
 });
@@ -510,13 +505,13 @@ if ([null, undefined, "null"].includes(localStorage.getItem(storageKey("saveData
 
 const newGame = () => {
     localStorage.setItem(storageKey("saveData"), "None");
-    GAME_STATE = "game";
+    switchState("game");
     updateLabels();
 }
 const loadGame = () => {
     if (typeof localStorage.getItem(storageKey("saveData")) != "string" || !localStorage.getItem(storageKey("saveData")).includes(",")) return newGame();
     if (![null, undefined, "null"].includes(localStorage.getItem(storageKey("saveData")))) loadData(null, localStorage.getItem(storageKey("saveData")));
-    GAME_STATE = "game";
+    switchState("game");
     updateLabels();
 };
 const updateLabels = () => {
@@ -525,3 +520,30 @@ const updateLabels = () => {
     document.querySelector("#highScoreLabel").innerText = localStorage.getItem(storageKey("highScore"));
     document.querySelector("#flagsLabel").innerText = flags;
 }
+
+const switchState = (state) => {
+    GAME_STATE = state;
+    Array.from(document.querySelector("#GUI").children).forEach(mode => {
+        mode.style.display = "none";
+        if (mode.getAttribute("GAME_STATE") === GAME_STATE) mode.style.display = "block";
+    });
+}
+switchState("title");
+
+const copyScore = (elm) => {
+    if (navigator.clipboard) navigator.clipboard.writeText(`I got a new score of ${(score - 1).toString().split("").map(j => {
+        switch (parseFloat(j)) {
+            case 0: return "0️⃣";
+            case 1: return "1️⃣";
+            case 2: return "2️⃣";
+            case 3: return "3️⃣";
+            case 4: return "4️⃣";
+            case 5: return "5️⃣";
+            case 6: return "6️⃣";
+            case 7: return "7️⃣";
+            case 8: return "8️⃣";
+            case 9: return "9️⃣";
+        }
+    }).join("")} in Infinisweeper! 🚩\n\nhttps://edwardscamera.com/infinisweeper`);
+    elm.innerText = "Copied!";
+};
