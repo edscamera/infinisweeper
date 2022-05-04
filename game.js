@@ -2,8 +2,9 @@ const CANVAS = document.createElement("canvas");
 const g = CANVAS.getContext("2d");
 document.body.appendChild(CANVAS);
 
-let seed = (Math.random() - 0.5) * 2500;
 const bombChance = 0.2;
+
+let seed = (Math.random() - 0.5) * 2500;
 let score = 0;
 let flags = 0;
 let lose = false;
@@ -53,9 +54,8 @@ class PoppedTile {
 
 const img = {
     "flag_icon": "./flag_icon.png",
-    "flag_gif": "https://www.google.com/logos/fnbx/minesweeper/flag_plant.png",
+    "flag_gif": "./flag_plant.png",
 };
-Object.keys(img).forEach(key => img[key] = Object.assign(document.createElement("img"), { src: img[key] }))
 
 const camera = {
     "tilesize": 64,
@@ -88,7 +88,6 @@ const getMinesweeperMap = (x, y) => {
     if (!minesweeperMap.hasOwnProperty(address)) {
         minesweeperMap[address] = {
             "c": 1,
-            //"#": (noise.simplex2(x, y) + 1) / 2 > (1 - bombChance) ? -1 : 0,
             "#": prng(parseFloat(x) * 1000 + parseFloat(y), parseFloat(seed)) > (1 - bombChance) ? -1 : 0,
         };
         for (let yy = y - 1; yy <= y + 1; yy++) {
@@ -195,7 +194,7 @@ const draw = () => {
                 }
             }
             // Constant 0 at first click
-            if (clicks === 0) {
+            if (score === 0) {
                 // Get address of block with # of 0
                 while (target == null || minesweeperMap[target]["#"] !== 0) {
                     for (let i = 0; i < Object.keys(minesweeperMap).length; i++) {
@@ -224,17 +223,16 @@ const draw = () => {
                     }
                 }
             }
-            PoppedTile.tiles.forEach(tile => tile.draw());
-            Particle.particles.forEach(p => p.draw());
             break;
     }
+    PoppedTile.tiles.forEach(tile => tile.draw());
+    Particle.drawAllParticles();
 };
 
 const update = () => {
+    Particle.updateAllParticles();
+    PoppedTile.tiles.forEach(tile => tile.update());
     if (GAME_STATE === "game") {
-        Particle.particles.forEach(p => p.update());
-        PoppedTile.tiles.forEach(tile => tile.update());
-
         if (lose || !camera.canMove) return;
         if (Input.keyDown["ArrowRight"]) {
             camera.x += 0.5;
@@ -252,51 +250,57 @@ const update = () => {
 };
 
 CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
-let clicks = 0;
-mousedown = false;
-dragging = false;
-CANVAS.addEventListener("mousedown", (evt) => {
-    if (GAME_STATE !== "game") return;
-    mousedown = true;
-    yeOlX = Input.mouse.position.x;
-    yeOlY = Input.mouse.position.y;
-    setTimeout(() => {
-        difference = ((yeOlX - Input.mouse.position.x) ** 2 + (yeOlY - Input.mouse.position.y) ** 2);
-        if (mousedown) {
-            if (difference > 25) dragging = true;
-        }
-    }, 50);
-});
+
 let target = null;
-CANVAS.addEventListener("mousemove", (evt) => {
-    if (dragging && !lose) {
+
+// Drag Screen
+CANVAS.addEventListener("mousedown", () => {
+    if (GAME_STATE !== "game" || lose) return;
+    const onMouseMove = (evt) => {
         camera.x -= evt.movementX / camera.tilesize;
         camera.y -= evt.movementY / camera.tilesize;
-    }
+    };
+    CANVAS.addEventListener("mousemove", onMouseMove);
+    CANVAS.addEventListener("mouseup", () => {
+        CANVAS.removeEventListener("mousemove", onMouseMove)
+    }, { "once": true });
 });
+
+// Hold to flag
+CANVAS.addEventListener("mousedown", (evt) => {
+    if (GAME_STATE !== "game" || lose) return;
+    setTimeout(() => {
+        if (Input.mouse.buttons[evt.button]) {
+            const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
+            const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
+
+            toggleFlag(x, y);
+        }
+    }, 1000);
+});
+
+const toggleFlag = (x, y) => {
+    if (getMinesweeperMap(x, y)["c"] === 1) {
+        minesweeperMap[`${x},${y}`]["c"] = 2;
+        flags++;
+    } else if (getMinesweeperMap(x, y)["c"] >= 2) {
+        new PoppedTile(x * camera.tilesize, y * camera.tilesize, 2);
+        minesweeperMap[`${x},${y}`]["c"] = 1;
+        flags--;
+    }
+    saveData(null);
+};
+
 CANVAS.addEventListener("mouseup", (evt) => {
     if (GAME_STATE !== "game") return;
 
-    mousedown = false;
-    if (dragging) return dragging = false;
     if (lose) return;
     const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
     const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
 
-    if (evt.button === 2) {
-        if (getMinesweeperMap(x, y)["c"] === 1) {
-            minesweeperMap[`${x},${y}`]["c"] = 2;
-            flags++;
-        } else if (getMinesweeperMap(x, y)["c"] >= 2) {
-            new PoppedTile(x * camera.tilesize, y * camera.tilesize, 2);
-            minesweeperMap[`${x},${y}`]["c"] = 1;
-            flags--;
-        }
-        saveData(null);
-    }
+    if (evt.button === 2) toggleFlag(x, y);
 
     if (evt.button === 0) {
-        clicks++;
         camera.canMove = true;
         let leftToEmpty = [[x, y]];
         if (minesweeperMap[`${x},${y}`]["c"] >= 2) return;
@@ -317,7 +321,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
 
             leftToEmpty = leftToEmpty.slice(1);
             cycles++;
-            if (cycles > 10000) break;
+            if (cycles > 50000) break;
         }
         if (cycles > 30) {
             const shake = setInterval(() => {
@@ -331,7 +335,10 @@ CANVAS.addEventListener("mouseup", (evt) => {
 
         if (minesweeperMap[`${x},${y}`]["#"] === -1) {
             localStorage.setItem(storageKey("saveData"), "None");
-            Particle.explosion((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, 50, 20, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50)
+            Particle.explosion({
+                "x": (x - camera.x) * camera.tilesize,
+                "y": (y - camera.y) * camera.tilesize,
+            }, 10, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
             lose = true;
             document.querySelector("#lossScreen").style.display = "block";
             window.bombs = [];
@@ -352,82 +359,67 @@ window.setInterval(() => {
         const x = myBomb[0];
         const y = myBomb[1];
         minesweeperMap[`${x},${y}`]["c"] = 0;
-        Particle.explosion((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, 50, 20, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
+        Particle.explosion({
+            "x": (x - camera.x) * camera.tilesize,
+            "y": (y - camera.y) * camera.tilesize,
+        }, 1, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
         window.bombs.splice(window.bombs.indexOf(myBomb), 1);
     }
 }, 50);
 
-class Input {
-    static keyDown = {};
-    static mouse = {
-        "position": {
-            "x": 0,
-            "y": 0,
-        },
-        "relativePosition": {
-            "x": 0,
-            "y": 0,
-        }
-    }
-    static initialize() {
-        window.addEventListener("mousemove", evt => {
-            this.mouse.position.x = evt.clientX;
-            this.mouse.position.y = evt.clientY;
-            this.mouse.relativePosition.x = evt.clientX / CANVAS.width;
-            this.mouse.relativePosition.y = evt.clientY / CANVAS.height;
-        });
-        window.addEventListener("keydown", evt => this.keyDown[evt.key] = true);
-        window.addEventListener("keyup", evt => this.keyDown[evt.key] = false);
-    }
-}
-
 class Particle {
     static particles = [];
-    static explosion(x, y, velocity, amount, colors, minSize, maxSize) {
+    static decayRate = 5000;
+    static gravity = 0.05;
+    static explosion(position, velocity, amount, colors, minSize, maxSize) {
         for (let i = 0; i < amount; i++) {
             const myColor = colors[Math.floor(Math.random() * colors.length)];
-            this.particles.push(
-                new Particle(
-                    x,
-                    y,
-                    velocity,
-                    myColor,
-                    minSize + (maxSize - minSize) * Math.random()
-                )
-            )
+            this.particles.push(new Particle(
+                position,
+                {
+                    "x": Math.cos(Math.PI * 2 * Math.random()) * ((Math.random() - 0.5) * velocity),
+                    "y": Math.sin(Math.PI * 2 * Math.random()) * ((Math.random() - 0.5) * velocity),
+                },
+                myColor,
+                minSize + (maxSize - minSize) * Math.random()
+            ));
+
         }
     }
-    constructor(x, y, velocity, color, size) {
+    constructor(position, velocity, color, size) {
+        this.position = position;
+        this.velocity = velocity;
         this.color = color;
         this.size = size;
-        this.x = x;
-        this.y = y;
+
         this.rotation = 0;
         this.rotationVel = 0;
-        this.velocity = {
-            "x": Math.cos(Math.PI * 2 * Math.random()) * (Math.random() * velocity - velocity / 2),
-            "y": Math.sin(Math.PI * 2 * Math.random()) * (Math.random() * velocity - velocity / 2),
-        }
-        window.setTimeout(() => {
+        /*window.setTimeout(() => {
             Particle.particles.splice(Particle.particles.indexOf(this), 1);
-        }, 5 * 1000);
-
+        }, Particle.decayRate);*/
     }
     update() {
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
-        this.velocity.y += 0.7;
+        console.log(this.velocity);
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+        this.velocity.y += Particle.gravity;
         this.rotation += this.rotationVel;
         this.rotationVel += 0.005;
-        if (this.x < 0 || this.x > CANVAS.width || this.y > CANVAS.height) Particle.particles.splice(Particle.particles.indexOf(this), 1);
+        //if (this.position.x < 0 || this.position.x > CANVAS.width || this.position.y > CANVAS.height) Particle.particles.splice(Particle.particles.indexOf(this), 1);
     }
     draw() {
         g.fillStyle = this.color;
         g.save();
-        g.translate(this.x, this.y);
+        g.translate(this.position.x, this.position.y);
         g.rotate(this.rotation);
         g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
         g.restore();
+    }
+    static updateAllParticles() {
+        for (let i = 0; i < Particle.particles.length; i++) Particle.particles[i].update();
+    }
+    static drawAllParticles() {
+        for (let i = 0; i < Particle.particles.length; i++) Particle.particles[i].draw();
     }
 }
 
@@ -446,7 +438,7 @@ window.addEventListener("load", () => {
     Input.initialize();
 });
 
-function prng(a, seed) {
+const prng = (a, seed) => {
     a = parseFloat(a);
     seed = parseFloat(seed);
     a *= seed;
@@ -493,7 +485,6 @@ const loadData = (elm, dt) => {
         if (data[i * 3 + 2] > 1) flags++;
         else score++;
     }
-    clicks = 1;
     camera.canMove = true;
     updateLabels();
 }

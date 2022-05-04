@@ -18,13 +18,14 @@
             <div class="titleContainer">
                 <h1>Infinisweeper</h1>
                 <button style="margin-bottom:5px" onclick="newGame()">New Game</button><br />
-                <button onclick="loadGame()">Continue Game</button>
+                <button onclick="loadGame()">Continue Game</button><br /><br />
+                <footer>built by <a href="https://edwardscamera.com">edwardscamera</a><br />v1.0</footer>
             </div>
         </div>
         <div GAME_STATE="game">
             <div class="scoreContainer">
                 <div>Flags: <span id="flagsLabel">0</span></div>
-                <div>Score: <span id="scoreLabel">0</span></div> 
+                <div>Score: <span id="scoreLabel">0</span></div>
                 <div>High Score: <span id="highScoreLabel">0</span></div>
             </div>
             <div id="lossScreen" class="titleContainer">
@@ -33,6 +34,7 @@
             </div>
         </div>
     </div>
+    <script src="./lib.js"></script>
     <script src="./game.js"></script>
 </body>
 
