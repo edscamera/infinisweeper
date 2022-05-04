@@ -512,7 +512,8 @@ CANVAS.addEventListener("mousedown", () => {
         { once: true }
     );
 });
-CANVAS.addEventListener("touchmove", () => {
+CANVAS.addEventListener("touchmove", (evt) => {
+    evt.preventDefault();
     camera.x -= Input.swipe.x / camera.tilesize;
     camera.y -= Input.swipe.y / camera.tilesize;
     dragging = true;
