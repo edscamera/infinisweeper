@@ -1,41 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Infinisweeper</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap"
+			rel="stylesheet"
+		/>
+		<link href="./style.css" rel="stylesheet" />
+	</head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinisweeper</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
-    <link href="./style.css" rel="stylesheet">
-</head>
-
-<body>
-    <div id="GUI">
-        <div GAME_STATE="title">
-            <div class="titleContainer">
-                <h1>Infinisweeper</h1>
-                <button style="margin-bottom:5px" onclick="newGame()">New Game</button><br />
-                <button onclick="loadGame()">Continue Game</button><br /><br />
-            </div>
-            <footer>v1.1 | built by <a href="https://edwardscamera.com">edwardscamera</a><br />name by heidrekursson</footer>
-        </div>
-        <div GAME_STATE="game">
-            <div class="scoreContainer">
-                <div>Flags: <span id="flagsLabel">0</span></div>
-                <div>Score: <span id="scoreLabel">0</span></div>
-                <div>High Score: <span id="highScoreLabel">0</span></div>
-            </div>
-            <div id="lossScreen" class="titleContainer">
-                <h1>You've been sweeped!</h1>
-                <button style="margin-bottom:5px" onclick="copyScore(this)">Copy Score</button><br />
-            </div>
-        </div>
-    </div>
-    <script src="./lib.js"></script>
-    <script src="./game.js"></script>
-</body>
-
+	<body>
+		<div id="GUI">
+			<div GAME_STATE="title">
+				<div id="changelog">test</div>
+				<div class="titleContainer">
+					<h1>Infinisweeper</h1>
+					<button style="margin-bottom: 5px" onclick="newGame()">
+						New Game</button
+					><br />
+					<button onclick="loadGame()">Continue Game</button
+					><br /><br />
+				</div>
+				<footer>
+					v1.1 | built by
+					<a href="https://edwardscamera.com">edwardscamera</a
+					><br />name by heidrekursson
+				</footer>
+			</div>
+			<div GAME_STATE="game">
+				<div class="scoreContainer">
+					<div>Flags: <span id="flagsLabel">0</span></div>
+					<div>Score: <span id="scoreLabel">0</span></div>
+					<div>High Score: <span id="highScoreLabel">0</span></div>
+				</div>
+				<div id="lossScreen" class="titleContainer">
+					<h1>You've been sweeped!</h1>
+					<button
+						style="margin-bottom: 5px"
+						onclick="copyScore(this)"
+					>
+						Copy Score</button
+					><br />
+				</div>
+			</div>
+		</div>
+		<script src="./lib.js"></script>
+		<script src="./game.js"></script>
+	</body>
 </html>

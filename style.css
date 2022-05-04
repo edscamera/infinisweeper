@@ -1,74 +1,116 @@
 html {
-    overflow: hidden;
-    overscroll-behavior-x: none;
+	overflow: hidden;
+	overscroll-behavior-x: none;
 }
-body { 
-    margin: 0px;
-    font-family: roboto;
-    user-select: none;
+
+body {
+	margin: 0px;
+	font-family: roboto;
+	user-select: none;
 }
 
 button {
-    width: 150px;
-    padding: 5px;
-    font-family: roboto;
-    background-color: #E4C29E;
-    border: 2px solid #B99E81;
+	width: 150px;
+	padding: 5px;
+	font-family: roboto;
+	background-color: #e4c29e;
+	border: 2px solid #b99e81;
 }
-button:hover { background-color: #D7B998; }
+
+button:hover {
+	background-color: #d7b998;
+}
+
+button:first-of-type {
+	border-radius: 15px 15px 0px 0px;
+}
+
+button:last-of-type {
+	border-radius: 0px 0px 15px 15px;
+}
+
+button:only-of-type {
+	border-radius: 15px;
+}
 
 footer {
-    position: fixed;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    width: 100%;
+	position: fixed;
+	bottom: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	text-align: center;
+	width: 100%;
 }
 
 #GUI > div {
-    display: none;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: 1;
+	display: none;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 1;
 }
 
 .titleContainer {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
 }
-.titleContainer > h1 { margin-bottom: 50%; }
+
+.titleContainer > h1 {
+	margin-bottom: 50%;
+}
+
+#changelog {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+
+	width: 300px;
+	height: 500px;
+
+	background-color: rgba(255, 255, 255, 0.5);
+	border-radius: 15px;
+	margin: 10px;
+	padding: 10px;
+}
+
 .scoreContainer {
-    position: fixed;
-    border-radius: 15px;
-    margin: 10px;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.9);
-    bottom: 0px;
-    left: 0px;
+	position: fixed;
+	border-radius: 15px;
+	margin: 10px;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.9);
+	bottom: 0px;
+	left: 0px;
 }
+
 .scoreContainer > div {
-    padding: 5px;
-    font-size: 24px;
+	padding: 5px;
+	font-size: 24px;
 }
+
 #lossScreen {
-    display: none;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 15px;
+	display: none;
+	background-color: rgba(255, 255, 255, 0.9);
+	padding: 20px;
+	border-radius: 15px;
 }
 
 @media only screen and (max-device-width: 480px) {
-    .scoreContainer { width: calc(100% - 40px); }
-    .titleContainer > h1 { font-size: 50px; }
-    .titleContainer > button {
-        font-size: 30px;
-        width: 300px;
-        border-width: 5px;
-        margin: 10px;
-    }
+	.scoreContainer {
+		width: calc(100% - 40px);
+	}
+
+	.titleContainer > h1 {
+		font-size: 50px;
+	}
+
+	.titleContainer > button {
+		font-size: 30px;
+		width: 300px;
+		border-width: 5px;
+		margin: 10px;
+	}
 }
