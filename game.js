@@ -336,9 +336,9 @@ CANVAS.addEventListener("mouseup", (evt) => {
         if (minesweeperMap[`${x},${y}`]["#"] === -1) {
             localStorage.setItem(storageKey("saveData"), "None");
             Particle.explosion({
-                "x": (x - camera.x) * camera.tilesize,
-                "y": (y - camera.y) * camera.tilesize,
-            }, 10, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
+                "x": (x - camera.x + 0.5) * camera.tilesize,
+                "y": (y - camera.y + 0.5) * camera.tilesize,
+            }, 15, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
             lose = true;
             document.querySelector("#lossScreen").style.display = "block";
             window.bombs = [];
@@ -360,68 +360,12 @@ window.setInterval(() => {
         const y = myBomb[1];
         minesweeperMap[`${x},${y}`]["c"] = 0;
         Particle.explosion({
-            "x": (x - camera.x) * camera.tilesize,
-            "y": (y - camera.y) * camera.tilesize,
-        }, 1, 50, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
+            "x": (x - camera.x + 0.5) * camera.tilesize,
+            "y": (y - camera.y + 0.5) * camera.tilesize,
+        }, 10, 15, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
         window.bombs.splice(window.bombs.indexOf(myBomb), 1);
     }
 }, 50);
-
-class Particle {
-    static particles = [];
-    static decayRate = 5000;
-    static gravity = 0.05;
-    static explosion(position, velocity, amount, colors, minSize, maxSize) {
-        for (let i = 0; i < amount; i++) {
-            const myColor = colors[Math.floor(Math.random() * colors.length)];
-            this.particles.push(new Particle(
-                position,
-                {
-                    "x": Math.cos(Math.PI * 2 * Math.random()) * ((Math.random() - 0.5) * velocity),
-                    "y": Math.sin(Math.PI * 2 * Math.random()) * ((Math.random() - 0.5) * velocity),
-                },
-                myColor,
-                minSize + (maxSize - minSize) * Math.random()
-            ));
-
-        }
-    }
-    constructor(position, velocity, color, size) {
-        this.position = position;
-        this.velocity = velocity;
-        this.color = color;
-        this.size = size;
-
-        this.rotation = 0;
-        this.rotationVel = 0;
-        /*window.setTimeout(() => {
-            Particle.particles.splice(Particle.particles.indexOf(this), 1);
-        }, Particle.decayRate);*/
-    }
-    update() {
-        console.log(this.velocity);
-        this.position.x += this.velocity.x;
-        this.position.y += this.velocity.y;
-        this.velocity.y += Particle.gravity;
-        this.rotation += this.rotationVel;
-        this.rotationVel += 0.005;
-        //if (this.position.x < 0 || this.position.x > CANVAS.width || this.position.y > CANVAS.height) Particle.particles.splice(Particle.particles.indexOf(this), 1);
-    }
-    draw() {
-        g.fillStyle = this.color;
-        g.save();
-        g.translate(this.position.x, this.position.y);
-        g.rotate(this.rotation);
-        g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-        g.restore();
-    }
-    static updateAllParticles() {
-        for (let i = 0; i < Particle.particles.length; i++) Particle.particles[i].update();
-    }
-    static drawAllParticles() {
-        for (let i = 0; i < Particle.particles.length; i++) Particle.particles[i].draw();
-    }
-}
 
 window.addEventListener("load", () => {
     CANVAS.width = window.innerWidth;
