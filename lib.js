@@ -21,6 +21,12 @@ class Input {
             "y": 0,
         }
     }
+    static touch = false;
+    static swipe = {
+        "x": 0,
+        "y": 0,
+    }
+    static previousTouch = null;
     static initialize() {
         window.addEventListener("mousemove", evt => {
             this.mouse.position.x = evt.clientX;
@@ -30,6 +36,19 @@ class Input {
         });
         window.addEventListener("mousedown", evt => this.mouse.buttons[evt.button] = true);
         window.addEventListener("mouseup", evt => this.mouse.buttons[evt.button] = false);
+        window.addEventListener("touchstart", evt => this.touch = true);
+        window.addEventListener("touchmove", evt => {
+            const touch = evt.touches[0];
+            if (this.previousTouch) {
+                this.swipe.x = touch.clientX - this.previousTouch.clientX;
+                this.swipe.y = touch.clientY - this.previousTouch.clientY;
+            }
+            this.previousTouch = touch;
+        });
+        window.addEventListener("touchend", evt => {
+            this.touch = false;
+            this.previousTouch = null;
+        });
         window.addEventListener("keydown", evt => this.keyDown[evt.key] = true);
         window.addEventListener("keyup", evt => this.keyDown[evt.key] = false);
     }

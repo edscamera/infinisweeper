@@ -1,3 +1,6 @@
+// todo:
+// sfx, leaderboard
+
 const CANVAS = document.createElement("canvas");
 const g = CANVAS.getContext("2d");
 document.body.appendChild(CANVAS);
@@ -82,6 +85,7 @@ const updateTile = (x, y) => {
         }
     }
 };
+
 const getMinesweeperMap = (x, y) => {
     const address = `${x},${y}`;
 
@@ -119,7 +123,7 @@ const draw = () => {
                 for (let y = Math.floor(camera.y); y < camera.y + CANVAS.height / camera.tilesize; y++) {
                     if (getMinesweeperMap(x, y)["c"] > 0) {
                         g.fillStyle = Math.abs((x + y + colorCorrection) % 2) === 0 ? "#AAD650" : "#A2D048";
-                        g.fillRect((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, camera.tilesize, camera.tilesize);
+                        g.fillRect(Math.round((x - camera.x) * camera.tilesize), Math.round((y - camera.y) * camera.tilesize), camera.tilesize, camera.tilesize);
                         if (getMinesweeperMap(x, y)["c"] >= 9) {
                             g.drawImage(img.flag_icon, (x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, camera.tilesize, camera.tilesize);
                         }
@@ -129,27 +133,27 @@ const draw = () => {
                         }
                     } else {
                         g.fillStyle = Math.abs((x + y + colorCorrection) % 2) === 1 ? "#D7B998" : "#E4C29E";
-                        g.fillRect((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize, camera.tilesize, camera.tilesize);
+                        g.fillRect(Math.round((x - camera.x) * camera.tilesize), Math.round((y - camera.y) * camera.tilesize), camera.tilesize, camera.tilesize);
 
                         g.strokeStyle = "#86AE3A";
                         g.lineWidth = camera.tilesize / (64 / 15) / 2;
                         g.beginPath();
                         const condition = (x, y) => (getMinesweeperMap(x, y)["c"] === 0 && getMinesweeperMap(x, y)["#"] === -1) || getMinesweeperMap(x, y)["c"] > 0
                         if (condition(x + 1, y)) {
-                            g.moveTo((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2, (y - camera.y) * camera.tilesize);
-                            g.lineTo((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2, (y - camera.y + 1) * camera.tilesize);
+                            g.moveTo(Math.round((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2), Math.round((y - camera.y) * camera.tilesize));
+                            g.lineTo(Math.round((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2), Math.round((y - camera.y + 1) * camera.tilesize));
                         }
                         if (condition(x - 1, y)) {
-                            g.moveTo((x - camera.x) * camera.tilesize + g.lineWidth / 2, (y - camera.y) * camera.tilesize);
-                            g.lineTo((x - camera.x) * camera.tilesize + g.lineWidth / 2, (y - camera.y + 1) * camera.tilesize);
+                            g.moveTo(Math.round((x - camera.x) * camera.tilesize + g.lineWidth / 2), Math.round((y - camera.y) * camera.tilesize));
+                            g.lineTo(Math.round((x - camera.x) * camera.tilesize + g.lineWidth / 2), Math.round((y - camera.y + 1) * camera.tilesize));
                         }
                         if (condition(x, y + 1)) {
-                            g.moveTo((x - camera.x) * camera.tilesize, (y - camera.y + 1) * camera.tilesize - g.lineWidth / 2);
-                            g.lineTo((x - camera.x + 1) * camera.tilesize, (y - camera.y + 1) * camera.tilesize - g.lineWidth / 2);
+                            g.moveTo(Math.round((x - camera.x) * camera.tilesize), Math.round((y - camera.y + 1) * camera.tilesize - g.lineWidth / 2));
+                            g.lineTo(Math.round((x - camera.x + 1) * camera.tilesize), Math.round((y - camera.y + 1) * camera.tilesize - g.lineWidth / 2));
                         }
                         if (condition(x, y - 1)) {
-                            g.moveTo((x - camera.x) * camera.tilesize, (y - camera.y) * camera.tilesize + g.lineWidth / 2);
-                            g.lineTo((x - camera.x + 1) * camera.tilesize, (y - camera.y) * camera.tilesize + g.lineWidth / 2);
+                            g.moveTo(Math.round((x - camera.x) * camera.tilesize), Math.round((y - camera.y) * camera.tilesize + g.lineWidth / 2));
+                            g.lineTo(Math.round((x - camera.x + 1) * camera.tilesize), Math.round((y - camera.y) * camera.tilesize + g.lineWidth / 2));
                         }
                         g.stroke();
 
@@ -254,29 +258,35 @@ CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
 let target = null;
 
 // Drag Screen
+let dragging = false;
 CANVAS.addEventListener("mousedown", () => {
     if (GAME_STATE !== "game" || lose) return;
     const onMouseMove = (evt) => {
         camera.x -= evt.movementX / camera.tilesize;
         camera.y -= evt.movementY / camera.tilesize;
+        dragging = true;
     };
     CANVAS.addEventListener("mousemove", onMouseMove);
     CANVAS.addEventListener("mouseup", () => {
-        CANVAS.removeEventListener("mousemove", onMouseMove)
+        CANVAS.removeEventListener("mousemove", onMouseMove);
+        dragging = false;
     }, { "once": true });
 });
+CANVAS.addEventListener("touchmove", () => {
+    camera.x -= Input.swipe.x / camera.tilesize;
+    camera.y -= Input.swipe.y / camera.tilesize;
+    dragging = true;
+});
+CANVAS.addEventListener("touchend", () => dragging = false);
 
 // Hold to flag
-CANVAS.addEventListener("mousedown", (evt) => {
-    if (GAME_STATE !== "game" || lose) return;
+CANVAS.addEventListener("touchstart", (evt) => {
+    if (GAME_STATE !== "game" || lose || dragging) return;
     setTimeout(() => {
-        if (Input.mouse.buttons[evt.button]) {
-            const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
-            const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
-
-            toggleFlag(x, y);
-        }
-    }, 1000);
+        const x = Math.floor((camera.x * camera.tilesize + evt.targetTouches[0].clientX) / camera.tilesize);
+        const y = Math.floor((camera.y * camera.tilesize + evt.targetTouches[0].clientY) / camera.tilesize);
+        if (Input.touch && !dragging) toggleFlag(x, y);
+    }, 250);
 });
 
 const toggleFlag = (x, y) => {
@@ -292,13 +302,17 @@ const toggleFlag = (x, y) => {
 };
 
 CANVAS.addEventListener("mouseup", (evt) => {
-    if (GAME_STATE !== "game") return;
+    if (GAME_STATE !== "game" || dragging || lose) return;
 
-    if (lose) return;
+    if (score === 0) {
+        camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
+        camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
+    }
+
     const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
     const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
 
-    if (evt.button === 2) toggleFlag(x, y);
+    if (evt.button === 2 && !Input.touch) toggleFlag(x, y);
 
     if (evt.button === 0) {
         camera.canMove = true;
@@ -311,6 +325,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
             if (minesweeperMap[`${x2},${y2}`]["c"] === 1) {
                 score++;
                 new PoppedTile(x2 * camera.tilesize, y2 * camera.tilesize, Math.abs((x2 + y2) % 2));
+                new Audio("https://www.myinstants.com/media/sounds/vine-boom.mp3").play();
             }
             minesweeperMap[`${x2},${y2}`]["c"] = 0;
             for (let xoffset = -1; xoffset <= 1; xoffset++) {

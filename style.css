@@ -1,7 +1,11 @@
-html { overflow: hidden; }
+html {
+    overflow: hidden;
+    overscroll-behavior-x: none;
+}
 body { 
     margin: 0px;
     font-family: roboto;
+    user-select: none;
 }
 
 button {
@@ -10,9 +14,17 @@ button {
     font-family: roboto;
     background-color: #E4C29E;
     border: 2px solid #B99E81;
-    user-select: none;
 }
 button:hover { background-color: #D7B998; }
+
+footer {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 100%;
+}
 
 #GUI > div {
     display: none;
@@ -32,9 +44,9 @@ button:hover { background-color: #D7B998; }
 .titleContainer > h1 { margin-bottom: 50%; }
 .scoreContainer {
     position: fixed;
+    border-radius: 15px;
     margin: 10px;
     padding: 10px;
-    border-radius: 15px;
     background-color: rgba(255, 255, 255, 0.9);
     bottom: 0px;
     left: 0px;
@@ -48,4 +60,15 @@ button:hover { background-color: #D7B998; }
     background-color: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 15px;
+}
+
+@media only screen and (max-device-width: 480px) {
+    .scoreContainer { width: calc(100% - 40px); }
+    .titleContainer > h1 { font-size: 50px; }
+    .titleContainer > button {
+        font-size: 30px;
+        width: 300px;
+        border-width: 5px;
+        margin: 10px;
+    }
 }
