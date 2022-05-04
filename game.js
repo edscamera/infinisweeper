@@ -65,22 +65,22 @@ class PoppedTile {
 }
 
 const img = {
-    flag_icon: "./flag_icon.png",
-    flag_gif: "./flag_plant.png",
+    flag_icon: "./img/flag_icon.png",
+    flag_gif: "./img/flag_plant.png",
 };
 const sfx = {
-    0: "./0.mp3",
-    1: "./1.mp3",
-    2: "./2.mp3",
-    3: "./3.mp3",
-    4: "./4.mp3",
-    5: "./5.mp3",
-    6: "./6.mp3",
-    7: "./7.mp3",
-    8: "./8.mp3",
-    flag_up: "./flag_up.mp3",
-    flag_down: "./flag_down.mp3",
-    confetti: "./confetti.mp3",
+    0: "./sfx/0.mp3",
+    1: "./sfx/1.mp3",
+    2: "./sfx/2.mp3",
+    3: "./sfx/3.mp3",
+    4: "./sfx/4.mp3",
+    5: "./sfx/5.mp3",
+    6: "./sfx/6.mp3",
+    7: "./sfx/7.mp3",
+    8: "./sfx/8.mp3",
+    flag_up: "./sfx/flag_up.mp3",
+    flag_down: "./sfx/flag_down.mp3",
+    confetti: "./sfx/confetti.mp3",
 };
 
 const camera = {

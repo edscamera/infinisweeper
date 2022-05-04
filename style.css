@@ -65,6 +65,10 @@ footer {
 .titleContainer > h1 {
 	margin-bottom: 50%;
 }
+.titleContainer > h1 > img {
+    height: 35px;
+    transform: translate(20%, 20%);
+}
 
 #changelog {
 	position: absolute;
@@ -127,4 +131,5 @@ footer {
     :root {
         --background-gui: rgba(255, 255, 255, 0.5);
     }
+    .titleContainer > h1 > img { display: none; }
 }
