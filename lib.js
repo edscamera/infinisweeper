@@ -1,6 +1,7 @@
 window.addEventListener("load", () => {
     // Load all images in dictionary
     if (typeof (img) === "object") Object.keys(img).forEach(key => img[key] = Object.assign(document.createElement("img"), { src: img[key] }));
+    if (typeof (sfx) === "object") Object.keys(sfx).forEach(key => sfx[key] = new Audio(sfx[key]));
 });
 
 // Input System

@@ -59,6 +59,19 @@ const img = {
     "flag_icon": "./flag_icon.png",
     "flag_gif": "./flag_plant.png",
 };
+const sfx = {
+    "0": "./0.mp3",
+    "1": "./1.mp3",
+    "2": "./2.mp3",
+    "3": "./3.mp3",
+    "4": "./4.mp3",
+    "5": "./5.mp3",
+    "6": "./6.mp3",
+    "7": "./7.mp3",
+    "8": "./8.mp3",
+    "flag_up": "./flag_up.mp3",
+    "flag_down": "./flag_down.mp3",
+}
 
 const camera = {
     "tilesize": 64,
@@ -292,10 +305,12 @@ CANVAS.addEventListener("touchstart", (evt) => {
 const toggleFlag = (x, y) => {
     if (getMinesweeperMap(x, y)["c"] === 1) {
         minesweeperMap[`${x},${y}`]["c"] = 2;
+        sfx["flag_down"].play();
         flags++;
     } else if (getMinesweeperMap(x, y)["c"] >= 2) {
         new PoppedTile(x * camera.tilesize, y * camera.tilesize, 2);
         minesweeperMap[`${x},${y}`]["c"] = 1;
+        sfx["flag_up"].play();
         flags--;
     }
     saveData(null);
@@ -317,15 +332,16 @@ CANVAS.addEventListener("mouseup", (evt) => {
     if (evt.button === 0) {
         camera.canMove = true;
         let leftToEmpty = [[x, y]];
-        if (minesweeperMap[`${x},${y}`]["c"] >= 2) return;
+        if (minesweeperMap[`${x},${y}`]["c"] !== 1) return;
         let cycles = 0;
+        let highestNumber = 1;
         while (leftToEmpty.length > 0) {
             const x2 = Math.floor(leftToEmpty[0][0]);
             const y2 = Math.floor(leftToEmpty[0][1]);
             if (minesweeperMap[`${x2},${y2}`]["c"] === 1) {
                 score++;
+                if (minesweeperMap[`${x2},${y2}`]["#"] > highestNumber) highestNumber = minesweeperMap[`${x2},${y2}`]["#"];
                 new PoppedTile(x2 * camera.tilesize, y2 * camera.tilesize, Math.abs((x2 + y2) % 2));
-                new Audio("https://www.myinstants.com/media/sounds/vine-boom.mp3").play();
             }
             minesweeperMap[`${x2},${y2}`]["c"] = 0;
             for (let xoffset = -1; xoffset <= 1; xoffset++) {
@@ -344,6 +360,9 @@ CANVAS.addEventListener("mouseup", (evt) => {
                 camera.y += (Math.random() - 0.5) * 0.2;
             }, 10);
             setTimeout(() => clearInterval(shake), 400);
+            sfx["0"].play();
+        } else {
+            sfx[highestNumber.toString()].play();
         }
 
         saveData(null);
@@ -374,13 +393,14 @@ window.setInterval(() => {
         const x = myBomb[0];
         const y = myBomb[1];
         minesweeperMap[`${x},${y}`]["c"] = 0;
+        new Audio("https://www.myinstants.com/media/sounds/vine-boom.mp3").play();
         Particle.explosion({
             "x": (x - camera.x + 0.5) * camera.tilesize,
             "y": (y - camera.y + 0.5) * camera.tilesize,
         }, 10, 15, [`hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`], 1, 50);
         window.bombs.splice(window.bombs.indexOf(myBomb), 1);
     }
-}, 50);
+}, 150);
 
 window.addEventListener("load", () => {
     CANVAS.width = window.innerWidth;
