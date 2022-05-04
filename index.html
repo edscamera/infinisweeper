@@ -1,55 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Infinisweeper</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap"
-			rel="stylesheet"
-		/>
-		<link href="./style.css" rel="stylesheet" />
-	</head>
 
-	<body>
-		<div id="GUI">
-			<div GAME_STATE="title">
-				<div id="changelog">test</div>
-				<div class="titleContainer">
-					<h1>Infinisweeper</h1>
-					<button style="margin-bottom: 5px" onclick="newGame()">
-						New Game</button
-					><br />
-					<button onclick="loadGame()">Continue Game</button
-					><br /><br />
-				</div>
-				<footer>
-					v1.1 | built by
-					<a href="https://edwardscamera.com">edwardscamera</a
-					><br />name by heidrekursson
-				</footer>
-			</div>
-			<div GAME_STATE="game">
-				<div class="scoreContainer">
-					<div>Flags: <span id="flagsLabel">0</span></div>
-					<div>Score: <span id="scoreLabel">0</span></div>
-					<div>High Score: <span id="highScoreLabel">0</span></div>
-				</div>
-				<div id="lossScreen" class="titleContainer">
-					<h1>You've been sweeped!</h1>
-					<button
-						style="margin-bottom: 5px"
-						onclick="copyScore(this)"
-					>
-						Copy Score</button
-					><br />
-				</div>
-			</div>
-		</div>
-		<script src="./lib.js"></script>
-		<script src="./game.js"></script>
-	</body>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Infinisweeper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet" />
+    <link href="./style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="GUI">
+        <div GAME_STATE="title">
+            <div id="changelog">
+                <span>v1.1</span>
+                <ul>
+                    <li>Mobile support</li>
+                    <li>Sound effects added</li>
+                    <li>Changelog added</li>
+                    <li>Bomb & Dialog animations</li>
+                    <li>Bomb particles slow down reduction</li>
+                    <li>Fixed bomb particle vanish bug</li>
+                    <li>Fixed graphical "white grid" bug</li>
+                </ul>
+                <span>Initial Release</span>
+                <ul>
+                    <li>
+                        Concept & Programming by
+                        <a href="https://edwardscamera.com">edwardscamera</a>
+                    </li>
+                    <li>
+                        "Infinisweeper" name and "You've been sweeped!"
+                        phrase created by heidrekursson
+                    </li>
+                    <li>
+                        Art design, flag art and sound effects from Google
+                        Minesweeper
+                    </li>
+                </ul>
+            </div>
+            <div class="titleContainer">
+                <h1>Infinisweeper</h1>
+                <button style="margin-bottom: 5px" onclick="newGame()">
+                    New Game</button><br />
+                <button onclick="loadGame()">Continue Game</button><br /><br />
+            </div>
+            <footer>
+                v1.1 | built by
+                <a href="https://edwardscamera.com">edwardscamera</a>
+            </footer>
+        </div>
+        <div GAME_STATE="game">
+            <div class="scoreContainer">
+                <div>Flags: <span id="flagsLabel">0</span></div>
+                <div>Score: <span id="scoreLabel">0</span></div>
+                <div>High Score: <span id="highScoreLabel">0</span></div>
+            </div>
+            <div id="lossScreen" class="titleContainer">
+                <h1>You've been sweeped!</h1>
+                <button style="margin-bottom: 5px" onclick="copyScore(this)">
+                    Copy Score</button><br />
+            </div>
+        </div>
+    </div>
+    <script src="./lib.js"></script>
+    <script src="./game.js"></script>
+</body>
+
 </html>

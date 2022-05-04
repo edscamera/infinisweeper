@@ -66,13 +66,13 @@ class Particle {
             const myColor = colors[Math.floor(Math.random() * colors.length)];
             const myDir = Math.PI * 2 * Math.random();
             this.particles.push(new Particle(
-                    {...position},
-                    {
-                        "x": Math.cos(myDir) * velocity,
-                        "y": Math.sin(myDir) * velocity,
-                    },
-                    myColor,
-                    minSize + (maxSize - minSize) * Math.random()
+                { ...position },
+                {
+                    "x": Math.cos(myDir) * velocity,
+                    "y": Math.sin(myDir) * velocity,
+                },
+                myColor,
+                minSize + (maxSize - minSize) * Math.random()
             ));
         }
     }
@@ -85,10 +85,9 @@ class Particle {
 
         this.rotation = Math.PI * 2 * Math.random();
         this.rotationVel = 0;
-        
-        window.setTimeout(() => {
-            Particle.particles.splice(Particle.particles.indexOf(this), 1);
-        }, Particle.decayRate);
+
+        this.dead = false;
+        window.setTimeout(() => this.dead = true, Particle.decayRate);
 
     }
     update() {
@@ -113,6 +112,7 @@ class Particle {
     }
     static updateAllParticles() {
         Particle.particles.forEach(p => p.update());
+        Particle.particles = Particle.particles.filter(p => !p.dead);
     }
     static drawAllParticles() {
         Particle.particles.forEach(p => p.draw());

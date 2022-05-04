@@ -1,3 +1,7 @@
+:root {
+    --background-gui: rgba(255, 255, 255, 0.7);
+}
+
 html {
 	overflow: hidden;
 	overscroll-behavior-x: none;
@@ -54,8 +58,8 @@ footer {
 	position: fixed;
 	left: 50%;
 	top: 50%;
-	transform: translate(-50%, -50%);
 	text-align: center;
+    transform: translate(-50%, -50%);
 }
 
 .titleContainer > h1 {
@@ -67,13 +71,17 @@ footer {
 	left: 0px;
 	top: 0px;
 
-	width: 300px;
-	height: 500px;
+	width: 20vw;
+	max-width: 300px;
+	height: calc(100vh - 40px);
 
-	background-color: rgba(255, 255, 255, 0.5);
+	background-color: var(--background-gui);
 	border-radius: 15px;
 	margin: 10px;
 	padding: 10px;
+}
+#changelog > span {
+	font-weight: bold;
 }
 
 .scoreContainer {
@@ -81,7 +89,7 @@ footer {
 	border-radius: 15px;
 	margin: 10px;
 	padding: 10px;
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: var(--background-gui);
 	bottom: 0px;
 	left: 0px;
 }
@@ -92,10 +100,11 @@ footer {
 }
 
 #lossScreen {
-	display: none;
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: var(--background-gui);
 	padding: 20px;
 	border-radius: 15px;
+    transform: translate(-50%, 650%);
+    transition: 1s ease-out;
 }
 
 @media only screen and (max-device-width: 480px) {
@@ -113,4 +122,9 @@ footer {
 		border-width: 5px;
 		margin: 10px;
 	}
+
+    #changelog { display: none; }
+    :root {
+        --background-gui: rgba(255, 255, 255, 0.5);
+    }
 }
