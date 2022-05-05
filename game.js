@@ -9,6 +9,7 @@ let score = 0;
 let flags = 0;
 let lose = false;
 let minesweeperMap = {};
+let scoreText = "";
 
 let frameCount = 0;
 let colorCorrection = 0;
@@ -638,6 +639,37 @@ CANVAS.addEventListener("mouseup", (evt) => {
             );
             lose = true;
 
+            scoreText = `I got a new score of ${(score - 1)
+                .toString()
+                .split("")
+                .map((j) => {
+                    switch (parseFloat(j)) {
+                        case 0:
+                            return "0️⃣";
+                        case 1:
+                            return "1️⃣";
+                        case 2:
+                            return "2️⃣";
+                        case 3:
+                            return "3️⃣";
+                        case 4:
+                            return "4️⃣";
+                        case 5:
+                            return "5️⃣";
+                        case 6:
+                            return "6️⃣";
+                        case 7:
+                            return "7️⃣";
+                        case 8:
+                            return "8️⃣";
+                        case 9:
+                            return "9️⃣";
+                    }
+                })
+                .join(
+                    ""
+                )} in Infinisweeper! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
+
             setTimeout(() => {
                 window.bombs = [];
                 document.querySelector("#lossScreen").style.transform = "translate(-50%, -50%)";
@@ -819,37 +851,9 @@ switchState("title");
 
 const copyScore = (elm) => {
     if (navigator.clipboard)
-        navigator.clipboard.writeText(
-            `I got a new score of ${(score - 1)
-                .toString()
-                .split("")
-                .map((j) => {
-                    switch (parseFloat(j)) {
-                        case 0:
-                            return "0️⃣";
-                        case 1:
-                            return "1️⃣";
-                        case 2:
-                            return "2️⃣";
-                        case 3:
-                            return "3️⃣";
-                        case 4:
-                            return "4️⃣";
-                        case 5:
-                            return "5️⃣";
-                        case 6:
-                            return "6️⃣";
-                        case 7:
-                            return "7️⃣";
-                        case 8:
-                            return "8️⃣";
-                        case 9:
-                            return "9️⃣";
-                    }
-                })
-                .join(
-                    ""
-                )} in Infinisweeper! 🚩\n\nhttps://edwardscamera.com/infinisweeper`
-        );
+        navigator.clipboard.writeText(scoreText);
     elm.innerText = "Copied!";
 };
+
+const twitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURI(scoreText)}`, "_blank");
+const facebook = () => window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(scoreText)}&p[url]=https://edwardscamera.com/infinisweeper`);

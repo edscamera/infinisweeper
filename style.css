@@ -46,6 +46,8 @@ footer {
 	width: 100%;
 }
 
+a { cursor: pointer; }
+
 #GUI > div {
 	display: none;
 	position: absolute;
