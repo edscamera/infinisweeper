@@ -72,22 +72,52 @@ a { cursor: pointer; }
     transform: translate(20%, 20%);
 }
 
-#changelog {
-	position: absolute;
+#changelogContainer {
+    position: absolute;
 	left: 0px;
 	top: 0px;
-
-	width: 20vw;
-	max-width: 300px;
-	height: calc(100vh - 40px);
+    
+    width: 20vw;
+	max-width: 315px;
+	max-height: calc(100vh - 40px);
 
 	background-color: var(--background-gui);
 	border-radius: 15px;
 	margin: 10px;
 	padding: 10px;
 }
+#changelog {
+    width: 20vw;
+	max-width: 300px;
+	max-height: calc(100vh - 40px);
+
+	border-radius: 15px;
+    padding-right: 15px;
+    
+    overflow-y: auto;
+}
 #changelog > span {
 	font-weight: bold;
+}
+#changelog > h2 {
+    text-align: center;
+}
+#changelog > h2:first-of-type { margin-top: 0px; }
+#changelog::-webkit-scrollbar {
+    width: 5px;
+    transform: translateX(-50%)
+}
+
+#changelog::-webkit-scrollbar-track {
+    display: none;
+    border-radius: 10px;
+    transform: translateX(-50%)
+}
+
+#changelog::-webkit-scrollbar-thumb {
+    border-radius: 15px;
+    background-color: #ccc;
+    transform: translateX(-50%)
 }
 
 .scoreContainer {
@@ -99,6 +129,7 @@ a { cursor: pointer; }
 	bottom: 0px;
 	left: 0px;
 }
+
 
 .scoreContainer > div {
 	padding: 5px;
@@ -112,10 +143,13 @@ a { cursor: pointer; }
     transform: translate(-50%, 650%);
     transition: 1s ease-out;
 }
+.mobileOnly { display: none; }
 
 @media only screen and (max-device-width: 480px) {
 	.scoreContainer {
 		width: calc(100% - 40px);
+        display: flex;
+        align-items: center;
 	}
 
 	.titleContainer > h1 {
@@ -129,9 +163,12 @@ a { cursor: pointer; }
 		margin: 10px;
 	}
 
-    #changelog { display: none; }
     :root {
         --background-gui: rgba(255, 255, 255, 0.5);
     }
-    .titleContainer > h1 > img { display: none; }
+    .desktopOnly { display: none!important; }
+    .mobileOnly { display: initial!important; }
+    .scoreContainer button { font-size: 24px; }
+    button:hover { background-color: #e4c29e!important; }
+    button:active { background-color: #d7b998!important; }
 }

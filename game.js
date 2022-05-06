@@ -16,22 +16,21 @@ let colorCorrection = 0;
 
 class PoppedTile {
     static tiles = [];
-    constructor(x, y, type) {
+    constructor(position, type) {
         this.type = type;
-        this.x = x;
-        this.y = y;
+        this.position = position;
         this.rotation = 0;
         this.rotationVel = 0;
         this.velocity = {
-            x: (Math.random() - 0.5) * 10,
-            y: -Math.random() * 10,
+            x: (Math.random() - 0.5) * 10 / (64 / camera.tilesize),
+            y: -Math.random() * 10 / (64 / camera.tilesize),
         };
         this.size = camera.tilesize;
         PoppedTile.tiles.push(this);
     }
     update() {
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
         this.velocity.y += 0.2;
         this.rotation += this.rotationVel;
         if (Math.abs(this.rotationVel) < 0.1)
@@ -40,8 +39,8 @@ class PoppedTile {
     draw() {
         g.save();
         g.translate(
-            this.x - camera.x * camera.tilesize + this.size / 2,
-            this.y - camera.y * camera.tilesize + this.size / 2
+            this.position.x - camera.x * camera.tilesize + this.size / 2,
+            this.position.y - camera.y * camera.tilesize + this.size / 2
         );
         g.rotate(this.rotation);
         g.fillStyle =
@@ -62,6 +61,12 @@ class PoppedTile {
         this.size *= 0.99;
         if (this.size <= 1)
             PoppedTile.tiles.splice(PoppedTile.tiles.indexOf(this), 1);
+    }
+    static updateAllPoppedTiles() {
+        this.tiles.forEach(t => t.update());
+    }
+    static drawAllPoppedTiles() {
+        this.tiles.forEach(t => t.draw());
     }
 }
 
@@ -466,13 +471,13 @@ const draw = () => {
             }
             break;
     }
-    PoppedTile.tiles.forEach((tile) => tile.draw());
+    PoppedTile.drawAllPoppedTiles();
     Particle.drawAllParticles();
 };
 
 const update = () => {
     Particle.updateAllParticles();
-    PoppedTile.tiles.forEach((tile) => tile.update());
+    PoppedTile.updateAllPoppedTiles();
     if (GAME_STATE === "game") {
         if (lose || !camera.canMove) return;
         if (Input.keyDown["ArrowRight"]) {
@@ -543,7 +548,7 @@ const toggleFlag = (x, y) => {
         sfx["flag_down"].play();
         flags++;
     } else if (getMinesweeperMap(x, y)["c"] >= 2) {
-        new PoppedTile(x * camera.tilesize, y * camera.tilesize, 2);
+        new PoppedTile({ "x": x * camera.tilesize, "y": y * camera.tilesize, }, 2);
         minesweeperMap[`${x},${y}`]["c"] = 1;
         sfx["flag_up"].play();
         flags--;
@@ -572,6 +577,11 @@ CANVAS.addEventListener("mouseup", (evt) => {
 
     if (evt.button === 2 && !Input.touch && score > 0) toggleFlag(x, y);
 
+    if (evt.button === 0 && (evt.ctrlKey || evt.shiftKey) && !Input.touch && score > 0) {
+        toggleFlag(x, y);
+        return updateLabels();
+    }
+
     if (evt.button === 0) {
         camera.canMove = true;
         let leftToEmpty = [[x, y]];
@@ -586,8 +596,10 @@ CANVAS.addEventListener("mouseup", (evt) => {
                 if (minesweeperMap[`${x2},${y2}`]["#"] > highestNumber)
                     highestNumber = minesweeperMap[`${x2},${y2}`]["#"];
                 new PoppedTile(
-                    x2 * camera.tilesize,
-                    y2 * camera.tilesize,
+                    {
+                        "x": x2 * camera.tilesize,
+                        "y": y2 * camera.tilesize,
+                    },
                     Math.abs((x2 + y2) % 2)
                 );
             }
@@ -623,19 +635,20 @@ CANVAS.addEventListener("mouseup", (evt) => {
         if (minesweeperMap[`${x},${y}`]["#"] === -1) {
             localStorage.setItem(storageKey("saveData"), "None");
             sfx["confetti"].play();
+            Particle.gravity = 0.7 / (64 / camera.tilesize);
             Particle.explosion(
                 {
                     x: (x - camera.x + 0.5) * camera.tilesize,
                     y: (y - camera.y + 0.5) * camera.tilesize,
                 },
-                15,
+                15 / (64 / camera.tilesize),
                 100,
                 [
                     `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
                     },100%,50%)`,
                 ],
-                1,
-                50
+                1 / (64 / camera.tilesize),
+                50 / (64 / camera.tilesize),
             );
             lose = true;
 
@@ -708,14 +721,14 @@ window.setInterval(() => {
                 x: (x - camera.x + 0.5) * camera.tilesize,
                 y: (y - camera.y + 0.5) * camera.tilesize,
             },
-            10,
+            10 / (64 / camera.tilesize),
             15,
             [
                 `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
                 },100%,50%)`,
             ],
-            1,
-            50
+            1 / (64 / camera.tilesize),
+            50 / (64 / camera.tilesize)
         );
         window.bombs.splice(window.bombs.indexOf(myBomb), 1);
     }
@@ -854,6 +867,11 @@ const copyScore = (elm) => {
         navigator.clipboard.writeText(scoreText);
     elm.innerText = "Copied!";
 };
+
+const zoom = (size) => {
+    camera.tilesize += size;
+    camera.tilesize = Math.min(Math.max(16, camera.tilesize), 128);
+}
 
 const twitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURI(scoreText)}`, "_blank");
 const facebook = () => window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(scoreText)}&p[url]=https://edwardscamera.com/infinisweeper`);

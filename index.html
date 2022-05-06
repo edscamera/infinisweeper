@@ -17,58 +17,90 @@
 <body>
     <div id="GUI">
         <div GAME_STATE="title">
-            <div id="changelog">
-                <span>v1.2</span>
-                <ul>
-                    <li>Added social buttons</li>
-                    <li>Added play again button</li>
-                </ul>
-                <span>Hotfix v1.1.1</span>
-                <ul>
-                    <li>Fixed scrolling slow-down glitch on mobile</li>
-                </ul>
-                <span>v1.1</span>
-                <ul>
-                    <li>Mobile support</li>
-                    <li>Sound effects added</li>
-                    <li>Changelog added</li>
-                    <li>Bomb & Dialog animations</li>
-                    <li>Bomb particles slow down reduction</li>
-                    <li>Fixed bomb particle vanish bug</li>
-                    <li>Fixed graphical "white grid" bug</li>
-                </ul>
-                <span>Initial Release</span>
-                <ul>
-                    <li>
-                        Concept & Programming by
-                        <a href="https://edwardscamera.com">edwardscamera</a>
-                    </li>
-                    <li>
-                        "Infinisweeper" name and "You've been sweeped!"
-                        phrase created by heidrekursson
-                    </li>
-                    <li>
-                        Art design, flag art and sound effects from Google
-                        Minesweeper
-                    </li>
-                </ul>
+            <div id="changelogContainer" class="desktopOnly">
+                <div id="changelog">
+                    <h2>How to Play</h2>
+                    <ul>
+                        <li>Left click to dig, right click to place a flag. On mobile, tap to dig, hold to place a flag.
+                        </li>
+                        <li>The number on a tile represents how many mines are adjacent to the tile.</li>
+                        <li>Every tile without a mine dug up is worth one point.</li>
+                        <li>Don't dig up a mine, or else it's game over!</li>
+                        <li>Compete with friends to see who can get the most points.</li>
+                    </ul>
+                    <hr>
+                    <h2>Changelog</h2>
+                    <span>v1.3</span>
+                    <ul>
+                        <li>Now can place flags using shift + click or ctrl + click. Hooray for mac users and orchestra
+                            teachers everywhere!</li>
+                        <li>Added "How to Play" section</li>
+                        <li>Added zoom in/out buttons</li>
+                    </ul>
+                    <span>v1.2</span>
+                    <ul>
+                        <li>Added social buttons</li>
+                        <li>Added play again button</li>
+                    </ul>
+                    <span>Hotfix v1.1.1</span>
+                    <ul>
+                        <li>Fixed scrolling slow-down glitch on mobile</li>
+                    </ul>
+                    <span>v1.1</span>
+                    <ul>
+                        <li>Mobile support</li>
+                        <li>Sound effects added</li>
+                        <li>Changelog added</li>
+                        <li>Bomb & Dialog animations</li>
+                        <li>Bomb particles slow down reduction</li>
+                        <li>Fixed bomb particle vanish bug</li>
+                        <li>Fixed graphical "white grid" bug</li>
+                    </ul>
+                    <span>Initial Release</span>
+                    <ul>
+                        <li>
+                            Concept & Programming by
+                            <a href="https://edwardscamera.com">edwardscamera</a>
+                        </li>
+                        <li>
+                            "Infinisweeper" name and "You've been sweeped!"
+                            phrase created by heidrekursson
+                        </li>
+                        <li>
+                            Art design, flag art and sound effects from Google
+                            Minesweeper
+                        </li>
+                    </ul>
+                </div>
             </div>
+
             <div class="titleContainer">
-                <h1>Infinisweeper<img src="./img/flag_icon.png"></h1>
+                <h1>Infinisweeper<img class="desktopOnly" src="./img/flag_icon.png"></h1>
                 <button style="margin-bottom: 5px" onclick="newGame()">
                     New Game</button><br />
                 <button onclick="loadGame()">Continue</button><br /><br />
             </div>
             <footer>
-                v1.2 | built by
+                v1.3 | built by
                 <a href="https://edwardscamera.com">edwardscamera</a>
             </footer>
         </div>
         <div GAME_STATE="game">
             <div class="scoreContainer">
-                <div>Flags: <span id="flagsLabel">0</span></div>
-                <div>Score: <span id="scoreLabel">0</span></div>
-                <div>High Score: <span id="highScoreLabel">0</span></div>
+                <div class="desktopOnly" style="text-align: center">
+                    <button onclick="zoom(16)">Zoom in</button><br />
+                    <button onclick="zoom(-16)">Zoom out</button>
+                </div>
+                <hr class="desktopOnly">
+                <div style="display: inline-block; flex: 1;">
+                    <div>Flags: <span id="flagsLabel">0</span></div>
+                    <div>Score: <span id="scoreLabel">0</span></div>
+                    <div>High Score: <span id="highScoreLabel">0</span></div>
+                </div>
+                <div class="mobileOnly" style="text-align: center; flex: 1;">
+                    <button onclick="zoom(16)">+</button><br />
+                    <button onclick="zoom(-16)">-</button>
+                </div>
             </div>
             <div id="lossScreen" class="titleContainer">
                 <h1>You've been sweeped!</h1>
@@ -81,7 +113,6 @@
                     href="http://www.facebook.com/sharer.php?s=100&p[title]=Infinisweeper&p[summary]=hello&p[url]=https://edwardscamera.com/infinisweeper">
                     <img src="https://static.xx.fbcdn.net/rsrc.php/yb/r/hLRJ1GG_y0J.ico">
                 </a>
-
             </div>
         </div>
     </div>
