@@ -76,6 +76,21 @@ class Particle {
             ));
         }
     }
+    static fullExplosion(position, velocity, amount, colors, minSize, maxSize) {
+        for (let i = 0; i < amount; i++) {
+            const myColor = colors[Math.floor(Math.random() * colors.length)];
+            const myDir = Math.PI * 2 * Math.random();
+            this.particles.push(new Particle(
+                { ...position },
+                {
+                    "x": Math.cos(myDir) * velocity * Math.random(),
+                    "y": Math.sin(myDir) * velocity * Math.random(),
+                },
+                myColor,
+                minSize + (maxSize - minSize) * Math.random()
+            ));
+        }
+    }
     constructor(position, velocity, color, size) {
         this.position = position;
         this.velocity = velocity;

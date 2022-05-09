@@ -108,6 +108,7 @@ window.addEventListener("load", () => {
         frameCount++;
     }, 1000 / 60);
     Input.initialize();
+    document.querySelector("#versionCalc").innerText = document.getElementById("changelog").querySelector("span").innerText;
 });
 window.addEventListener("resize", () => {
     CANVAS.width = window.innerWidth;
@@ -403,7 +404,7 @@ let dragging = false;
 CANVAS.addEventListener("mousedown", () => {
     if (GAME_STATE !== "game" || lose) return;
     const onMouseMove = (evt) => {
-        if (Math.abs(evt.movementX) + Math.abs(evt.movementY) > 0) {
+        if (dragging || (!dragging && Math.abs(evt.movementX) + Math.abs(evt.movementY) > 5)) {
             camera.x -= evt.movementX / camera.tilesize;
             camera.y -= evt.movementY / camera.tilesize;
             dragging = true;
@@ -414,6 +415,7 @@ CANVAS.addEventListener("mousedown", () => {
         () => {
             CANVAS.removeEventListener("mousemove", onMouseMove);
             dragging = false;
+            saveData();
         }, { once: true });
 });
 CANVAS.addEventListener("touchmove", (evt) => {
@@ -425,15 +427,22 @@ CANVAS.addEventListener("touchmove", (evt) => {
         dragging = true;
     }
 });
-CANVAS.addEventListener("touchend", () => (dragging = false));
+CANVAS.addEventListener("touchend", () => {
+    dragging = false;
+    saveData();
+});
 
 // Hold to flag
+let toggleFlagDisable = false;
 CANVAS.addEventListener("touchstart", (evt) => {
     if (GAME_STATE !== "game" || lose || dragging) return;
     setTimeout(() => {
         const x = Math.floor((camera.x * camera.tilesize + evt.targetTouches[0].clientX) / camera.tilesize);
         const y = Math.floor((camera.y * camera.tilesize + evt.targetTouches[0].clientY) / camera.tilesize);
-        if (Input.touch && !dragging && score > 0) toggleFlag(x, y);
+        if (Input.touch && !dragging && score > 0) {
+            toggleFlag(x, y);
+            toggleFlagDisable = true;
+        }
     }, 250);
 });
 
@@ -452,6 +461,7 @@ const toggleFlag = (x, y) => {
 };
 
 CANVAS.addEventListener("mouseup", (evt) => {
+    if (toggleFlagDisable) return toggleFlagDisable = false;
     if (GAME_STATE !== "game" || dragging || lose) return;
 
     if (score === 0) {
@@ -478,6 +488,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
         if (minesweeperMap[`${x},${y}`]["c"] !== 1) return;
         let cycles = 0;
         let highestNumber = 1;
+        let poppedTiles = 0;
         while (leftToEmpty.length > 0) {
             const x2 = Math.floor(leftToEmpty[0][0]);
             const y2 = Math.floor(leftToEmpty[0][1]);
@@ -492,6 +503,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
                     },
                     Math.abs((x2 + y2) % 2)
                 );
+                poppedTiles++;
             }
             minesweeperMap[`${x2},${y2}`]["c"] = 0;
             for (let xoffset = -1; xoffset <= 1; xoffset++) {
@@ -512,7 +524,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
             setTimeout(() => clearInterval(shake), 400);
             sfx["0"].play();
         } else {
-            sfx[highestNumber.toString()].play();
+            sfx[Math.floor(Math.min(Math.max(highestNumber, poppedTiles / 3), 8)).toString()].play();
         }
 
         saveData();
@@ -521,7 +533,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
             localStorage.setItem(storageKey("saveData"), "None");
             sfx["confetti"].play();
             Particle.gravity = 0.7 / (64 / camera.tilesize);
-            Particle.explosion(
+            Particle.fullExplosion(
                 {
                     x: (x - camera.x + 0.5) * camera.tilesize,
                     y: (y - camera.y + 0.5) * camera.tilesize,
@@ -564,7 +576,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
                         const x = myBomb[0];
                         const y = myBomb[1];
                         minesweeperMap[`${x},${y}`]["c"] = 0;
-                        Particle.explosion(
+                        Particle.fullExplosion(
                             {
                                 x: (x - camera.x + 0.5) * camera.tilesize,
                                 y: (y - camera.y + 0.5) * camera.tilesize,
@@ -590,7 +602,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
 });
 
 const saveData = (elm) => {
-    data = `${seed},${camera.x},${camera.y}`;
+    data = `${seed},${camera.x},${camera.y},${camera.tilesize}`;
     Object.keys(minesweeperMap).forEach((key) => {
         if (minesweeperMap[key]["c"] != 1)
             data += `,${key},${minesweeperMap[key]["c"]}`;
@@ -604,6 +616,7 @@ const loadData = (dt) => {
     seed = parseFloat(data.shift());
     camera.x = parseFloat(data.shift());
     camera.y = parseFloat(data.shift());
+    camera.tilesize = parseFloat(data.shift());
     minesweeperMap = {};
     for (let i = 0; i < data.length / 3; i++) {
         getMinesweeperMap(data[i * 3], data[i * 3 + 1], seed);
@@ -677,8 +690,13 @@ const copyScore = (elm) => {
 };
 
 const zoom = (size) => {
+    xMiddle = camera.x + CANVAS.width / 2 / camera.tilesize;
+    yMiddle = camera.y + CANVAS.height / 2 / camera.tilesize;
     camera.tilesize += size;
     camera.tilesize = Math.min(Math.max(16, camera.tilesize), 128);
+    camera.x = xMiddle - CANVAS.width / 2 / camera.tilesize;
+    camera.y = yMiddle - CANVAS.height / 2 / camera.tilesize;
+    saveData();
 }
 
 const twitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURI(scoreText)}`, "_blank");
