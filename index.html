@@ -78,7 +78,7 @@
                 <h1>Infinisweeper<img class="desktopOnly" src="./img/flag_icon.png"></h1>
                 <button style="margin-bottom: 5px" onclick="newGame()">
                     New Game</button><br />
-                <button onclick="loadGame()">Continue</button><br /><br />
+                <button onclick="loadGame(this)" id="continueGame">Continue</button><br /><br />
             </div>
             <footer>
                 v1.3 | built by
@@ -104,9 +104,9 @@
             </div>
             <div id="lossScreen" class="titleContainer">
                 <h1>You've been sweeped!</h1>
-                <button style="margin-bottom: 5px" onclick="window.location.reload()">Play Again</button><br />
-                <button style="margin-bottom: 15px" onclick="copyScore(this)">
-                    Copy Score</button><br />
+                <button style="margin-bottom: 5px" onclick="copyScore(this)">Copy Score</button><br />
+                <button style="margin-bottom: 5px" onclick="newGame()">Play Again</button><br />
+                <button style="margin-bottom: 15px" onclick="switchState('title')">Main Menu</button><br />
                 <a onclick="twitter()">
                     <img src="https://abs.twimg.com/favicons/twitter.2.ico"></a>
                 <a onclick="facebook()"

@@ -4,14 +4,12 @@ document.body.appendChild(CANVAS);
 
 const bombChance = 0.2;
 
-let seed = (Math.random() - 0.5) * 2500;
+let seed = null;
 let score = 0;
 let flags = 0;
 let lose = false;
 let minesweeperMap = {};
 let scoreText = "";
-
-let frameCount = 0;
 let colorCorrection = 0;
 
 class PoppedTile {
@@ -95,7 +93,22 @@ const camera = {
     x: 0,
     y: 0,
 };
-window.bombs = [];
+
+let frameCount = 0;
+window.addEventListener("load", () => {
+    CANVAS.width = window.innerWidth;
+    CANVAS.height = window.innerHeight;
+    window.setInterval(() => {
+        g.fillStyle = "#fff";
+        g.fillRect(0, 0, CANVAS.width, CANVAS.height);
+
+        update();
+        draw();
+
+        frameCount++;
+    }, 1000 / 60);
+    Input.initialize();
+});
 window.addEventListener("resize", () => {
     CANVAS.width = window.innerWidth;
     CANVAS.height = window.innerHeight;
@@ -147,276 +160,183 @@ const draw = () => {
             const tileHeight = Math.ceil(CANVAS.height / camera.tilesize) + 1;
             for (let x = 0; x < tileWidth; x++) {
                 for (let y = 0; y < tileHeight; y++) {
-                    const renderX =
-                        ((x * camera.tilesize + frameCount) %
-                            (tileWidth * camera.tilesize)) -
-                        camera.tilesize;
-                    const renderY =
-                        ((y * camera.tilesize + frameCount) %
-                            (tileHeight * camera.tilesize)) -
-                        camera.tilesize;
-                    g.fillStyle =
-                        Math.abs(
-                            (Math.floor(renderY / camera.tilesize) +
-                                Math.floor(renderX / camera.tilesize)) %
-                            2
-                        ) === 0
-                            ? "#AAD650"
-                            : "#A2D048";
-                    g.fillRect(
-                        renderX,
-                        renderY,
-                        camera.tilesize,
-                        camera.tilesize
-                    );
+                    const renderX = ((x * camera.tilesize + frameCount) % (tileWidth * camera.tilesize)) - camera.tilesize;
+                    const renderY = ((y * camera.tilesize + frameCount) % (tileHeight * camera.tilesize)) - camera.tilesize;
+                    g.fillStyle = Math.abs((Math.floor(renderY / camera.tilesize) + Math.floor(renderX / camera.tilesize)) % 2) === 0 ? "#AAD650" : "#A2D048";
+                    g.fillRect(renderX, renderY, camera.tilesize, camera.tilesize);
                 }
             }
             break;
         case "game":
-            g.font = `${camera.tilesize / (64 / 48)}px roboto`;
-            for (
-                let x = Math.floor(camera.x);
-                x < camera.x + CANVAS.width / camera.tilesize;
-                x++
-            ) {
-                for (
-                    let y = Math.floor(camera.y);
-                    y < camera.y + CANVAS.height / camera.tilesize;
-                    y++
-                ) {
-                    if (getMinesweeperMap(x, y)["c"] > 0) {
-                        g.fillStyle =
-                            Math.abs((x + y + colorCorrection) % 2) === 0
-                                ? "#AAD650"
-                                : "#A2D048";
-                        g.fillRect(
-                            Math.round((x - camera.x) * camera.tilesize),
-                            Math.round((y - camera.y) * camera.tilesize),
-                            camera.tilesize,
-                            camera.tilesize
-                        );
-                        if (getMinesweeperMap(x, y)["c"] >= 9) {
-                            g.drawImage(
-                                img.flag_icon,
-                                (x - camera.x) * camera.tilesize,
-                                (y - camera.y) * camera.tilesize,
+            if (score > 0) {
+                for (let x = Math.floor(camera.x); x < camera.x + CANVAS.width / camera.tilesize; x++) {
+                    for (let y = Math.floor(camera.y); y < camera.y + CANVAS.height / camera.tilesize; y++) {
+                        if (getMinesweeperMap(x, y)["c"] > 0) {
+                            // Draw Ground
+                            g.fillStyle = Math.abs((x + y + colorCorrection) % 2) === 0 ? "#AAD650" : "#A2D048";
+                            g.fillRect(
+                                Math.round((x - camera.x) * camera.tilesize),
+                                Math.round((y - camera.y) * camera.tilesize),
                                 camera.tilesize,
                                 camera.tilesize
                             );
-                        }
-                        if (
-                            getMinesweeperMap(x, y)["c"] >= 2 &&
-                            getMinesweeperMap(x, y)["c"] < 9
-                        ) {
-                            minesweeperMap[`${x},${y}`]["c"] += 0.5;
-                            g.drawImage(
-                                img.flag_gif,
-                                1,
-                                81 *
-                                (Math.floor(
-                                    minesweeperMap[`${x},${y}`]["c"]
-                                ) -
-                                    2),
-                                81,
-                                80,
-                                (x - camera.x) * camera.tilesize,
-                                (y - camera.y) * camera.tilesize,
-                                camera.tilesize,
-                                camera.tilesize
-                            );
-                        }
-                    } else {
-                        g.fillStyle =
-                            Math.abs((x + y + colorCorrection) % 2) === 1
-                                ? "#D7B998"
-                                : "#E4C29E";
-                        g.fillRect(
-                            Math.round((x - camera.x) * camera.tilesize),
-                            Math.round((y - camera.y) * camera.tilesize),
-                            camera.tilesize,
-                            camera.tilesize
-                        );
-
-                        g.strokeStyle = "#86AE3A";
-                        g.lineWidth = camera.tilesize / (64 / 15) / 2;
-                        g.beginPath();
-                        const condition = (x, y) =>
-                            (getMinesweeperMap(x, y)["c"] === 0 &&
-                                getMinesweeperMap(x, y)["#"] === -1) ||
-                            getMinesweeperMap(x, y)["c"] > 0;
-                        if (condition(x + 1, y)) {
-                            g.moveTo(
-                                Math.round(
-                                    (x - camera.x + 1) * camera.tilesize -
-                                    g.lineWidth / 2
-                                ),
-                                Math.round((y - camera.y) * camera.tilesize)
-                            );
-                            g.lineTo(
-                                Math.round(
-                                    (x - camera.x + 1) * camera.tilesize -
-                                    g.lineWidth / 2
-                                ),
-                                Math.round((y - camera.y + 1) * camera.tilesize)
-                            );
-                        }
-                        if (condition(x - 1, y)) {
-                            g.moveTo(
-                                Math.round(
-                                    (x - camera.x) * camera.tilesize +
-                                    g.lineWidth / 2
-                                ),
-                                Math.round((y - camera.y) * camera.tilesize)
-                            );
-                            g.lineTo(
-                                Math.round(
-                                    (x - camera.x) * camera.tilesize +
-                                    g.lineWidth / 2
-                                ),
-                                Math.round((y - camera.y + 1) * camera.tilesize)
-                            );
-                        }
-                        if (condition(x, y + 1)) {
-                            g.moveTo(
+                            // Draw Flags
+                            if (getMinesweeperMap(x, y)["c"] >= 2 && getMinesweeperMap(x, y)["c"] < 9) {
+                                minesweeperMap[`${x},${y}`]["c"] += 0.5;
+                                g.drawImage(
+                                    img.flag_gif,
+                                    1,
+                                    81 *
+                                    (Math.floor(
+                                        minesweeperMap[`${x},${y}`]["c"]
+                                    ) -
+                                        2),
+                                    81,
+                                    80,
+                                    (x - camera.x) * camera.tilesize,
+                                    (y - camera.y) * camera.tilesize,
+                                    camera.tilesize,
+                                    camera.tilesize
+                                );
+                            }
+                            if (getMinesweeperMap(x, y)["c"] >= 9) {
+                                g.drawImage(
+                                    img.flag_icon,
+                                    (x - camera.x) * camera.tilesize,
+                                    (y - camera.y) * camera.tilesize,
+                                    camera.tilesize,
+                                    camera.tilesize
+                                );
+                            }
+                        } else {
+                            // Draw Background tiles
+                            g.fillStyle = Math.abs((x + y + colorCorrection) % 2) === 1 ? "#D7B998" : "#E4C29E";
+                            g.fillRect(
                                 Math.round((x - camera.x) * camera.tilesize),
-                                Math.round(
-                                    (y - camera.y + 1) * camera.tilesize -
-                                    g.lineWidth / 2
-                                )
+                                Math.round((y - camera.y) * camera.tilesize),
+                                camera.tilesize, camera.tilesize
                             );
-                            g.lineTo(
-                                Math.round(
-                                    (x - camera.x + 1) * camera.tilesize
-                                ),
-                                Math.round(
-                                    (y - camera.y + 1) * camera.tilesize -
-                                    g.lineWidth / 2
-                                )
-                            );
-                        }
-                        if (condition(x, y - 1)) {
-                            g.moveTo(
-                                Math.round((x - camera.x) * camera.tilesize),
-                                Math.round(
-                                    (y - camera.y) * camera.tilesize +
-                                    g.lineWidth / 2
-                                )
-                            );
-                            g.lineTo(
-                                Math.round(
-                                    (x - camera.x + 1) * camera.tilesize
-                                ),
-                                Math.round(
-                                    (y - camera.y) * camera.tilesize +
-                                    g.lineWidth / 2
-                                )
-                            );
-                        }
-                        g.stroke();
-
-                        g.fillStyle = "#86AE3A";
-                        if (condition(x - 1, y - 1))
-                            g.fillRect(
-                                (x - camera.x) * camera.tilesize,
-                                (y - camera.y) * camera.tilesize,
-                                g.lineWidth,
-                                g.lineWidth
-                            );
-                        if (condition(x + 1, y + 1))
-                            g.fillRect(
-                                (x - camera.x + 1) * camera.tilesize -
-                                g.lineWidth,
-                                (y - camera.y + 1) * camera.tilesize -
-                                g.lineWidth,
-                                g.lineWidth,
-                                g.lineWidth
-                            );
-                        if (condition(x + 1, y - 1))
-                            g.fillRect(
-                                (x - camera.x + 1) * camera.tilesize -
-                                g.lineWidth,
-                                (y - camera.y) * camera.tilesize,
-                                g.lineWidth,
-                                g.lineWidth
-                            );
-                        if (condition(x - 1, y + 1))
-                            g.fillRect(
-                                (x - camera.x) * camera.tilesize,
-                                (y - camera.y + 1) * camera.tilesize -
-                                g.lineWidth,
-                                g.lineWidth,
-                                g.lineWidth
-                            );
-
-                        g.fillStyle = "#000";
-                        switch (getMinesweeperMap(x, y)["#"]) {
-                            case 1:
-                                g.fillStyle = "#1977D3";
-                                break;
-                            case 2:
-                                g.fillStyle = "#3B8E3F";
-                                break;
-                            case 3:
-                                g.fillStyle = "#D53734";
-                                break;
-                            case 4:
-                                g.fillStyle = "#7A1EA2";
-                                break;
-                            case 5:
-                                g.fillStyle = "#FF8F00";
-                                break;
-                            case 6:
-                                g.fillStyle = "#159AA4";
-                                break;
-                            case 7:
-                                g.fillStyle = "#424343";
-                                break;
-                            case 8:
-                                g.fillStyle = "#A99D93";
-                                break;
-                        }
-
-                        const metrics = g.measureText(
-                            getMinesweeperMap(x, y)["#"]
-                        );
-                        const textHeight =
-                            metrics.actualBoundingBoxAscent +
-                            metrics.actualBoundingBoxDescent;
-
-                        if (getMinesweeperMap(x, y)["#"] > 0) {
-                            g.fillText(
-                                getMinesweeperMap(x, y)["#"],
-                                (x - camera.x + 0.5) * camera.tilesize -
-                                metrics.width / 2,
-                                (y - camera.y + 0.5) * camera.tilesize +
-                                textHeight * 0.5,
-                                camera.tilesize
-                            );
-                        }
-                        if (getMinesweeperMap(x, y)["#"] === -1) {
-                            g.fillStyle = `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
-                                },100%,50%)`;
-                            if (!minesweeperMap[`${x},${y}`]["t"]) minesweeperMap[`${x},${y}`]["t"] = 255;
-                            minesweeperMap[`${x},${y}`]["t"] += (0 - minesweeperMap[`${x},${y}`]["t"]) / 150;
-                            g.fillRect(
-                                (x - camera.x) * camera.tilesize - 0.5,
-                                (y - camera.y) * camera.tilesize - 0.5,
-                                camera.tilesize + 1,
-                                camera.tilesize + 1
-                            );
-                            const centerVal = minesweeperMap[`${x},${y}`]["t"];
-                            g.fillStyle = `rgb(${centerVal},${centerVal},${centerVal})`;
+                            // Draw Borders
+                            g.strokeStyle = g.fillStyle = "#86AE3A";
+                            g.lineWidth = camera.tilesize / (64 / 15) / 2;
                             g.beginPath();
-                            g.ellipse(
-                                (x - camera.x + 0.5) * camera.tilesize,
-                                (y - camera.y + 0.5) * camera.tilesize,
-                                camera.tilesize / 4,
-                                camera.tilesize / 4,
-                                0,
-                                0,
-                                Math.PI * 2
+                            const condition = (x, y) => (getMinesweeperMap(x, y)["c"] === 0 && getMinesweeperMap(x, y)["#"] === -1) || getMinesweeperMap(x, y)["c"] > 0;
+                            if (condition(x + 1, y)) { // Right
+                                g.moveTo(
+                                    Math.round((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2),
+                                    Math.round((y - camera.y) * camera.tilesize)
+                                );
+                                g.lineTo(
+                                    Math.round((x - camera.x + 1) * camera.tilesize - g.lineWidth / 2),
+                                    Math.round((y - camera.y + 1) * camera.tilesize)
+                                );
+                            }
+                            if (condition(x - 1, y)) { // Left
+                                g.moveTo(
+                                    Math.round((x - camera.x) * camera.tilesize + g.lineWidth / 2),
+                                    Math.round((y - camera.y) * camera.tilesize)
+                                );
+                                g.lineTo(
+                                    Math.round((x - camera.x) * camera.tilesize + g.lineWidth / 2),
+                                    Math.round((y - camera.y + 1) * camera.tilesize)
+                                );
+                            }
+                            if (condition(x, y + 1)) { // Bottom
+                                g.moveTo(
+                                    Math.round((x - camera.x) * camera.tilesize),
+                                    Math.round((y - camera.y + 1) * camera.tilesize - g.lineWidth / 2)
+                                );
+                                g.lineTo(
+                                    Math.round((x - camera.x + 1) * camera.tilesize),
+                                    Math.round((y - camera.y + 1) * camera.tilesize - g.lineWidth / 2)
+                                );
+                            }
+                            if (condition(x, y - 1)) { // Top
+                                g.moveTo(
+                                    Math.round((x - camera.x) * camera.tilesize),
+                                    Math.round((y - camera.y) * camera.tilesize + g.lineWidth / 2)
+                                );
+                                g.lineTo(
+                                    Math.round((x - camera.x + 1) * camera.tilesize),
+                                    Math.round((y - camera.y) * camera.tilesize + g.lineWidth / 2)
+                                );
+                            }
+                            g.stroke();
+                            if (condition(x - 1, y - 1)) g.fillRect( // Top Left
+                                (x - camera.x) * camera.tilesize,
+                                (y - camera.y) * camera.tilesize,
+                                g.lineWidth,
+                                g.lineWidth
                             );
-                            g.fill();
+                            if (condition(x + 1, y - 1)) g.fillRect( // Top Right
+                                (x - camera.x + 1) * camera.tilesize - g.lineWidth,
+                                (y - camera.y) * camera.tilesize,
+                                g.lineWidth,
+                                g.lineWidth
+                            );
+                            if (condition(x - 1, y + 1)) g.fillRect( // Bottom Left
+                                (x - camera.x) * camera.tilesize,
+                                (y - camera.y + 1) * camera.tilesize - g.lineWidth,
+                                g.lineWidth,
+                                g.lineWidth
+                            );
+                            if (condition(x + 1, y + 1)) g.fillRect( // Bottom Right
+                                (x - camera.x + 1) * camera.tilesize - g.lineWidth,
+                                (y - camera.y + 1) * camera.tilesize - g.lineWidth,
+                                g.lineWidth,
+                                g.lineWidth
+                            );
+
+                            // Draw Numbers
+                            const colors = {
+                                1: "#1977D3",
+                                2: "#3B8E3F",
+                                3: "#D53734",
+                                4: "#7A1EA2",
+                                5: "#FF8F00",
+                                6: "#159AA4",
+                                7: "#434343",
+                                8: "#A99D93",
+                            }
+                            g.fillStyle = colors[getMinesweeperMap(x, y)["#"]];
+                            const metrics = g.measureText(getMinesweeperMap(x, y)["#"]);
+                            const textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+                            if (getMinesweeperMap(x, y)["#"] > 0) {
+                                g.font = `${camera.tilesize / (64 / 48)}px roboto`;
+                                g.fillText(
+                                    getMinesweeperMap(x, y)["#"],
+                                    (x - camera.x + 0.5) * camera.tilesize -
+                                    metrics.width / 2,
+                                    (y - camera.y + 0.5) * camera.tilesize +
+                                    textHeight * 0.5,
+                                    camera.tilesize
+                                );
+                            }
+                            // Draw Bombs
+                            if (getMinesweeperMap(x, y)["#"] === -1) {
+                                g.fillStyle = `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360},100%,50%)`;
+                                if (!minesweeperMap[`${x},${y}`]["t"]) minesweeperMap[`${x},${y}`]["t"] = 255;
+                                minesweeperMap[`${x},${y}`]["t"] += (0 - minesweeperMap[`${x},${y}`]["t"]) / 150;
+                                g.fillRect(
+                                    (x - camera.x) * camera.tilesize - 0.5,
+                                    (y - camera.y) * camera.tilesize - 0.5,
+                                    camera.tilesize + 1,
+                                    camera.tilesize + 1
+                                );
+                                const centerVal = minesweeperMap[`${x},${y}`]["t"];
+                                g.fillStyle = `rgb(${centerVal},${centerVal},${centerVal})`;
+                                g.beginPath();
+                                g.ellipse(
+                                    (x - camera.x + 0.5) * camera.tilesize,
+                                    (y - camera.y + 0.5) * camera.tilesize,
+                                    camera.tilesize / 4,
+                                    camera.tilesize / 4,
+                                    0,
+                                    0,
+                                    Math.PI * 2
+                                );
+                                g.fill();
+                            }
                         }
                     }
                 }
@@ -424,47 +344,26 @@ const draw = () => {
             // Constant 0 at first click
             if (score === 0) {
                 // Get address of block with # of 0
-                while (target == null || minesweeperMap[target]["#"] !== 0) {
-                    for (
-                        let i = 0;
-                        i < Object.keys(minesweeperMap).length;
-                        i++
-                    ) {
-                        const key = Object.keys(minesweeperMap)[i];
-                        if (minesweeperMap[key]["#"] === 0) {
-                            target = key;
-                            break;
-                        }
-                    }
-                    camera.x += CANVAS.width / camera.tilesize;
-                }
+                let j = -1;
+                do {
+                    for (let x = -2; x < 2; x++) for (let y = -2; y < 2; y++) getMinesweeperMap(j + x, y);
+                    target = `${j},0`;
+                    j++;
+                } while (minesweeperMap[target]["#"] !== 0);
                 // Align camera so mouse is always on target
-                camera.x =
-                    parseFloat(target.split(",")[0]) -
-                    Math.floor(Input.mouse.position.x / camera.tilesize);
-                camera.y =
-                    parseFloat(target.split(",")[1]) -
-                    Math.floor(Input.mouse.position.y / camera.tilesize);
+                camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
+                camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
                 // Calculate color difference
-                colorCorrection =
-                    (parseFloat(target.split(",")[0]) +
-                        parseFloat(target.split(",")[1])) %
-                    2;
-                colorCorrection -= Math.abs(
-                    (Math.floor(Input.mouse.position.x / camera.tilesize) +
-                        Math.floor(Input.mouse.position.y / camera.tilesize)) %
-                    2
-                );
+                colorCorrection = (parseFloat(target.split(",")[0]) + parseFloat(target.split(",")[1])) % 2;
+                colorCorrection -= Math.abs((Math.floor(Input.mouse.position.x / camera.tilesize) + Math.floor(Input.mouse.position.y / camera.tilesize)) % 2);
                 // Draw overlay
                 for (let x = 0; x < CANVAS.width / camera.tilesize; x++) {
                     for (let y = 0; y < CANVAS.height / camera.tilesize; y++) {
-                        g.fillStyle =
-                            Math.abs((x + y) % 2) === 0 ? "#AAD650" : "#A2D048";
+                        g.fillStyle = Math.abs((x + y) % 2) === 0 ? "#AAD650" : "#A2D048";
                         g.fillRect(
                             x * camera.tilesize,
                             y * camera.tilesize,
-                            camera.tilesize,
-                            camera.tilesize
+                            camera.tilesize, camera.tilesize
                         );
                     }
                 }
@@ -504,25 +403,27 @@ let dragging = false;
 CANVAS.addEventListener("mousedown", () => {
     if (GAME_STATE !== "game" || lose) return;
     const onMouseMove = (evt) => {
-        camera.x -= evt.movementX / camera.tilesize;
-        camera.y -= evt.movementY / camera.tilesize;
-        dragging = true;
+        if (Math.abs(evt.movementX) + Math.abs(evt.movementY) > 0) {
+            camera.x -= evt.movementX / camera.tilesize;
+            camera.y -= evt.movementY / camera.tilesize;
+            dragging = true;
+        }
     };
     CANVAS.addEventListener("mousemove", onMouseMove);
-    CANVAS.addEventListener(
-        "mouseup",
+    CANVAS.addEventListener("mouseup",
         () => {
             CANVAS.removeEventListener("mousemove", onMouseMove);
             dragging = false;
-        },
-        { once: true }
-    );
+        }, { once: true });
 });
 CANVAS.addEventListener("touchmove", (evt) => {
     evt.preventDefault();
-    camera.x -= Input.swipe.x / camera.tilesize;
-    camera.y -= Input.swipe.y / camera.tilesize;
-    dragging = true;
+    if (GAME_STATE !== "game" || lose) return;
+    if (Math.abs(Input.swipe.x) + Math.abs(Input.swipe.y) > 0) {
+        camera.x -= Input.swipe.x / camera.tilesize;
+        camera.y -= Input.swipe.y / camera.tilesize;
+        dragging = true;
+    }
 });
 CANVAS.addEventListener("touchend", () => (dragging = false));
 
@@ -530,14 +431,8 @@ CANVAS.addEventListener("touchend", () => (dragging = false));
 CANVAS.addEventListener("touchstart", (evt) => {
     if (GAME_STATE !== "game" || lose || dragging) return;
     setTimeout(() => {
-        const x = Math.floor(
-            (camera.x * camera.tilesize + evt.targetTouches[0].clientX) /
-            camera.tilesize
-        );
-        const y = Math.floor(
-            (camera.y * camera.tilesize + evt.targetTouches[0].clientY) /
-            camera.tilesize
-        );
+        const x = Math.floor((camera.x * camera.tilesize + evt.targetTouches[0].clientX) / camera.tilesize);
+        const y = Math.floor((camera.y * camera.tilesize + evt.targetTouches[0].clientY) / camera.tilesize);
         if (Input.touch && !dragging && score > 0) toggleFlag(x, y);
     }, 250);
 });
@@ -553,29 +448,24 @@ const toggleFlag = (x, y) => {
         sfx["flag_up"].play();
         flags--;
     }
-    saveData(null);
+    saveData();
 };
 
 CANVAS.addEventListener("mouseup", (evt) => {
     if (GAME_STATE !== "game" || dragging || lose) return;
 
     if (score === 0) {
-        camera.x =
-            parseFloat(target.split(",")[0]) -
-            Math.floor(Input.mouse.position.x / camera.tilesize);
-        camera.y =
-            parseFloat(target.split(",")[1]) -
-            Math.floor(Input.mouse.position.y / camera.tilesize);
+        camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
+        camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
     }
 
-    const x = Math.floor(
-        (camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize
-    );
-    const y = Math.floor(
-        (camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize
-    );
+    const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
+    const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
 
-    if (evt.button === 2 && !Input.touch && score > 0) toggleFlag(x, y);
+    if (evt.button === 2 && !Input.touch && score > 0) {
+        toggleFlag(x, y);
+        return updateLabels();
+    }
 
     if (evt.button === 0 && (evt.ctrlKey || evt.shiftKey) && !Input.touch && score > 0) {
         toggleFlag(x, y);
@@ -606,12 +496,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
             minesweeperMap[`${x2},${y2}`]["c"] = 0;
             for (let xoffset = -1; xoffset <= 1; xoffset++) {
                 for (let yoffset = -1; yoffset <= 1; yoffset++) {
-                    if (
-                        getMinesweeperMap(x2 + xoffset, y2 + yoffset)["c"] ===
-                        1 &&
-                        getMinesweeperMap(x2, y2)["#"] === 0
-                    )
-                        leftToEmpty.push([x2 + xoffset, y2 + yoffset]);
+                    if (getMinesweeperMap(x2 + xoffset, y2 + yoffset)["c"] === 1 && getMinesweeperMap(x2, y2)["#"] === 0) leftToEmpty.push([x2 + xoffset, y2 + yoffset]);
                 }
             }
 
@@ -630,7 +515,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
             sfx[highestNumber.toString()].play();
         }
 
-        saveData(null);
+        saveData();
 
         if (minesweeperMap[`${x},${y}`]["#"] === -1) {
             localStorage.setItem(storageKey("saveData"), "None");
@@ -652,57 +537,51 @@ CANVAS.addEventListener("mouseup", (evt) => {
             );
             lose = true;
 
-            scoreText = `I got a new score of ${(score - 1)
-                .toString()
-                .split("")
-                .map((j) => {
-                    switch (parseFloat(j)) {
-                        case 0:
-                            return "0️⃣";
-                        case 1:
-                            return "1️⃣";
-                        case 2:
-                            return "2️⃣";
-                        case 3:
-                            return "3️⃣";
-                        case 4:
-                            return "4️⃣";
-                        case 5:
-                            return "5️⃣";
-                        case 6:
-                            return "6️⃣";
-                        case 7:
-                            return "7️⃣";
-                        case 8:
-                            return "8️⃣";
-                        case 9:
-                            return "9️⃣";
-                    }
-                })
-                .join(
-                    ""
-                )} in Infinisweeper! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
+            scoreText = `I got a new score of ${(score - 1).toString().split("").map((j) => {
+                switch (parseFloat(j)) {
+                    case 0: return "0️⃣";
+                    case 1: return "1️⃣";
+                    case 2: return "2️⃣";
+                    case 3: return "3️⃣";
+                    case 4: return "4️⃣";
+                    case 5: return "5️⃣";
+                    case 6: return "6️⃣";
+                    case 7: return "7️⃣";
+                    case 8: return "8️⃣";
+                    case 9: return "9️⃣";
+                }
+            }).join("")} in Infinisweeper! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
 
             setTimeout(() => {
-                window.bombs = [];
+                mines = [];
                 document.querySelector("#lossScreen").style.transform = "translate(-50%, -50%)";
-                for (
-                    let x = Math.floor(camera.x);
-                    x < camera.x + CANVAS.width / camera.tilesize;
-                    x++
-                ) {
-                    for (
-                        let y = Math.floor(camera.y);
-                        y < camera.y + CANVAS.height / camera.tilesize;
-                        y++
-                    ) {
-                        if (
-                            minesweeperMap[`${x},${y}`]["#"] === -1 &&
-                            minesweeperMap[`${x},${y}`]["c"] === 1
-                        )
-                            window.bombs.push([x, y]);
+                for (let x = Math.floor(camera.x); x < camera.x + CANVAS.width / camera.tilesize; x++)
+                    for (let y = Math.floor(camera.y); y < camera.y + CANVAS.height / camera.tilesize; y++)
+                        if (minesweeperMap[`${x},${y}`]["#"] === -1 && minesweeperMap[`${x},${y}`]["c"] === 1) mines.push([x, y]);
+                window.thisInterval = setInterval(() => {
+                    if (mines.length > 0) {
+                        myBomb = mines[Math.floor(Math.random() * mines.length)];
+                        const x = myBomb[0];
+                        const y = myBomb[1];
+                        minesweeperMap[`${x},${y}`]["c"] = 0;
+                        Particle.explosion(
+                            {
+                                x: (x - camera.x + 0.5) * camera.tilesize,
+                                y: (y - camera.y + 0.5) * camera.tilesize,
+                            },
+                            10 / (64 / camera.tilesize),
+                            15,
+                            [
+                                `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
+                                },100%,50%)`,
+                            ],
+                            1 / (64 / camera.tilesize),
+                            50 / (64 / camera.tilesize)
+                        );
+                        mines.splice(mines.indexOf(myBomb), 1);
                     }
-                }
+                    if (mines.length <= 0) clearInterval(window.thisInterval);
+                }, 50);
             }, 1500);
             return;
         }
@@ -710,86 +589,16 @@ CANVAS.addEventListener("mouseup", (evt) => {
     updateLabels();
 });
 
-window.setInterval(() => {
-    if (window.bombs.length > 0) {
-        myBomb = window.bombs[Math.floor(Math.random() * window.bombs.length)];
-        const x = myBomb[0];
-        const y = myBomb[1];
-        minesweeperMap[`${x},${y}`]["c"] = 0;
-        Particle.explosion(
-            {
-                x: (x - camera.x + 0.5) * camera.tilesize,
-                y: (y - camera.y + 0.5) * camera.tilesize,
-            },
-            10 / (64 / camera.tilesize),
-            15,
-            [
-                `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
-                },100%,50%)`,
-            ],
-            1 / (64 / camera.tilesize),
-            50 / (64 / camera.tilesize)
-        );
-        window.bombs.splice(window.bombs.indexOf(myBomb), 1);
-    }
-}, 50);
-
-window.addEventListener("load", () => {
-    CANVAS.width = window.innerWidth;
-    CANVAS.height = window.innerHeight;
-    window.setInterval(() => {
-        g.fillStyle = "#fff";
-        g.fillRect(0, 0, CANVAS.width, CANVAS.height);
-
-        update();
-        draw();
-
-        frameCount++;
-    }, 1000 / 60);
-    Input.initialize();
-});
-
-const prng = (a, seed) => {
-    a = parseFloat(a);
-    seed = parseFloat(seed);
-    a *= seed;
-    return (function () {
-        var t = (a += 0x6d2b79f5);
-        t = Math.imul(t ^ (t >>> 15), t | 1);
-        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    })();
-};
-
 const saveData = (elm) => {
-    if (elm) {
-        elm.innerText = "Copying...";
-        if (!navigator.clipboard) {
-            elm.innerText = "Save Game";
-            return alert(
-                "There was an error copying save data.\n\nNo Clipboard Detected"
-            );
-        }
-    }
     data = `${seed},${camera.x},${camera.y}`;
     Object.keys(minesweeperMap).forEach((key) => {
         if (minesweeperMap[key]["c"] != 1)
             data += `,${key},${minesweeperMap[key]["c"]}`;
     });
-    if (!elm) return localStorage.setItem(storageKey("saveData"), data);
     localStorage.setItem(storageKey("saveData"), data);
-    navigator.clipboard.writeText(data).then(
-        () => {
-            elm.innerText = "Copied!";
-            setTimeout(() => (elm.innerText = "Save Game"), 1000);
-        },
-        (err) => {
-            alert(`There was an error copying save data.\n\n${err}`);
-            elm.innerText = "Save Game";
-        }
-    );
 };
-const loadData = (elm, dt) => {
+
+const loadData = (dt) => {
     data = dt ?? prompt("Enter save data:");
     data = data.split(",");
     seed = parseFloat(data.shift());
@@ -807,41 +616,40 @@ const loadData = (elm, dt) => {
     updateLabels();
 };
 
-const storageKey = (d) =>
-    d
-        ? `edwardscamera.infinisweeper.${d.replace(/\//g, ".")}`
-        : "edwardscamera.infinisweeper";
-if (!localStorage.getItem(storageKey("saveData")))
-    localStorage.setItem(storageKey("saveData"), "None");
-if (!localStorage.getItem(storageKey("highScore")))
-    localStorage.setItem(storageKey("highScore"), 0);
-if (
-    [null, undefined, "null"].includes(
-        localStorage.getItem(storageKey("saveData"))
-    )
-)
-    localStorage.setItem(storageKey("saveData"), "None");
+const storageKey = (d) => `edwardscamera.infinisweeper${d ? "." : ""}${d.replace(/\//g, ".")}`;
+
+if (!localStorage.getItem(storageKey("saveData"))) localStorage.setItem(storageKey("saveData"), "None");
+if (!localStorage.getItem(storageKey("highScore"))) localStorage.setItem(storageKey("highScore"), 0);
+if (!localStorage.getItem(storageKey("saveData"))) localStorage.setItem(storageKey("saveData"), "None");
 
 const newGame = () => {
+    flags = score = 0;
+    minesweeperMap = {};
+    lose = false;
+    document.querySelector("#lossScreen").style.transform = "translate(-50%, 650%)";
+    clearInterval(window.thisInterval);
+    seed = (Math.random() - 0.5) * 2500;
     localStorage.setItem(storageKey("saveData"), "None");
     switchState("game");
     updateLabels();
 };
-const loadGame = () => {
+const loadGame = (elm) => {
     if (
         typeof localStorage.getItem(storageKey("saveData")) != "string" ||
         !localStorage.getItem(storageKey("saveData")).includes(",")
-    )
-        return newGame();
-    if (
-        ![null, undefined, "null"].includes(
-            localStorage.getItem(storageKey("saveData"))
-        )
-    )
-        loadData(null, localStorage.getItem(storageKey("saveData")));
-    switchState("game");
-    updateLabels();
+    ) {
+        elm.innerText = "No Game Saved!";
+        elm.addEventListener("mouseout", () => {
+            elm.innerText = "Continue";
+        }, { "once": true });
+        return;
+    } else {
+        loadData(localStorage.getItem(storageKey("saveData")));
+        switchState("game");
+        updateLabels();
+    }
 };
+
 const updateLabels = () => {
     document.querySelector("#scoreLabel").innerText = score;
     if (score > localStorage.getItem(storageKey("highScore")))
