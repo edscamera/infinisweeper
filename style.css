@@ -56,18 +56,14 @@ a { cursor: pointer; }
 	z-index: 1;
 }
 
-.titleContainer {
+.guiContainer {
 	position: fixed;
 	left: 50%;
 	top: 50%;
 	text-align: center;
     transform: translate(-50%, -50%);
 }
-
-.titleContainer > h1 {
-	margin-bottom: 50%;
-}
-.titleContainer > h1 > img {
+.guiContainer > h1 > img {
     height: 35px;
     transform: translate(20%, 20%);
 }
@@ -120,6 +116,13 @@ a { cursor: pointer; }
     transform: translateX(-50%)
 }
 
+#login {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+}
+#login > button { border-radius: 15px!important; }
+
 .scoreContainer {
 	position: fixed;
 	border-radius: 15px;
@@ -143,16 +146,25 @@ a { cursor: pointer; }
     transform: translate(-50%, 650%);
     transition: 1s ease-out;
 }
+#lossScreen > img {
+	width: 32px;
+	display: inline-block;
+	cursor: pointer;
+}
+#lossScreen > img:hover {
+	transform: scale(1.1);
+}
+
 .mobileOnly { display: none; }
 
 @media only screen and (max-device-width: 480px) {
-	.scoreContainer {
+	.guiContainer {
 		width: calc(100% - 40px);
         display: flex;
         align-items: center;
 	}
 
-	.titleContainer > h1 {
+	.guiContainer > h1 {
 		font-size: 50px;
 	}
 

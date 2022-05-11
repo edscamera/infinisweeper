@@ -5,12 +5,15 @@ document.body.appendChild(CANVAS);
 const bombChance = 0.2;
 
 let seed = null;
+let gameLost = false;
 let score = 0;
 let flags = 0;
-let lose = false;
 let minesweeperMap = {};
-let scoreText = "";
-let colorCorrection = 0;
+let GAME_STATE = "title";
+
+let GAME_MODE = null;
+let rushTime = 5;
+let rushInterval = null;
 
 class PoppedTile {
     static tiles = [];
@@ -41,20 +44,9 @@ class PoppedTile {
             this.position.y - camera.y * camera.tilesize + this.size / 2
         );
         g.rotate(this.rotation);
-        g.fillStyle =
-            (this.type + colorCorrection) % 2 === 0 ? "#AAD650" : "#A2D048";
-        if ([0, 1].includes(this.type)) {
-            g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-        }
-        if (this.type === 2) {
-            g.drawImage(
-                img.flag_icon,
-                -this.size / 2,
-                -this.size / 2,
-                this.size,
-                this.size
-            );
-        }
+        g.fillStyle = this.type % 2 === 0 ? "#AAD650" : "#A2D048";
+        if ([0, 1].includes(this.type)) g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+        if (this.type === 2) g.drawImage(img.flag_icon, -this.size / 2, -this.size / 2, this.size, this.size);
         g.restore();
         this.size *= 0.99;
         if (this.size <= 1)
@@ -109,6 +101,7 @@ window.addEventListener("load", () => {
     }, 1000 / 60);
     Input.initialize();
     document.querySelector("#versionCalc").innerText = document.getElementById("changelog").querySelector("span").innerText;
+    CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
 });
 window.addEventListener("resize", () => {
     CANVAS.width = window.innerWidth;
@@ -123,11 +116,7 @@ const updateTile = (x, y) => {
     for (let yy = y - 1; yy <= y + 1; yy++) {
         for (let xx = x - 1; xx <= x + 1; xx++) {
             try {
-                if (
-                    !(xx === x && yy === y) &&
-                    minesweeperMap[`${xx},${yy}`]["#"] === -1
-                )
-                    minesweeperMap[`${x},${y}`]["#"]++;
+                if (!(xx === x && yy === y) && minesweeperMap[`${xx},${yy}`]["#"] === -1) minesweeperMap[`${x},${y}`]["#"]++;
             } catch (e) { }
         }
     }
@@ -155,6 +144,7 @@ const getMinesweeperMap = (x, y) => {
 };
 
 const draw = () => {
+    if (typeof colorCorrection == 'undefined') colorCorrection = 0;
     switch (GAME_STATE) {
         case "title":
             const tileWidth = Math.ceil(CANVAS.width / camera.tilesize) + 1;
@@ -185,19 +175,10 @@ const draw = () => {
                             if (getMinesweeperMap(x, y)["c"] >= 2 && getMinesweeperMap(x, y)["c"] < 9) {
                                 minesweeperMap[`${x},${y}`]["c"] += 0.5;
                                 g.drawImage(
-                                    img.flag_gif,
-                                    1,
-                                    81 *
-                                    (Math.floor(
-                                        minesweeperMap[`${x},${y}`]["c"]
-                                    ) -
-                                        2),
-                                    81,
-                                    80,
+                                    img.flag_gif, 1, 81 * (Math.floor(minesweeperMap[`${x},${y}`]["c"]) - 2), 81, 80,
                                     (x - camera.x) * camera.tilesize,
                                     (y - camera.y) * camera.tilesize,
-                                    camera.tilesize,
-                                    camera.tilesize
+                                    camera.tilesize, camera.tilesize
                                 );
                             }
                             if (getMinesweeperMap(x, y)["c"] >= 9) {
@@ -205,8 +186,7 @@ const draw = () => {
                                     img.flag_icon,
                                     (x - camera.x) * camera.tilesize,
                                     (y - camera.y) * camera.tilesize,
-                                    camera.tilesize,
-                                    camera.tilesize
+                                    camera.tilesize, camera.tilesize
                                 );
                             }
                         } else {
@@ -266,26 +246,22 @@ const draw = () => {
                             if (condition(x - 1, y - 1)) g.fillRect( // Top Left
                                 (x - camera.x) * camera.tilesize,
                                 (y - camera.y) * camera.tilesize,
-                                g.lineWidth,
-                                g.lineWidth
+                                g.lineWidth, g.lineWidth
                             );
                             if (condition(x + 1, y - 1)) g.fillRect( // Top Right
                                 (x - camera.x + 1) * camera.tilesize - g.lineWidth,
                                 (y - camera.y) * camera.tilesize,
-                                g.lineWidth,
-                                g.lineWidth
+                                g.lineWidth, g.lineWidth
                             );
                             if (condition(x - 1, y + 1)) g.fillRect( // Bottom Left
                                 (x - camera.x) * camera.tilesize,
                                 (y - camera.y + 1) * camera.tilesize - g.lineWidth,
-                                g.lineWidth,
-                                g.lineWidth
+                                g.lineWidth, g.lineWidth
                             );
                             if (condition(x + 1, y + 1)) g.fillRect( // Bottom Right
                                 (x - camera.x + 1) * camera.tilesize - g.lineWidth,
                                 (y - camera.y + 1) * camera.tilesize - g.lineWidth,
-                                g.lineWidth,
-                                g.lineWidth
+                                g.lineWidth, g.lineWidth
                             );
 
                             // Draw Numbers
@@ -332,9 +308,7 @@ const draw = () => {
                                     (y - camera.y + 0.5) * camera.tilesize,
                                     camera.tilesize / 4,
                                     camera.tilesize / 4,
-                                    0,
-                                    0,
-                                    Math.PI * 2
+                                    0, 0, Math.PI * 2
                                 );
                                 g.fill();
                             }
@@ -379,7 +353,7 @@ const update = () => {
     Particle.updateAllParticles();
     PoppedTile.updateAllPoppedTiles();
     if (GAME_STATE === "game") {
-        if (lose || !camera.canMove) return;
+        if (gameLost || !camera.canMove) return;
         if (Input.keyDown["ArrowRight"]) {
             camera.x += 0.5;
         }
@@ -395,14 +369,10 @@ const update = () => {
     }
 };
 
-CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
-
-let target = null;
-
 // Drag Screen
 let dragging = false;
 CANVAS.addEventListener("mousedown", () => {
-    if (GAME_STATE !== "game" || lose) return;
+    if (GAME_STATE !== "game" || gameLost) return;
     const onMouseMove = (evt) => {
         if (dragging || (!dragging && Math.abs(evt.movementX) + Math.abs(evt.movementY) > 5)) {
             camera.x -= evt.movementX / camera.tilesize;
@@ -420,7 +390,7 @@ CANVAS.addEventListener("mousedown", () => {
 });
 CANVAS.addEventListener("touchmove", (evt) => {
     evt.preventDefault();
-    if (GAME_STATE !== "game" || lose) return;
+    if (GAME_STATE !== "game" || gameLost) return;
     if (Math.abs(Input.swipe.x) + Math.abs(Input.swipe.y) > 0) {
         camera.x -= Input.swipe.x / camera.tilesize;
         camera.y -= Input.swipe.y / camera.tilesize;
@@ -435,7 +405,7 @@ CANVAS.addEventListener("touchend", () => {
 // Hold to flag
 let toggleFlagDisable = false;
 CANVAS.addEventListener("touchstart", (evt) => {
-    if (GAME_STATE !== "game" || lose || dragging) return;
+    if (GAME_STATE !== "game" || gameLost || dragging) return;
     setTimeout(() => {
         const x = Math.floor((camera.x * camera.tilesize + evt.targetTouches[0].clientX) / camera.tilesize);
         const y = Math.floor((camera.y * camera.tilesize + evt.targetTouches[0].clientY) / camera.tilesize);
@@ -457,17 +427,13 @@ const toggleFlag = (x, y) => {
         sfx["flag_up"].play();
         flags--;
     }
+    rushTime = 5;
     saveData();
 };
 
 CANVAS.addEventListener("mouseup", (evt) => {
     if (toggleFlagDisable) return toggleFlagDisable = false;
-    if (GAME_STATE !== "game" || dragging || lose) return;
-
-    if (score === 0) {
-        camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
-        camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
-    }
+    if (GAME_STATE !== "game" || gameLost || dragging) return;
 
     const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
     const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
@@ -547,61 +513,75 @@ CANVAS.addEventListener("mouseup", (evt) => {
                 1 / (64 / camera.tilesize),
                 50 / (64 / camera.tilesize),
             );
-            lose = true;
 
-            scoreText = `I got a new score of ${(score - 1).toString().split("").map((j) => {
-                switch (parseFloat(j)) {
-                    case 0: return "0️⃣";
-                    case 1: return "1️⃣";
-                    case 2: return "2️⃣";
-                    case 3: return "3️⃣";
-                    case 4: return "4️⃣";
-                    case 5: return "5️⃣";
-                    case 6: return "6️⃣";
-                    case 7: return "7️⃣";
-                    case 8: return "8️⃣";
-                    case 9: return "9️⃣";
-                }
-            }).join("")} in Infinisweeper! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
-
-            setTimeout(() => {
-                mines = [];
-                document.querySelector("#lossScreen").style.transform = "translate(-50%, -50%)";
-                for (let x = Math.floor(camera.x); x < camera.x + CANVAS.width / camera.tilesize; x++)
-                    for (let y = Math.floor(camera.y); y < camera.y + CANVAS.height / camera.tilesize; y++)
-                        if (minesweeperMap[`${x},${y}`]["#"] === -1 && minesweeperMap[`${x},${y}`]["c"] === 1) mines.push([x, y]);
-                window.thisInterval = setInterval(() => {
-                    if (mines.length > 0) {
-                        myBomb = mines[Math.floor(Math.random() * mines.length)];
-                        const x = myBomb[0];
-                        const y = myBomb[1];
-                        minesweeperMap[`${x},${y}`]["c"] = 0;
-                        Particle.fullExplosion(
-                            {
-                                x: (x - camera.x + 0.5) * camera.tilesize,
-                                y: (y - camera.y + 0.5) * camera.tilesize,
-                            },
-                            10 / (64 / camera.tilesize),
-                            15,
-                            [
-                                `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
-                                },100%,50%)`,
-                            ],
-                            1 / (64 / camera.tilesize),
-                            50 / (64 / camera.tilesize)
-                        );
-                        mines.splice(mines.indexOf(myBomb), 1);
-                    }
-                    if (mines.length <= 0) clearInterval(window.thisInterval);
-                }, 50);
-            }, 1500);
+            
+            setTimeout(loseGame, 1500);
             return;
         }
     }
+    rushTime = 5;
     updateLabels();
 });
 
-const saveData = (elm) => {
+const loseGame = () => {
+    clearInterval(rushInterval);
+    mines = [];
+    gameLost = true;
+    flavortexts = [
+        "Better luck next time!",
+        "Get a move on!",
+        "You could do better than that...",
+        "Have a nice day!",
+        "That's it?",
+        `Only ${score} points?`,
+        "There was a mine right there.",
+        "Grant Burns finished the music theory test before you.",
+        "C'mon. One more game.",
+        "Getting better.",
+        "You could use a hand.",
+        "You suck. I hate you.",
+        "Hahahahahahaha...",
+        "I'm disappointed. You suck.",
+        "You've lost.",
+        "Idiot. Idiot. Idiot.",
+    ];
+    document.querySelector("#lossScreenFlavortext").innerText = flavortexts[Math.floor(flavortexts.length * Math.random())];
+    document.querySelector("#lossScreen").style.transform = "translate(-50%, -50%)";
+    for (let x = Math.floor(camera.x); x < camera.x + CANVAS.width / camera.tilesize; x++)
+        for (let y = Math.floor(camera.y); y < camera.y + CANVAS.height / camera.tilesize; y++)
+            if (minesweeperMap[`${x},${y}`]["#"] === -1 && minesweeperMap[`${x},${y}`]["c"] === 1) mines.push([x, y]);
+    window.thisInterval = setInterval(() => {
+        if (mines.length > 0) {
+            myBomb = mines[Math.floor(Math.random() * mines.length)];
+            const x = myBomb[0];
+            const y = myBomb[1];
+            minesweeperMap[`${x},${y}`]["c"] = 0;
+            Particle.fullExplosion(
+                {
+                    x: (x - camera.x + 0.5) * camera.tilesize,
+                    y: (y - camera.y + 0.5) * camera.tilesize,
+                },
+                10 / (64 / camera.tilesize),
+                15,
+                [
+                    `hsl(${((x - camera.x) * 5 + (y - camera.y) * 5) % 360
+                    },100%,50%)`,
+                ],
+                1 / (64 / camera.tilesize),
+                50 / (64 / camera.tilesize)
+            );
+            mines.splice(mines.indexOf(myBomb), 1);
+        }
+        if (mines.length <= 0) clearInterval(window.thisInterval);
+    }, 50);
+}
+
+const storageKey = (d) => `edwardscamera.infinisweeper${d ? "." : ""}${d.replace(/\//g, ".")}`;
+
+if (!localStorage.getItem(storageKey("saveData"))) localStorage.setItem(storageKey("saveData"), "None");
+
+const saveData = () => {
+    if (GAME_MODE !== "normal") return;
     data = `${seed},${camera.x},${camera.y},${camera.tilesize}`;
     Object.keys(minesweeperMap).forEach((key) => {
         if (minesweeperMap[key]["c"] != 1)
@@ -629,20 +609,28 @@ const loadData = (dt) => {
     updateLabels();
 };
 
-const storageKey = (d) => `edwardscamera.infinisweeper${d ? "." : ""}${d.replace(/\//g, ".")}`;
-
-if (!localStorage.getItem(storageKey("saveData"))) localStorage.setItem(storageKey("saveData"), "None");
-if (!localStorage.getItem(storageKey("highScore"))) localStorage.setItem(storageKey("highScore"), 0);
-if (!localStorage.getItem(storageKey("saveData"))) localStorage.setItem(storageKey("saveData"), "None");
-
-const newGame = () => {
+const newGame = (mymode) => {
+    if (localStorage.getItem(storageKey(`highScore.${GAME_MODE}`)) == null) localStorage.setItem(storageKey(`highScore.${GAME_MODE}`), 0);
+    updateLabels();
+    GAME_MODE = mymode;
+    rushTime = 5;
+    document.querySelector("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
+    if (GAME_MODE === "rush") rushInterval = setInterval(() => {
+        rushTime--;
+        if (rushTime === -1) {
+            rushTime = 0;
+            clearInterval(rushInterval);
+            loseGame();
+        }
+        updateLabels();
+    }, 1000);
     flags = score = 0;
     minesweeperMap = {};
-    lose = false;
+    gameLost = false;
     document.querySelector("#lossScreen").style.transform = "translate(-50%, 650%)";
     clearInterval(window.thisInterval);
     seed = (Math.random() - 0.5) * 2500;
-    localStorage.setItem(storageKey("saveData"), "None");
+    if (GAME_MODE === "normal") localStorage.setItem(storageKey("saveData"), "None");
     switchState("game");
     updateLabels();
 };
@@ -657,6 +645,8 @@ const loadGame = (elm) => {
         }, { "once": true });
         return;
     } else {
+        GAME_MODE = "normal";
+        document.querySelector("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
         loadData(localStorage.getItem(storageKey("saveData")));
         switchState("game");
         updateLabels();
@@ -665,12 +655,28 @@ const loadGame = (elm) => {
 
 const updateLabels = () => {
     document.querySelector("#scoreLabel").innerText = score;
-    if (score > localStorage.getItem(storageKey("highScore")))
-        localStorage.setItem(storageKey("highScore"), score);
-    document.querySelector("#highScoreLabel").innerText = localStorage.getItem(
-        storageKey("highScore")
-    );
+    if (localStorage.getItem(storageKey("highScore"))) {
+        localStorage.setItem(storageKey("highScore.normal"), localStorage.getItem(storageKey("highScore")));
+        localStorage.removeItem(storageKey("highScore"));
+    }
+    if (score > localStorage.getItem(storageKey(`highScore.${GAME_MODE}`)))
+        localStorage.setItem(storageKey(`highScore.${GAME_MODE}`), score);
+    document.querySelector("#highScoreLabel").innerText = localStorage.getItem(storageKey(`highScore.${GAME_MODE}`));
     document.querySelector("#flagsLabel").innerText = flags;
+    document.querySelector("#rushLabel").innerText = rushTime;
+};
+
+const updateLogin = () => {
+    document.querySelector("#signinbtn").style.display = "none";
+    document.querySelector("#signoutbtn").style.display = "none";
+    document.querySelector("#displaynamelabel").style.display = "none";
+    if (firebase.auth().currentUser) {
+        document.querySelector("#displayname").innerText = firebase.auth().currentUser.displayName;
+        document.querySelector("#signoutbtn").style.display = "block";
+        document.querySelector("#displaynamelabel").style.display = "block";
+    } else {
+        document.querySelector("#signinbtn").style.display = "block";
+    }
 };
 
 const switchState = (state) => {
@@ -680,14 +686,13 @@ const switchState = (state) => {
         if (mode.getAttribute("GAME_STATE") === GAME_STATE)
             mode.style.display = "block";
     });
+    switch(GAME_STATE) {
+        case "title":
+            updateLogin();
+            break;
+    }
 };
 switchState("title");
-
-const copyScore = (elm) => {
-    if (navigator.clipboard)
-        navigator.clipboard.writeText(scoreText);
-    elm.innerText = "Copied!";
-};
 
 const zoom = (size) => {
     xMiddle = camera.x + CANVAS.width / 2 / camera.tilesize;
@@ -699,5 +704,70 @@ const zoom = (size) => {
     saveData();
 }
 
-const twitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURI(scoreText)}`, "_blank");
-const facebook = () => window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(scoreText)}&p[url]=https://edwardscamera.com/infinisweeper`);
+const share = (method) => {
+    scoreText = `I got a new score of ${(score - 1).toString().split("").map((j) => {
+        switch (parseFloat(j)) {
+            case 0: return "0️⃣";
+            case 1: return "1️⃣";
+            case 2: return "2️⃣";
+            case 3: return "3️⃣";
+            case 4: return "4️⃣";
+            case 5: return "5️⃣";
+            case 6: return "6️⃣";
+            case 7: return "7️⃣";
+            case 8: return "8️⃣";
+            case 9: return "9️⃣";
+        }
+    }).join("")} in Infinisweeper${GAME_MODE === "rush" ? " RUSH MODE" : ""}! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
+
+    switch(method) {
+        case "copy":
+            if (navigator.clipboard) navigator.clipboard.writeText(scoreText);
+            break;
+        case "twitter":
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURI(scoreText)}`, "_blank");
+            break;
+        case "facebook":
+            window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(scoreText)}&p[url]=https://edwardscamera.com/infinisweeper`);
+            break;
+    }
+};
+
+signinbtn = document.querySelector("#signinbtn");
+const signinfunc = (callback) => {
+    if (firebase.auth().currentUser) return;
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    firebase.auth().signInWithPopup(provider).then((result) => {
+        document.querySelector("#displayname").innerText = result.user.displayName;
+        updateLogin();
+        callback();
+    }).catch((error) => {
+        signinbtn.innerText = "Error";
+        signinbtn.addEventListener("mouseout", () => {
+            signinbtn.innerText = "Sign In";
+        }, { "once": true, });
+        console.error(error);
+    });
+};
+signinbtn.addEventListener("click", () => signinfunc(() => {}));
+signoutbtn.addEventListener("click", () => {
+    if (!firebase.auth().currentUser) return;
+    firebase.auth().signOut().then(() => {
+        updateLogin();
+    });
+});
+firebase.auth().onAuthStateChanged(evt => {
+    updateLogin();
+}); 
+const uploadScore = () => {
+    const func = () => {
+        db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).set({
+            "username": firebase.auth().currentUser.displayName,
+            "score": score + 1,
+        });
+    };
+    if (!firebase.auth().currentUser) return signinfunc(func);
+    else func();
+}
