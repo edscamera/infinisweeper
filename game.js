@@ -123,26 +123,26 @@ window.addEventListener("load", () => {
                 $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
             });
         }
-    });
-
-    db.ref(`scores/${"Rush".toLowerCase()}/`).orderByChild("/score").once("value", data => {
-        let game_mode = "Rush";
-        scores = [];
-        if (!data.val() || Object.keys(data.val()).length == 0) return;
-        Object.keys(data.val()).forEach(key => {
-            scores.push(data.val()[key]);
-        });
-        scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
-        $("#globalScores").innerHTML += `<br /><div>${game_mode} Mode</div>
+    }).then(() => {
+        db.ref(`scores/${"Rush".toLowerCase()}/`).orderByChild("/score").once("value", data => {
+            let game_mode = "Rush";
+            scores = [];
+            if (!data.val() || Object.keys(data.val()).length == 0) return;
+            Object.keys(data.val()).forEach(key => {
+                scores.push(data.val()[key]);
+            });
+            scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
+            $("#globalScores").innerHTML += `<br /><div>${game_mode} Mode</div>
             <table><tbody>
                 ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
             </tbody></table>
         `;
-        for (let i = 0; i < scores.length; i++) {
-            db.ref(`names/${scores[i].uid}`).once('value').then(data => {
-                $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
-            });
-        }
+            for (let i = 0; i < scores.length; i++) {
+                db.ref(`names/${scores[i].uid}`).once('value').then(data => {
+                    $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
+                });
+            }
+        });
     });
 });
 window.addEventListener("resize", () => {
