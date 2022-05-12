@@ -55,7 +55,11 @@ a { cursor: pointer; }
 	left: 0px;
 	z-index: 1;
 }
-
+.container {
+    background-color: var(--background-gui);
+    border-radius: 15px;
+    padding: 15px;
+}
 .guiContainer {
 	position: fixed;
 	left: 50%;
@@ -66,6 +70,9 @@ a { cursor: pointer; }
 .guiContainer > h1 > img {
     height: 35px;
     transform: translate(20%, 20%);
+}
+.hiddenGUIContainer {
+    transform: translate(-50%, -50%)!important;
 }
 
 #changelogContainer {
@@ -154,11 +161,18 @@ a { cursor: pointer; }
 #lossScreen > img:hover {
 	transform: scale(1.1);
 }
+#scorepage {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+#scorepage > button { width: 100%; }
 
 .mobileOnly { display: none; }
 
 @media only screen and (max-device-width: 480px) {
-	.guiContainer {
+	.scoreContainer {
 		width: calc(100% - 40px);
         display: flex;
         align-items: center;
@@ -175,12 +189,32 @@ a { cursor: pointer; }
 		margin: 10px;
 	}
 
-    :root {
-        --background-gui: rgba(255, 255, 255, 0.5);
-    }
     .desktopOnly { display: none!important; }
     .mobileOnly { display: initial!important; }
     .scoreContainer button { font-size: 24px; }
     button:hover { background-color: #e4c29e!important; }
     button:active { background-color: #d7b998!important; }
+
+    #lossScreen {
+        top: 10px;
+        width: calc(100% - 60px);
+    }
+    .hiddenGUIContainer { transform: translate(-50%, 0px)!important; }
+
+    #login {
+        position: fixed;
+        bottom: 10px;
+        top: unset;
+        right: 50%;
+        transform: translateX(50%);
+        text-align: center;
+    }
+    #titleMenu {
+        top: 10px;
+        transform: translate(-50%, 0px);
+    }
+    #signinbtn, #signoutbtn {
+        float: unset;
+        width: 100%;
+    }
 }

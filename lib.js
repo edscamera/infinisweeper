@@ -1,3 +1,5 @@
+const $ = (s) => document.querySelector(s);
+
 window.addEventListener("load", () => {
     // Load all images in dictionary
     if (typeof (img) === "object") Object.keys(img).forEach(key => img[key] = Object.assign(document.createElement("img"), { src: img[key] }));

@@ -21,20 +21,26 @@
                 <div id="changelog">
                     <h2>How to Play</h2>
                     <ul>
-                        <li>Left click to dig, right click to place a flag. On mobile, tap to dig, hold to place a flag.
-                        </li>
+                        <li>Left click or tap to dig.</li>
+                        <li>Right click, press & hold, or shift + click to place a flag.</li>
                         <li>The number on a tile represents how many mines are adjacent to the tile.</li>
+                        <li>Place flags to keep track of where the mines are.</li>
                         <li>Every tile without a mine dug up is worth one point.</li>
+                        <li>Correctly placed flags are worth bonus points.</li>
                         <li>Don't dig up a mine, or else it's game over!</li>
                         <li>Compete with friends to see who can get the most points.</li>
-                        <li>Rush Mode: You have 5 seconds to dig up a tile or place a flag. If you use all 5 seconds, you lose.</li>
+                        <li>Rush Mode: You have 5 seconds to dig up a tile. If you use all 5 seconds, you lose.</li>
                     </ul>
                     <hr>
                     <h2>Changelog</h2>
                     <span>v1.4</span>
                     <ul>
+                        <li>Added global score board</li>
                         <li>Added rush mode</li>
                         <li>Added loss text</li>
+                        <li>George's scroll wheel now controls zoom level</li>
+                        <li>Fixed bug where lose screen would overlap with score data.</li>
+                        <li>Fixed bug where you can still move and dig briefly after you lost.</li>
                     </ul>
                     <span>v1.3.1</span>
                     <ul>
@@ -92,21 +98,22 @@
                     </ul>
                 </div>
             </div>
-            <div class="guiContainer">
-                <h1 style="margin-bottom: 50%;">Infinisweeper<img class="desktopOnly" src="./img/flag_icon.png"></h1>
+            <div class="guiContainer" id="titleMenu">
+                <h1>Infinisweeper<img class="desktopOnly" src="./img/flag_icon.png"></h1>
+                <div style="margin-bottom: 50%;"><span id="versionCalc"></span> | built by <a
+                        href="https://edwardscamera.com">edwardscamera</a>
+                </div>
                 <button style="margin-bottom: 5px" onclick="newGame('normal')"> New Game</button><br />
                 <button style="margin-bottom: 5px" onclick="loadGame(this)" id="continueGame">Continue</button><br />
-                <button onclick="newGame('rush')">Rush Mode</button><br /><br />
+                <button style="margin-bottom: 5px" onclick="newGame('rush')">Rush Mode</button><br />
+                <button onclick="switchState('scores')">High Scores</button><br /><br />
             </div>
             <div id="login">
                 <button id="signinbtn">Sign In</button>
-                <p id="displaynamelabel">Signed in as: <b id="displayname"></b></p>
+                <div id="displaynamelabel" style="padding-bottom: 10px;">Signed in as: <b id="displayname"></b>
+                </div>
                 <button id="signoutbtn" style="float: right;">Sign Out</button>
             </div>
-            <footer>
-                <span id="versionCalc"></span> | built by
-                <a href="https://edwardscamera.com">edwardscamera</a>
-            </footer>
         </div>
         <div GAME_STATE="game">
             <div class="scoreContainer">
@@ -127,14 +134,21 @@
                 </div>
             </div>
             <div id="lossScreen" class="guiContainer">
-                <h1>You've been sweeped!</h1>
-                <p id="lossScreenFlavortext"></p>
-                <button style="margin: 5px 0px" onclick="uploadScore()">Upload Score</button><br />
+                <h1 style="margin-bottom: 5px;">You've been sweeped!</h1>
+                <div style="margin-bottom: 15px;" id="lossScreenFlavortext"></div>
+                <div id="pointCount"></div>
+                <button id="onlineBtn" style="margin: 5px 0px">Sign In</button><br />
                 <button style="margin-bottom: 5px" onclick="newGame(GAME_MODE)">Play Again</button><br />
                 <button style="margin-bottom: 15px" onclick="switchState('title')">Main Menu</button><br />
                 <img onclick="share('copy')" src="https://img.icons8.com/material-outlined/344/copy.png">
                 <img onclick="share('twitter')" src="https://abs.twimg.com/favicons/twitter.2.ico">
                 <img onclick="share('facebook')" src="https://static.xx.fbcdn.net/rsrc.php/yb/r/hLRJ1GG_y0J.ico">
+            </div>
+        </div>
+        <div GAME_STATE="scores">
+            <div id="scorepage">
+                <div class="container" id="globalScores"></div><br />
+                <button onclick="switchState('title')">Main Menu</button>
             </div>
         </div>
     </div>
@@ -153,12 +167,6 @@
         var sc_security = "601a502d"; 
     </script>
     <script type="text/javascript" src="https://www.statcounter.com/counter/counter.js" async></script>
-    <noscript>
-        <div class="statcounter"><a title="website
-    statistics" href="https://statcounter.com/" target="_blank"><img class="statcounter"
-                    src="https://c.statcounter.com/12750108/0/601a502d/1/" alt="website statistics"
-                    referrerPolicy="no-referrer-when-downgrade"></a></div>
-    </noscript>
     <!-- End of Statcounter Code -->
 </body>
 

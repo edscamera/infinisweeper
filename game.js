@@ -14,6 +14,7 @@ let GAME_STATE = "title";
 let GAME_MODE = null;
 let rushTime = 5;
 let rushInterval = null;
+let myDisplayName = "Offline";
 
 class PoppedTile {
     static tiles = [];
@@ -100,8 +101,49 @@ window.addEventListener("load", () => {
         frameCount++;
     }, 1000 / 60);
     Input.initialize();
-    document.querySelector("#versionCalc").innerText = document.getElementById("changelog").querySelector("span").innerText;
+    $("#versionCalc").innerText = document.getElementById("changelog").querySelector("span").innerText;
     CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
+
+
+    db.ref(`scores/${"Normal".toLowerCase()}/`).orderByChild("/score").once("value", data => {
+        let game_mode = "Normal";
+        scores = [];
+        if (!data.val() || Object.keys(data.val()).length == 0) return;
+        Object.keys(data.val()).forEach(key => {
+            scores.push(data.val()[key]);
+        });
+        scores = scores.splice(0, 10);
+        $("#globalScores").innerHTML += `<div>${game_mode} Mode</div>
+            <table><tbody>
+                ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
+            </tbody></table>
+        `;
+        for (let i = 0; i < scores.length; i++) {
+            db.ref(`names/${scores[i].uid}`).once('value').then(data => {
+                $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
+            });
+        }
+    });
+
+    db.ref(`scores/${"Rush".toLowerCase()}/`).orderByChild("/score").once("value", data => {
+        let game_mode = "Rush";
+        scores = [];
+        if (!data.val() || Object.keys(data.val()).length == 0) return;
+        Object.keys(data.val()).forEach(key => {
+            scores.push(data.val()[key]);
+        });
+        scores = scores.splice(0, 10);
+        $("#globalScores").innerHTML += `<br /><div>${game_mode} Mode</div>
+            <table><tbody>
+                ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
+            </tbody></table>
+        `;
+        for (let i = 0; i < scores.length; i++) {
+            db.ref(`names/${scores[i].uid}`).once('value').then(data => {
+                $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
+            });
+        }
+    });
 });
 window.addEventListener("resize", () => {
     CANVAS.width = window.innerWidth;
@@ -147,6 +189,7 @@ const draw = () => {
     if (typeof colorCorrection == 'undefined') colorCorrection = 0;
     switch (GAME_STATE) {
         case "title":
+        case "scores":
             const tileWidth = Math.ceil(CANVAS.width / camera.tilesize) + 1;
             const tileHeight = Math.ceil(CANVAS.height / camera.tilesize) + 1;
             for (let x = 0; x < tileWidth; x++) {
@@ -427,7 +470,6 @@ const toggleFlag = (x, y) => {
         sfx["flag_up"].play();
         flags--;
     }
-    rushTime = 5;
     saveData();
 };
 
@@ -449,6 +491,15 @@ CANVAS.addEventListener("mouseup", (evt) => {
     }
 
     if (evt.button === 0) {
+        if (score === 0 && GAME_MODE === "rush") rushInterval = setInterval(() => {
+            rushTime--;
+            if (rushTime === -1) {
+                rushTime = 0;
+                clearInterval(rushInterval);
+                loseGame();
+            }
+            updateLabels();
+        }, 1000);
         camera.canMove = true;
         let leftToEmpty = [[x, y]];
         if (minesweeperMap[`${x},${y}`]["c"] !== 1) return;
@@ -514,13 +565,19 @@ CANVAS.addEventListener("mouseup", (evt) => {
                 50 / (64 / camera.tilesize),
             );
 
-            
+
+            gameLost = true;
             setTimeout(loseGame, 1500);
             return;
         }
     }
     rushTime = 5;
     updateLabels();
+});
+window.addEventListener("mousewheel", evt => {
+    if (GAME_STATE === "game" && !gameLost) {
+        zoom(Math.sign(evt.wheelDeltaY) * Math.log(camera.tilesize));
+    }
 });
 
 const loseGame = () => {
@@ -539,14 +596,29 @@ const loseGame = () => {
         "C'mon. One more game.",
         "Getting better.",
         "You could use a hand.",
-        "You suck. I hate you.",
-        "Hahahahahahaha...",
-        "I'm disappointed. You suck.",
+        "Hahaha.",
+        "I'm disappointed.",
         "You've lost.",
         "Idiot. Idiot. Idiot.",
     ];
-    document.querySelector("#lossScreenFlavortext").innerText = flavortexts[Math.floor(flavortexts.length * Math.random())];
-    document.querySelector("#lossScreen").style.transform = "translate(-50%, -50%)";
+    $("#lossScreenFlavortext").innerText = flavortexts[Math.floor(flavortexts.length * Math.random())];
+    $("#lossScreen").classList.add("hiddenGUIContainer");
+    let flagBonus = Object.keys(minesweeperMap).filter(key => minesweeperMap[key]["#"] === -1 && minesweeperMap[key]["c"] >= 2).length;
+    let bonusText = "Flag Bonus";
+    if (GAME_MODE === "rush") {
+        flagBonus *= 5;
+        bonusText = "RUSH Flag Bonus"
+    }
+    $("#pointCount").innerHTML = `
+        ${score} Tile Points<br />
+        <span style="color: red;">+${flagBonus} ${bonusText}</span><br /><br />
+        <b style="color: green;">${score + flagBonus} Points!${score > localStorage.getItem(storageKey(`highScore.${GAME_MODE}`)) ? " New High score!" : ""}<br /><br />
+    `;
+    if (flagBonus == 0) $("#pointCount").innerHTML = `
+        <b style="color: green;">${score + flagBonus} Points!${score > localStorage.getItem(storageKey(`highScore.${GAME_MODE}`)) ? " New High score!" : ""}<br /><br />
+    `;
+    score += flagBonus;
+    updateLabels();
     for (let x = Math.floor(camera.x); x < camera.x + CANVAS.width / camera.tilesize; x++)
         for (let y = Math.floor(camera.y); y < camera.y + CANVAS.height / camera.tilesize; y++)
             if (minesweeperMap[`${x},${y}`]["#"] === -1 && minesweeperMap[`${x},${y}`]["c"] === 1) mines.push([x, y]);
@@ -574,6 +646,7 @@ const loseGame = () => {
         }
         if (mines.length <= 0) clearInterval(window.thisInterval);
     }, 50);
+
 }
 
 const storageKey = (d) => `edwardscamera.infinisweeper${d ? "." : ""}${d.replace(/\//g, ".")}`;
@@ -614,20 +687,11 @@ const newGame = (mymode) => {
     updateLabels();
     GAME_MODE = mymode;
     rushTime = 5;
-    document.querySelector("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
-    if (GAME_MODE === "rush") rushInterval = setInterval(() => {
-        rushTime--;
-        if (rushTime === -1) {
-            rushTime = 0;
-            clearInterval(rushInterval);
-            loseGame();
-        }
-        updateLabels();
-    }, 1000);
+    $("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
     flags = score = 0;
     minesweeperMap = {};
     gameLost = false;
-    document.querySelector("#lossScreen").style.transform = "translate(-50%, 650%)";
+    $("#lossScreen").classList.remove("hiddenGUIContainer");
     clearInterval(window.thisInterval);
     seed = (Math.random() - 0.5) * 2500;
     if (GAME_MODE === "normal") localStorage.setItem(storageKey("saveData"), "None");
@@ -646,7 +710,7 @@ const loadGame = (elm) => {
         return;
     } else {
         GAME_MODE = "normal";
-        document.querySelector("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
+        $("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
         loadData(localStorage.getItem(storageKey("saveData")));
         switchState("game");
         updateLabels();
@@ -654,39 +718,42 @@ const loadGame = (elm) => {
 };
 
 const updateLabels = () => {
-    document.querySelector("#scoreLabel").innerText = score;
+    $("#scoreLabel").innerText = score;
     if (localStorage.getItem(storageKey("highScore"))) {
         localStorage.setItem(storageKey("highScore.normal"), localStorage.getItem(storageKey("highScore")));
         localStorage.removeItem(storageKey("highScore"));
     }
     if (score > localStorage.getItem(storageKey(`highScore.${GAME_MODE}`)))
         localStorage.setItem(storageKey(`highScore.${GAME_MODE}`), score);
-    document.querySelector("#highScoreLabel").innerText = localStorage.getItem(storageKey(`highScore.${GAME_MODE}`));
-    document.querySelector("#flagsLabel").innerText = flags;
-    document.querySelector("#rushLabel").innerText = rushTime;
+    $("#highScoreLabel").innerText = localStorage.getItem(storageKey(`highScore.${GAME_MODE}`));
+    $("#flagsLabel").innerText = flags;
+    $("#rushLabel").innerText = rushTime;
 };
 
 const updateLogin = () => {
-    document.querySelector("#signinbtn").style.display = "none";
-    document.querySelector("#signoutbtn").style.display = "none";
-    document.querySelector("#displaynamelabel").style.display = "none";
+    $("#signinbtn").style.display = "none";
+    $("#signoutbtn").style.display = "none";
+    $("#displaynamelabel").style.display = "none";
     if (firebase.auth().currentUser) {
-        document.querySelector("#displayname").innerText = firebase.auth().currentUser.displayName;
-        document.querySelector("#signoutbtn").style.display = "block";
-        document.querySelector("#displaynamelabel").style.display = "block";
+        $("#displayname").innerText = "Loading...";
+        db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(data => {
+            $("#displayname").innerText = data.val();
+        });
+        $("#signoutbtn").style.display = "block";
+        $("#displaynamelabel").style.display = "block";
     } else {
-        document.querySelector("#signinbtn").style.display = "block";
+        $("#signinbtn").style.display = "block";
     }
 };
 
 const switchState = (state) => {
     GAME_STATE = state;
-    Array.from(document.querySelector("#GUI").children).forEach((mode) => {
+    Array.from($("#GUI").children).forEach((mode) => {
         mode.style.display = "none";
         if (mode.getAttribute("GAME_STATE") === GAME_STATE)
             mode.style.display = "block";
     });
-    switch(GAME_STATE) {
+    switch (GAME_STATE) {
         case "title":
             updateLogin();
             break;
@@ -701,6 +768,7 @@ const zoom = (size) => {
     camera.tilesize = Math.min(Math.max(16, camera.tilesize), 128);
     camera.x = xMiddle - CANVAS.width / 2 / camera.tilesize;
     camera.y = yMiddle - CANVAS.height / 2 / camera.tilesize;
+    camera.tilesize = Math.round(camera.tilesize);
     saveData();
 }
 
@@ -720,7 +788,7 @@ const share = (method) => {
         }
     }).join("")} in Infinisweeper${GAME_MODE === "rush" ? " RUSH MODE" : ""}! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
 
-    switch(method) {
+    switch (method) {
         case "copy":
             if (navigator.clipboard) navigator.clipboard.writeText(scoreText);
             break;
@@ -733,39 +801,80 @@ const share = (method) => {
     }
 };
 
-signinbtn = document.querySelector("#signinbtn");
+signinbtn = $("#signinbtn");
 const signinfunc = (callback) => {
     if (firebase.auth().currentUser) return;
 
     const provider = new firebase.auth.GoogleAuthProvider();
-    
-    firebase.auth().signInWithPopup(provider).then((result) => {
-        document.querySelector("#displayname").innerText = result.user.displayName;
+
+    firebase.auth().signInWithRedirect(provider).then((result) => {
+        $("#displayname").innerText = result.user.displayName;
         updateLogin();
         callback();
     }).catch((error) => {
         signinbtn.innerText = "Error";
+        signinbtn.innerText = error;
         signinbtn.addEventListener("mouseout", () => {
             signinbtn.innerText = "Sign In";
         }, { "once": true, });
         console.error(error);
     });
 };
-signinbtn.addEventListener("click", () => signinfunc(() => {}));
+signinbtn.addEventListener("click", () => signinfunc(() => { }));
 signoutbtn.addEventListener("click", () => {
     if (!firebase.auth().currentUser) return;
     firebase.auth().signOut().then(() => {
         updateLogin();
     });
 });
+const updateDisplayName = () => {
+    if (firebase.auth().currentUser) {
+        db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(data => {
+            myDisplayName = data.val();
+        });
+    } else {
+        myDisplayName = "Offline";
+    }
+}
 firebase.auth().onAuthStateChanged(evt => {
     updateLogin();
-}); 
+    if (firebase.auth().currentUser) {
+        db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(data => {
+            if (!data.val()) {
+                let username = null;
+                while (!username || username == "null" || username == "undefined" || username.length > 24 || username.length < 4) username = prompt("Please choose a username (YOU CAN NOT CHANGE THIS, 4-24 characters):")
+                db.ref(`/names/${firebase.auth().getUid()}`).set(username).then(() => updateDisplayName());
+            }
+        });
+        $("#onlineBtn").innerText = "Upload Score";
+        $("#onlineBtn").onclick = () => uploadScore();
+        updateDisplayName();
+    } else {
+        $("#onlineBtn").innerText = "Sign In";
+        $("#onlineBtn").onclick = () => signinfunc(() => { });
+    }
+});
 const uploadScore = () => {
+    $("#onlineBtn").innerText = "Uploading...";
     const func = () => {
-        db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).set({
-            "username": firebase.auth().currentUser.displayName,
-            "score": score + 1,
+        db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).once('value').then((data) => {
+            if (!data.val() || !data.val().hasOwnProperty("score") || score + 1 > data.val().score) {
+                db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).set({
+                    "uid": firebase.auth().getUid(),
+                    "score": score + 1,
+                    "timestamp": (new Date()).getTime(),
+                }).then(d => {
+                    $("#onlineBtn").innerText = "Uploaded!";
+                    $("#onlineBtn").addEventListener("mouseout", () => {
+                        $("#onlineBtn").innerText = "Upload Score";
+                    }, { "once": true, });
+                });
+            } else {
+                $("#onlineBtn").innerText = "High score already uploaded!";
+                $("#onlineBtn").addEventListener("mouseout", () => {
+                    $("#onlineBtn").innerText = "Upload Score";
+                }, { "once": true, });
+            }
         });
     };
     if (!firebase.auth().currentUser) return signinfunc(func);
