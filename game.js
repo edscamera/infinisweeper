@@ -112,7 +112,7 @@ window.addEventListener("load", () => {
         Object.keys(data.val()).forEach(key => {
             scores.push(data.val()[key]);
         });
-        scores = scores.splice(0, 10);
+        scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
         $("#globalScores").innerHTML += `<div>${game_mode} Mode</div>
             <table><tbody>
                 ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
@@ -132,7 +132,7 @@ window.addEventListener("load", () => {
         Object.keys(data.val()).forEach(key => {
             scores.push(data.val()[key]);
         });
-        scores = scores.splice(0, 10);
+        scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
         $("#globalScores").innerHTML += `<br /><div>${game_mode} Mode</div>
             <table><tbody>
                 ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
@@ -844,6 +844,7 @@ firebase.auth().onAuthStateChanged(evt => {
                 let username = null;
                 while (!username || username == "null" || username == "undefined" || username.length > 24 || username.length < 4) username = prompt("Please choose a username (YOU CAN NOT CHANGE THIS, 4-24 characters):")
                 db.ref(`/names/${firebase.auth().getUid()}`).set(username).then(() => updateDisplayName());
+                updateDisplayName();
             }
         });
         $("#onlineBtn").innerText = "Upload Score";
@@ -858,10 +859,10 @@ const uploadScore = () => {
     $("#onlineBtn").innerText = "Uploading...";
     const func = () => {
         db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).once('value').then((data) => {
-            if (!data.val() || !data.val().hasOwnProperty("score") || score + 1 > data.val().score) {
+            if (!data.val() || !data.val().hasOwnProperty("score") || score > data.val().score) {
                 db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).set({
                     "uid": firebase.auth().getUid(),
-                    "score": score + 1,
+                    "score": score,
                     "timestamp": (new Date()).getTime(),
                 }).then(d => {
                     $("#onlineBtn").innerText = "Uploaded!";
