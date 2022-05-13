@@ -491,15 +491,18 @@ CANVAS.addEventListener("mouseup", (evt) => {
     }
 
     if (evt.button === 0) {
-        if (score === 0 && GAME_MODE === "rush") rushInterval = setInterval(() => {
-            rushTime--;
-            if (rushTime === -1) {
-                rushTime = 0;
-                clearInterval(rushInterval);
-                loseGame();
-            }
-            updateLabels();
-        }, 1000);
+        if (score === 0 && GAME_MODE === "rush") {
+            clearInterval(rushInterval);
+            rushInterval = setInterval(() => {
+                rushTime--;
+                if (rushTime === -1) {
+                    rushTime = 0;
+                    clearInterval(rushInterval);
+                    loseGame();
+                }
+                updateLabels();
+            }, 1000);
+        }
         camera.canMove = true;
         let leftToEmpty = [[x, y]];
         if (minesweeperMap[`${x},${y}`]["c"] !== 1) return;
@@ -582,6 +585,7 @@ window.addEventListener("mousewheel", evt => {
 
 const loseGame = () => {
     clearInterval(rushInterval);
+    if (GAME_MODE === "normal") localStorage.setItem(storageKey("saveData"), "None");
     mines = [];
     gameLost = true;
     flavortexts = [
@@ -663,7 +667,7 @@ const saveData = () => {
     localStorage.setItem(storageKey("saveData"), data);
 };
 
-const loadData = (dt) => {
+const loadData = (dt, elm) => {
     data = dt ?? prompt("Enter save data:");
     data = data.split(",");
     seed = parseFloat(data.shift());
@@ -671,14 +675,17 @@ const loadData = (dt) => {
     camera.y = parseFloat(data.shift());
     camera.tilesize = parseFloat(data.shift());
     minesweeperMap = {};
+    elm.innerText = "Loading 0%";
     for (let i = 0; i < data.length / 3; i++) {
         getMinesweeperMap(data[i * 3], data[i * 3 + 1], seed);
         minesweeperMap[`${data[i * 3]},${data[i * 3 + 1]}`]["c"] =
             data[i * 3 + 2];
         if (data[i * 3 + 2] > 1) flags++;
         else score++;
+        elm.inerText = `Loading ${Math.round(i * 3 / data.legth) * 100}%`;
     }
     camera.canMove = true;
+    elm.innerText = "Continue";
     updateLabels();
 };
 
@@ -711,7 +718,7 @@ const loadGame = (elm) => {
     } else {
         GAME_MODE = "normal";
         $("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
-        loadData(localStorage.getItem(storageKey("saveData")));
+        loadData(localStorage.getItem(storageKey("saveData")), elm);
         switchState("game");
         updateLabels();
     }
