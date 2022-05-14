@@ -617,7 +617,7 @@ const storageKey = (d) => `edwardscamera.infinisweeper${d ? "." : ""}${d.replace
 if (!localStorage.getItem(storageKey("saveData"))) localStorage.setItem(storageKey("saveData"), "None");
 
 const saveData = () => {
-    if (GAME_MODE !== "normal") return;
+    if (GAME_MODE !== "normal" || gameLost) return;
     data = `${seed},${camera.x},${camera.y},${camera.tilesize}`;
     Object.keys(minesweeperMap).forEach((key) => {
         if (minesweeperMap[key]["c"] != 1)
