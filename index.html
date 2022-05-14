@@ -36,6 +36,8 @@
                     <span>v1.4.1</span>
                     <ul>
                         <li>Added loading indicator to continue button</li>
+                        <li>Online functionality loads asynchronously to avoid extra load time</li>
+                        <li>Fixed bug where holding down would select the screen on the Safari browser</li>
                         <li>Fixed bug where you can continue a game after you lost. No more cheating Mr. Graf!</li>
                         <li>Fixed bug where sometimes high scores won't sort correctly</li>
                         <li>Fixed bug where some high score names don't load</li>
@@ -117,10 +119,11 @@
                 <button onclick="switchState('scores')">High Scores</button><br /><br />
             </div>
             <div id="login">
-                <button id="signinbtn">Sign In</button>
-                <div id="displaynamelabel" style="padding-bottom: 10px;">Signed in as: <b id="displayname"></b>
+                <button id="signinbtn" class="onlineOnly">Sign In</button>
+                <div id="displaynamelabel" style="padding-bottom: 10px;" class="onlineOnly">Signed in as: <b
+                        id="displayname"></b>
                 </div>
-                <button id="signoutbtn" style="float: right;">Sign Out</button>
+                <button id="signoutbtn" style="float: right;" class="onlineOnly">Sign Out</button>
             </div>
         </div>
         <div GAME_STATE="game">
@@ -155,18 +158,43 @@
         </div>
         <div GAME_STATE="scores">
             <div id="scorepage">
-                <div class="container" id="globalScores"></div><br />
+                <div class="container" id="globalScores">Loading Scores...</div><br />
                 <button onclick="switchState('title')">Main Menu</button>
             </div>
         </div>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="./firebase_config.js"></script>
-    <script src="./lib.js?v=1.3.1"></script>
-    <script src="./game.js?v=1.3.1"></script>
+    <!-- #region Get latest version of scripts -->
+    <script type="application/javascript" src="./lib.js"></script>
+    <script type="application/javascript" src="./game.js"></script>
+    <script type="application/javascript">
+        const version = document.querySelector("#changelog").querySelector("span").innerText.replace(/v/g, "");
+        const gameScripts = Array.from(document.getElementsByTagName("script")).filter(script => script.getAttribute("src") && script.getAttribute("src").startsWith("./"));
+        gameScripts.forEach(script => script.src += `?v=${version}`);
+    </script>
+    <!-- #region Firebase -->
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+        let loadedScripts = 0;
+        const firebaseScripts = Array.from(document.getElementsByTagName("script")).filter(script => script.src.includes("firebasejs"));
+        firebaseScripts.forEach(script => {
+            script.addEventListener("load", () => {
+                loadedScripts += 1;
+                if (loadedScripts === firebaseScripts.length) {
+                    document.body.appendChild(Object.assign(document.createElement("script"), {
+                        "src": "./firebase_config.js",
+                        "onload": () => onFirebaseLoad(),
+                    }));
+                }
+            });
+        });
+    </script>
+    <!-- #endregion -->
     <!-- Default Statcounter code for Infinisweeper
     https://edwardscamera.com/infinisweeper -->
     <script type="text/javascript">

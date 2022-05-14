@@ -103,47 +103,6 @@ window.addEventListener("load", () => {
     Input.initialize();
     $("#versionCalc").innerText = document.getElementById("changelog").querySelector("span").innerText;
     CANVAS.addEventListener("contextmenu", (evt) => evt.preventDefault());
-
-
-    db.ref(`scores/${"Normal".toLowerCase()}/`).orderByChild("/score").once("value", data => {
-        let game_mode = "Normal";
-        scores = [];
-        if (!data.val() || Object.keys(data.val()).length == 0) return;
-        Object.keys(data.val()).forEach(key => {
-            scores.push(data.val()[key]);
-        });
-        scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
-        $("#globalScores").innerHTML += `<div>${game_mode} Mode</div>
-            <table><tbody>
-                ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
-            </tbody></table>
-        `;
-        for (let i = 0; i < scores.length; i++) {
-            db.ref(`names/${scores[i].uid}`).once('value').then(data => {
-                $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
-            });
-        }
-    }).then(() => {
-        db.ref(`scores/${"Rush".toLowerCase()}/`).orderByChild("/score").once("value", data => {
-            let game_mode = "Rush";
-            scores = [];
-            if (!data.val() || Object.keys(data.val()).length == 0) return;
-            Object.keys(data.val()).forEach(key => {
-                scores.push(data.val()[key]);
-            });
-            scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
-            $("#globalScores").innerHTML += `<br /><div>${game_mode} Mode</div>
-            <table><tbody>
-                ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
-            </tbody></table>
-        `;
-            for (let i = 0; i < scores.length; i++) {
-                db.ref(`names/${scores[i].uid}`).once('value').then(data => {
-                    $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
-                });
-            }
-        });
-    });
 });
 window.addEventListener("resize", () => {
     CANVAS.width = window.innerWidth;
@@ -738,6 +697,7 @@ const updateLabels = () => {
 };
 
 const updateLogin = () => {
+    if (typeof db === "undefined" || typeof firebase === "undefined") return;
     $("#signinbtn").style.display = "none";
     $("#signoutbtn").style.display = "none";
     $("#displaynamelabel").style.display = "none";
@@ -835,6 +795,7 @@ signoutbtn.addEventListener("click", () => {
     });
 });
 const updateDisplayName = () => {
+    if (typeof db === "undefined" || typeof firebase === "undefined") return;
     if (firebase.auth().currentUser) {
         db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(data => {
             myDisplayName = data.val();
@@ -843,7 +804,8 @@ const updateDisplayName = () => {
         myDisplayName = "Offline";
     }
 }
-firebase.auth().onAuthStateChanged(evt => {
+const onAuthStateChanged = () => {
+    if (typeof db === "undefined" || typeof firebase === "undefined") return;
     updateLogin();
     if (firebase.auth().currentUser) {
         db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(data => {
@@ -861,8 +823,9 @@ firebase.auth().onAuthStateChanged(evt => {
         $("#onlineBtn").innerText = "Sign In";
         $("#onlineBtn").onclick = () => signinfunc(() => { });
     }
-});
+};
 const uploadScore = () => {
+    if (typeof db === "undefined" || typeof firebase === "undefined") return;
     $("#onlineBtn").innerText = "Uploading...";
     const func = () => {
         db.ref(`/scores/${GAME_MODE}/${firebase.auth().getUid()}`).once('value').then((data) => {
@@ -888,3 +851,53 @@ const uploadScore = () => {
     if (!firebase.auth().currentUser) return signinfunc(func);
     else func();
 }
+
+const loadScores = () => {
+    if (typeof db === "undefined" || typeof firebase === "undefined") return;
+    db.ref(`scores/${"Normal".toLowerCase()}/`).orderByChild("/score").once("value", data => {
+        let game_mode = "Normal";
+        scores = [];
+        if (!data.val() || Object.keys(data.val()).length == 0) return;
+        Object.keys(data.val()).forEach(key => {
+            scores.push(data.val()[key]);
+        });
+        scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
+        $("#globalScores").innerHTML = `<div>${game_mode} Mode</div>
+            <table><tbody>
+                ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
+            </tbody></table>
+        `;
+        for (let i = 0; i < scores.length; i++) {
+            db.ref(`names/${scores[i].uid}`).once('value').then(data => {
+                $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
+            });
+        }
+    }).then(() => {
+        db.ref(`scores/${"Rush".toLowerCase()}/`).orderByChild("/score").once("value", data => {
+            let game_mode = "Rush";
+            scores = [];
+            if (!data.val() || Object.keys(data.val()).length == 0) return;
+            Object.keys(data.val()).forEach(key => {
+                scores.push(data.val()[key]);
+            });
+            scores = scores.sort((a, b) => b.score - a.score).splice(0, 10);
+            $("#globalScores").innerHTML += `<br /><div>${game_mode} Mode</div>
+            <table><tbody>
+                ${scores.map((j, i) => `<tr><td>#${i + 1}</td><td id="${game_mode}_${j.uid}">Loading</td><td>${j.score}</td></tr>`).join("")}
+            </tbody></table>
+        `;
+            for (let i = 0; i < scores.length; i++) {
+                db.ref(`names/${scores[i].uid}`).once('value').then(data => {
+                    $(`#${game_mode}_${scores[i].uid}`).innerText = data.val();
+                });
+            }
+        });
+    });
+};
+
+const onFirebaseLoad = () => {
+    firebase.auth().onAuthStateChanged(onAuthStateChanged);
+    updateDisplayName();
+    loadScores();
+    setTimeout(() => Array.from(document.getElementsByClassName("onlineOnly")).forEach(elm => elm.classList.remove("onlineOnly")), 500);
+};
