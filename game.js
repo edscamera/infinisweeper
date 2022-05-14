@@ -65,7 +65,7 @@ const img = {
     flag_icon: "./img/flag_icon.png",
     flag_gif: "./img/flag_plant.png",
 };
-const sfx = {
+sfx.data = {
     0: "./sfx/0.mp3",
     1: "./sfx/1.mp3",
     2: "./sfx/2.mp3",
@@ -376,7 +376,7 @@ let dragging = false;
 CANVAS.addEventListener("mousedown", () => {
     if (GAME_STATE !== "game" || gameLost) return;
     const onMouseMove = (evt) => {
-        if (dragging || (!dragging && Math.abs(evt.movementX) + Math.abs(evt.movementY) > 5)) {
+        if (dragging || (!dragging && Math.abs(evt.movementX) + Math.abs(evt.movementY) > 1)) {
             camera.x -= evt.movementX / camera.tilesize;
             camera.y -= evt.movementY / camera.tilesize;
             dragging = true;
@@ -421,12 +421,12 @@ CANVAS.addEventListener("touchstart", (evt) => {
 const toggleFlag = (x, y) => {
     if (getMinesweeperMap(x, y)["c"] === 1) {
         minesweeperMap[`${x},${y}`]["c"] = 2;
-        sfx["flag_down"].play();
+        sfx.play("flag_down");
         flags++;
     } else if (getMinesweeperMap(x, y)["c"] >= 2) {
         new PoppedTile({ "x": x * camera.tilesize, "y": y * camera.tilesize, }, 2);
         minesweeperMap[`${x},${y}`]["c"] = 1;
-        sfx["flag_up"].play();
+        sfx.play("flag_up");
         flags--;
     }
     saveData();
@@ -467,7 +467,6 @@ CANVAS.addEventListener("mouseup", (evt) => {
         if (minesweeperMap[`${x},${y}`]["c"] !== 1) return;
         let cycles = 0;
         let highestNumber = 1;
-        let poppedTiles = 0;
         while (leftToEmpty.length > 0) {
             const x2 = Math.floor(leftToEmpty[0][0]);
             const y2 = Math.floor(leftToEmpty[0][1]);
@@ -482,7 +481,6 @@ CANVAS.addEventListener("mouseup", (evt) => {
                     },
                     Math.abs((x2 + y2) % 2)
                 );
-                poppedTiles++;
             }
             minesweeperMap[`${x2},${y2}`]["c"] = 0;
             for (let xoffset = -1; xoffset <= 1; xoffset++) {
@@ -501,16 +499,16 @@ CANVAS.addEventListener("mouseup", (evt) => {
                 camera.y += (Math.random() - 0.5) * 0.2;
             }, 10);
             setTimeout(() => clearInterval(shake), 400);
-            sfx["0"].play();
+            sfx.play("0")
         } else {
-            sfx[Math.floor(Math.min(Math.max(highestNumber, poppedTiles / 3), 8)).toString()].play();
+            sfx.play(highestNumber.toString());
         }
 
         saveData();
 
         if (minesweeperMap[`${x},${y}`]["#"] === -1) {
             localStorage.setItem(storageKey("saveData"), "None");
-            sfx["confetti"].play();
+            sfx.play("confetti");
             Particle.gravity = 0.7 / (64 / camera.tilesize);
             Particle.fullExplosion(
                 {
@@ -725,6 +723,8 @@ const switchState = (state) => {
             updateLogin();
             break;
     }
+    Particle.particles = [];
+    PoppedTile.tiles = [];
 };
 switchState("title");
 
