@@ -18,12 +18,11 @@ class Board {
     set(x, y, value) {
         if (!this.exists(x, y)) this.board[Board.getAddress(x, y)] = value;
         else Object.assign(this.board[Board.getAddress(x, y)], value);
-        if (value.value === -1) for (let xx = x - 1; xx <= x + 1; xx++) {
-            for (let yy = y - 1; yy <= y + 1; yy++) {
+        for(let xx = x - 1; xx <= x + 1; xx++) {
+            for(let yy = y - 1; yy <= y + 1; yy++) {
                 this.update(xx, yy);
             }
         }
-
     }
     generate(x, y) {
         if (this.exists(x, y)) return;
@@ -42,6 +41,24 @@ class Board {
                 }
             }
             this.board[Board.getAddress(x, y)].value = adjacentBombs;
+        }
+    }
+
+    draw(g, camera) {
+        g.fillStyle = "#000";
+        for (let x = Math.floor(camera.position.x); x <= camera.position.x + window.innerWidth / camera.tilesize; x++) {
+            for (let y = Math.floor(camera.position.y); y <= camera.position.y + window.innerHeight / camera.tilesize; y++) {
+                const tile = this.get(x, y);
+                if (tile.value === -1) {
+                    g.fillRect(
+                        Math.round((x - camera.position.x) * camera.tilesize),
+                        Math.round((y - camera.position.y) * camera.tilesize),
+                        camera.tilesize, camera.tilesize
+                    );
+                } else {
+                    g.fillText(tile.value, (x - camera.position.x) * camera.tilesize, (y - camera.position.y) * camera.tilesize + 24);
+                }
+            }
         }
     }
 }

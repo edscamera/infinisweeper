@@ -7,10 +7,10 @@ class Canvas {
         /** @type {CanvasRenderingContext2D} */
         this.CTX = this.canvas.getContext("2d");
 
-        window.addEventListener("resize", () => this.resizeCanvas(), false);
-
         this.draw = (g) => { };
         this.update = () => { };
+
+        window.addEventListener("resize", () => this.resizeCanvas(), false);
 
         window.setInterval(() => {
             this.CTX.clearRect(0, 0, this.canvas.width, this.canvas.height);
