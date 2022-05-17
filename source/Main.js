@@ -11,15 +11,12 @@ function main() {
     const GUI = new GUIManager("game");
     const canvas = new Canvas("infinisweeper");
     const board = new Board((Math.random() - 0.5) * 2500);
-    const camera = new Camera();
+    const camera = new Camera(true);
 
     canvas.draw = (g) => {
         board.draw(g, camera);
     }
-    canvas.update = () => {
-        camera.position.x -= 0.1;
-    };
-
+    canvas.update = () => { };
 }
 
 // Load the game
