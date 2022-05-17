@@ -33,6 +33,10 @@
                     </ul>
                     <hr>
                     <h2>Changelog</h2>
+                    <span>v1.4.3</span>
+                    <ul>
+                        <li>Added a loading display screen when continuing a game</li>
+                    </ul>
                     <span>v1.4.2</span>
                     <ul>
                         <li>Added a mute button</li>
@@ -162,6 +166,9 @@
                 <img onclick="share('facebook')" src="https://static.xx.fbcdn.net/rsrc.php/yb/r/hLRJ1GG_y0J.ico">
             </div>
             <img src="./img/unmuted.png" id="muteBtn">
+        </div>
+        <div GAME_STATE="loading">
+            <h1 id="loadingstatus">Loading 0%</h1>
         </div>
         <div GAME_STATE="scores">
             <div id="scorepage">

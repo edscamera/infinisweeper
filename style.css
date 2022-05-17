@@ -131,6 +131,13 @@ a { cursor: pointer; }
 }
 #login > button { border-radius: 15px!important; }
 
+#loadingstatus {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+
 .scoreContainer {
 	position: fixed;
 	border-radius: 15px;

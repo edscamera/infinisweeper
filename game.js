@@ -150,6 +150,7 @@ const draw = () => {
     switch (GAME_STATE) {
         case "title":
         case "scores":
+        case "loading":
             const tileWidth = Math.ceil(CANVAS.width / camera.tilesize) + 1;
             const tileHeight = Math.ceil(CANVAS.height / camera.tilesize) + 1;
             for (let x = 0; x < tileWidth; x++) {
@@ -637,7 +638,7 @@ const saveData = () => {
     localStorage.setItem(storageKey("saveData"), data);
 };
 
-const loadData = (dt, elm) => {
+const loadData = (dt, cb) => {
     data = dt ?? prompt("Enter save data:");
     data = data.split(",");
     seed = parseFloat(data.shift());
@@ -645,18 +646,24 @@ const loadData = (dt, elm) => {
     camera.y = parseFloat(data.shift());
     camera.tilesize = parseFloat(data.shift());
     minesweeperMap = {};
-    elm.innerText = "Loading 0%";
-    for (let i = 0; i < data.length / 3; i++) {
-        getMinesweeperMap(data[i * 3], data[i * 3 + 1], seed);
-        minesweeperMap[`${data[i * 3]},${data[i * 3 + 1]}`]["c"] =
-            data[i * 3 + 2];
-        if (data[i * 3 + 2] > 1) flags++;
+    $("#loadingstatus").innerText = "Loading 0%";
+    let index = 0;
+    let loadInterval = null;
+    loadInterval = setInterval(() => {
+        getMinesweeperMap(data[index * 3], data[index * 3 + 1], seed);
+        minesweeperMap[`${data[index * 3]},${data[index * 3 + 1]}`]["c"] =
+            data[index * 3 + 2];
+        if (data[index * 3 + 2] > 1) flags++;
         else score++;
-        elm.inerText = `Loading ${Math.round(i * 3 / data.legth) * 100}%`;
-    }
-    camera.canMove = true;
-    elm.innerText = "Continue";
-    updateLabels();
+        $("#loadingstatus").innerText = `Loading ${Math.round(index * 3 / data.length * 100)}%`;
+        index++;
+        if (index > data.length / 3) {
+            clearInterval(loadInterval);
+            camera.canMove = true;
+            updateLabels();
+            cb();
+        }
+    });
 };
 
 const newGame = (mymode) => {
@@ -687,10 +694,12 @@ const loadGame = (elm) => {
         return;
     } else {
         GAME_MODE = "normal";
+        switchState("loading")
         $("#rushLabel").parentElement.style.display = GAME_MODE === "rush" ? "inline-block" : "none";
-        loadData(localStorage.getItem(storageKey("saveData")), elm);
-        switchState("game");
-        updateLabels();
+        loadData(localStorage.getItem(storageKey("saveData")), () => {
+            switchState("game");
+            updateLabels();
+        });
     }
 };
 
