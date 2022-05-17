@@ -49,14 +49,29 @@ class Board {
         for (let x = Math.floor(camera.position.x); x <= camera.position.x + window.innerWidth / camera.tilesize; x++) {
             for (let y = Math.floor(camera.position.y); y <= camera.position.y + window.innerHeight / camera.tilesize; y++) {
                 const tile = this.get(x, y);
-                if (tile.value === -1) {
+                if (tile.covered) {
+                    g.fillStyle = (x + y) % 2 === 0 ? "#AAD650" : "#A2D048";
                     g.fillRect(
                         Math.round((x - camera.position.x) * camera.tilesize),
                         Math.round((y - camera.position.y) * camera.tilesize),
                         camera.tilesize, camera.tilesize
                     );
                 } else {
-                    g.fillText(tile.value, (x - camera.position.x) * camera.tilesize, (y - camera.position.y) * camera.tilesize + 24);
+                    g.fillStyle = (x + y) % 2 === 0 ? "#D7B998" : "#E4C29E";
+                    g.fillRect(
+                        Math.round((x - camera.position.x) * camera.tilesize),
+                        Math.round((y - camera.position.y) * camera.tilesize),
+                        camera.tilesize, camera.tilesize
+                    );
+                    if (tile.value === -1) {
+                        g.fillRect(
+                            Math.round((x - camera.position.x) * camera.tilesize),
+                            Math.round((y - camera.position.y) * camera.tilesize),
+                            camera.tilesize, camera.tilesize
+                        );
+                    } else {
+                        g.fillText(tile.value, (x - camera.position.x) * camera.tilesize, (y - camera.position.y) * camera.tilesize + 24);
+                    }
                 }
             }
         }
