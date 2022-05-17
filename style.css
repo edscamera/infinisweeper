@@ -169,6 +169,13 @@ a { cursor: pointer; }
     transform: translate(-50%, -50%);
 }
 #scorepage > button { width: 100%; }
+#muteBtn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 32px;
+}
+#muteBtn:hover {filter:brightness(80%)}
 .onlineOnly { display: none!important; }
 
 .mobileOnly { display: none; }

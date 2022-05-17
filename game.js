@@ -10,6 +10,7 @@ let score = 0;
 let flags = 0;
 let minesweeperMap = {};
 let GAME_STATE = "title";
+let target = null;
 
 let GAME_MODE = null;
 let rushTime = 5;
@@ -322,11 +323,16 @@ const draw = () => {
             if (score === 0) {
                 // Get address of block with # of 0
                 let j = -1;
+                let surroundingSquares = 0;
                 do {
-                    for (let x = -2; x < 2; x++) for (let y = -2; y < 2; y++) getMinesweeperMap(j + x, y);
+                    surroundingSquares = 0;
+                    for (let x = -2; x < 2; x++) for (let y = -2; y < 2; y++) {
+                        if (getMinesweeperMap(j + x, y)["#"] === 0) surroundingSquares++;
+                    }
+
                     target = `${j},0`;
                     j++;
-                } while (minesweeperMap[target]["#"] !== 0);
+                } while (minesweeperMap[target]["#"] !== 0 || surroundingSquares < 5);
                 // Align camera so mouse is always on target
                 camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
                 camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
@@ -436,8 +442,15 @@ CANVAS.addEventListener("mouseup", (evt) => {
     if (toggleFlagDisable) return toggleFlagDisable = false;
     if (GAME_STATE !== "game" || gameLost || dragging) return;
 
-    const x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
-    const y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
+    let x = Math.floor((camera.x * camera.tilesize + Input.mouse.position.x) / camera.tilesize);
+    let y = Math.floor((camera.y * camera.tilesize + Input.mouse.position.y) / camera.tilesize);
+
+    if (score === 0) {
+        camera.x = parseFloat(target.split(",")[0]) - Math.floor(Input.mouse.position.x / camera.tilesize);
+        camera.y = parseFloat(target.split(",")[1]) - Math.floor(Input.mouse.position.y / camera.tilesize);
+        x = parseFloat(target.split(",")[0]);
+        y = parseFloat(target.split(",")[1]);
+    }
 
     if (evt.button === 2 && !Input.touch && score > 0) {
         toggleFlag(x, y);
@@ -464,7 +477,7 @@ CANVAS.addEventListener("mouseup", (evt) => {
         }
         camera.canMove = true;
         let leftToEmpty = [[x, y]];
-        if (minesweeperMap[`${x},${y}`]["c"] !== 1) return;
+        if (getMinesweeperMap(x, y)["c"] !== 1) return;
         let cycles = 0;
         let highestNumber = 1;
         while (leftToEmpty.length > 0) {
@@ -901,3 +914,14 @@ const onFirebaseLoad = () => {
     loadScores();
     setTimeout(() => Array.from(document.getElementsByClassName("onlineOnly")).forEach(elm => elm.classList.remove("onlineOnly")), 500);
 };
+
+$("#muteBtn").addEventListener("click", () => {
+    if (window.sfx.muted) {
+        window.sfx.muted = false;
+        sfx.play("1");
+        $("#muteBtn").src = "./img/unmuted.png";
+    } else {
+        window.sfx.muted = true;
+        $("#muteBtn").src = "./img/muted.png";
+    }
+});

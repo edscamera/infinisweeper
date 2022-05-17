@@ -1,7 +1,8 @@
 const $ = (s) => document.querySelector(s);
 window.sfx = {
     "data": [],
-    "play": (id) => new Audio(sfx.data[id]).play(),
+    "play": (id) => { if (!window.sfx.muted) new Audio(sfx.data[id]).play() },
+    "muted": false,
 };
 
 window.addEventListener("load", () => {
