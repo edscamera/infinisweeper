@@ -4,13 +4,16 @@ import { prng, Vector2 } from "./Util.js";
 class Board {
     /** @type {Number} */
     static bombChance = 0.2;
-    constructor(seed) {
+    constructor(seed, camera, boardControls) {
         /** @type {Object} */
         this.board = {};
-        this.seed = seed;
+        this.seed = seed ?? (Math.random() - 0.5) * 2500;
         this.score = 0;
         this.initialTile = null;
-        window.a = this;
+        this.boardControls = boardControls ?? false;
+        this.camera = camera ?? null;
+        
+        this.initializeControls();
     }
     static getAddress(x, y) { return `${x},${y}`; }
     exists(x, y) { return this.board.hasOwnProperty(Board.getAddress(x, y)) }
@@ -48,12 +51,13 @@ class Board {
         }
     }
 
-    draw(g, camera) {
+    draw(g) {
         g.fillStyle = "#000";
+        let camera = this.camera;
         for (let x = Math.floor(camera.position.x); x <= camera.position.x + window.innerWidth / camera.tilesize; x++) {
             for (let y = Math.floor(camera.position.y); y <= camera.position.y + window.innerHeight / camera.tilesize; y++) {
                 const tile = this.get(x, y);
-                if (!tile.covered) {
+                if (tile.covered) {
                     g.fillStyle = (x + y) % 2 === 0 ? "#AAD650" : "#A2D048";
                     g.fillRect(
                         Math.round((x - camera.position.x) * camera.tilesize),
@@ -103,11 +107,7 @@ class Board {
     findInitialTile() {
         let index = 0;
         while (!this.initialTile) {
-            let adjacentBlanks = 0;
-            for(let y = -1; y <= 1; y++) for(let x = index - 1; x <= index + 1; x++) {
-                this.generate(x, y);
-                if (this.get(x, y).value === 0) adjacentBlanks++;
-            }
+            for(let y = -1; y <= 1; y++) for(let x = index - 1; x <= index + 1; x++) this.generate(x, y);
             this.update(index, 0);
             if (this.get(index, 0).value === 0) this.initialTile = new Vector2(index, 0);
             index++;
@@ -115,11 +115,32 @@ class Board {
         return this.initialTile;
     }
 
-    snapToInitialTile(camera) {
+    snapToInitialTile() {
         if (this.initialTile) {
-            camera.position.x = this.initialTile.x - Math.round(Input.mouse.position.x / camera.tilesize) + 0.5;
-            camera.position.y = this.initialTile.y - Math.round(Input.mouse.position.y / camera.tilesize) + 0.5;
+            this.camera.position.x = this.initialTile.x - Math.floor(Input.mouse.position.x / this.camera.tilesize);
+            this.camera.position.y = this.initialTile.y - Math.floor(Input.mouse.position.y / this.camera.tilesize);
         }
+    }
+
+    initializeControls() {
+        window.addEventListener("mouseup", () => {
+            if (!this.boardControls) return;
+            const x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
+            const y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
+            if (this.get(x, y).covered) {
+                const leftToEmpty = [new Vector2(x, y)];
+                while (leftToEmpty.length > 0) {
+                     for (let xx = leftToEmpty[0].x - 1; xx <= leftToEmpty[0].x + 1; xx++) {
+                        for (let yy = leftToEmpty[0].y - 1; yy <= leftToEmpty[0].y + 1; yy++) {
+                            if (this.get(xx, yy).covered && this.get(leftToEmpty[0].x, leftToEmpty[0].y).value === 0) leftToEmpty.push(new Vector2(xx, yy));
+                        }
+                    }
+                    this.set(leftToEmpty[0].x, leftToEmpty[0].y, { "covered": false, });
+                    this.score++;
+                    leftToEmpty.splice(0, 1);
+                };
+            }
+        });
     }
 }
 

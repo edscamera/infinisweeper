@@ -2,7 +2,10 @@
     font-family: "roboto";
     src: url("../fonts/Roboto-Regular.ttf");
 }
-html { overflow: hidden; }
+html {
+    overflow: hidden;
+    overscroll-behavior: none;
+}
 canvas {
     position: absolute;
     top: 0px;

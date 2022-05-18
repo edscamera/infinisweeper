@@ -30,6 +30,8 @@ class Camera {
             let oldTouchData = null;
             let lockedToDrag = false;
             const touchMove = (event) => {
+                event.preventDefault();
+
                 event.movementX = oldTouchData ? event.touches[0].pageX - oldTouchData.x : 0;
                 event.movementY = oldTouchData ? event.touches[0].pageY - oldTouchData.y : 0;
 

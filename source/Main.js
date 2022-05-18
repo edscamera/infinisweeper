@@ -11,17 +11,17 @@ import Input from "./Input.js";
 function main() {
     const GUI = new GUIManager("game");
     const canvas = new Canvas("infinisweeper");
-    const board = new Board((Math.random() - 0.5) * 2500);
     const camera = new Camera(true);
+    const board = new Board((Math.random() - 0.5) * 2500, camera, true);
 
     Input.initialize();
 
     canvas.draw = (g) => {
-        board.draw(g, camera);
+        board.draw(g);
         
         if (board.score === 0) {
             if (!board.initialTile) board.findInitialTile();
-            board.snapToInitialTile(camera);
+            board.snapToInitialTile();
         }
     }
     canvas.update = () => {
