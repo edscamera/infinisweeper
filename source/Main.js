@@ -2,6 +2,7 @@ import Board from "./Board.js";
 import Camera from "./Camera.js";
 import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
+import Input from "./Input.js";
 
 /**
  * The main function
@@ -13,10 +14,19 @@ function main() {
     const board = new Board((Math.random() - 0.5) * 2500);
     const camera = new Camera(true);
 
+    Input.initialize();
+
     canvas.draw = (g) => {
         board.draw(g, camera);
+        
+        if (board.score === 0) {
+            if (!board.initialTile) board.findInitialTile();
+            board.snapToInitialTile(camera);
+        }
     }
-    canvas.update = () => { };
+    canvas.update = () => {
+
+    };
 }
 
 // Load the game
