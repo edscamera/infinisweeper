@@ -2,7 +2,6 @@ import Board from "./Board.js";
 import Camera from "./Camera.js";
 import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
-import Input from "./Input.js";
 
 /**
  * The main function
@@ -24,9 +23,7 @@ function main() {
             board.snapToInitialTile();
         }
     }
-    canvas.update = () => {
-
-    };
+    canvas.update = () => { };
 }
 
 // Load the game

@@ -5,6 +5,7 @@ class Input {
             "y": 0,
         }
     };
+    static keyDown = {};
     static initialize() {
         window.addEventListener("mousemove", (evt) => {
             this.mouse.position = {
@@ -12,6 +13,8 @@ class Input {
                 "y": evt.pageY,
             }
         });
+        window.addEventListener("keydown", (evt) => Input.keyDown[evt] = true);
+        window.addEventListener("keyup", (evt) => Input.keyDown[evt] = false);
     }
 }
 
