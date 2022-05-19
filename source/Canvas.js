@@ -11,6 +11,7 @@ class Canvas {
         this.update = () => { };
 
         window.addEventListener("resize", () => this.resizeCanvas(), false);
+        this.canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 
         window.setInterval(() => {
             this.CTX.clearRect(0, 0, this.canvas.width, this.canvas.height);

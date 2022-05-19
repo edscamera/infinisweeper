@@ -2,6 +2,7 @@ import Board from "./Board.js";
 import Camera from "./Camera.js";
 import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
+import { Input, Image } from "./Util.js"
 
 /**
  * The main function
@@ -12,6 +13,9 @@ function main() {
     const canvas = new Canvas("infinisweeper");
     const camera = new Camera(true);
     const board = new Board((Math.random() - 0.5) * 2500, camera, true);
+
+    Image.add("flag", "../images/flag.png");
+    Image.add("flag_animation", "../images/flag_animation.png");
 
     Input.initialize();
 

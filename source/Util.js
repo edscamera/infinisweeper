@@ -29,3 +29,36 @@ export class Vector2 {
         this.y = y ?? 0;
     }
 }
+export class Input {
+    static mouse = {
+        position: {
+            "x": 0,
+            "y": 0,
+        }
+    };
+    static keyDown = {};
+    static initialize() {
+        window.addEventListener("mousemove", (evt) => {
+            this.mouse.position = {
+                "x": evt.pageX,
+                "y": evt.pageY,
+            }
+        });
+        window.addEventListener("keydown", (evt) => Input.keyDown[evt] = true);
+        window.addEventListener("keyup", (evt) => Input.keyDown[evt] = false);
+    }
+}
+export class Image {
+    static imageList = { };
+    static add(name, url) {
+        if (Image.imageList.hasOwnProperty(name)) return null;
+        Image.imageList[name] = Object.assign(
+            document.createElement("img"),
+            { "src": url, }
+        );
+        return Image.imageList[name];
+    }
+    static get(name) {
+        return Image.imageList.hasOwnProperty(name) ? Image.imageList[name] : null;
+    }
+}
