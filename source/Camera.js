@@ -1,3 +1,4 @@
+import Settings from "./Settings.js";
 import { Vector2 } from "./Util.js"
 
 class Camera {
@@ -6,13 +7,13 @@ class Camera {
         this.position = new Vector2(0, 0);
         /** @type {Number} */
         this.tilesize = 64;
-        
+
         this.cameraControls = cameraControls;
         window.addEventListener("mousedown", () => {
             if (!this.cameraControls) return;
             let lockedToDrag = false;
             const mouseMove = (event) => {
-                if (lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > 5) {
+                if (lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > Settings.settings.dragSensitivity) {
                     lockedToDrag = true;
                     this.position.x -= event.movementX / this.tilesize;
                     this.position.y -= event.movementY / this.tilesize;
@@ -40,7 +41,7 @@ class Camera {
                     this.position.x -= event.movementX / this.tilesize;
                     this.position.y -= event.movementY / this.tilesize;
                 }
-    
+
                 oldTouchData = {
                     "x": event.touches[0].pageX,
                     "y": event.touches[0].pageY,
@@ -54,7 +55,7 @@ class Camera {
                 window.removeEventListener("touchmove", touchMove);
             });
         });
-        
+
     }
 }
 

@@ -1,5 +1,6 @@
 import { prng, Vector2, Input, Image } from "./Util.js";
 import Settings from "./Settings.js";
+import PoppedTile from "./PoppedTile.js";
 
 class Board {
     /** @type {Number} */
@@ -14,7 +15,8 @@ class Board {
         this.camera = camera ?? null;
 
         this.leftToEmpty = [];
-        
+        this.colorCorrection = 0;
+
         this.initializeControls();
     }
     static getAddress(x, y) { return `${x},${y}`; }
@@ -27,8 +29,8 @@ class Board {
     set(x, y, value) {
         if (!this.exists(x, y)) this.board[Board.getAddress(x, y)] = value;
         else Object.assign(this.board[Board.getAddress(x, y)], value);
-        for(let xx = x - 1; xx <= x + 1; xx++) {
-            for(let yy = y - 1; yy <= y + 1; yy++) {
+        for (let xx = x - 1; xx <= x + 1; xx++) {
+            for (let yy = y - 1; yy <= y + 1; yy++) {
                 this.update(xx, yy);
             }
         }
@@ -54,28 +56,39 @@ class Board {
     }
 
     draw(g) {
-        g.fillStyle = "#000";
         const camera = this.camera;
         for (let x = Math.floor(camera.position.x); x <= camera.position.x + window.innerWidth / camera.tilesize; x++) {
             for (let y = Math.floor(camera.position.y); y <= camera.position.y + window.innerHeight / camera.tilesize; y++) {
                 const tile = this.get(x, y);
                 if (tile.covered) {
-                    g.fillStyle = (x + y) % 2 === 0 ? "#AAD650" : "#A2D048";
+                    g.fillStyle = (x + y + this.colorCorrection) % 2 === 0 ? "#AAD650" : "#A2D048";
                     g.fillRect(
                         Math.round((x - camera.position.x) * camera.tilesize),
                         Math.round((y - camera.position.y) * camera.tilesize),
                         camera.tilesize, camera.tilesize
                     );
                     if (tile.flagState > 0) {
-                        g.drawImage(
-                            Image.get("flag"),
-                            Math.round((x - camera.position.x) * camera.tilesize),
-                            Math.round((y - camera.position.y) * camera.tilesize),
-                            camera.tilesize, camera.tilesize
-                        );
+                        if (Settings.settings.animateFlags) {
+                            g.drawImage(
+                                Image.get("flag_animation"), 1, 81 * tile.flagAnimationFrame, 81, 80,
+                                Math.round((x - camera.position.x) * camera.tilesize),
+                                Math.round((y - camera.position.y) * camera.tilesize),
+                                camera.tilesize, camera.tilesize
+                            );
+                            if (tile.flagAnimationFrame < 9) this.set(x, y, {
+                                "flagAnimationFrame": tile.flagAnimationFrame + 1,
+                            });
+                        } else {
+                            g.drawImage(
+                                Image.get("flag"),
+                                Math.round((x - camera.position.x) * camera.tilesize),
+                                Math.round((y - camera.position.y) * camera.tilesize),
+                                camera.tilesize, camera.tilesize
+                            );
+                        }
                     }
                 } else {
-                    g.fillStyle = (x + y) % 2 === 0 ? "#D7B998" : "#E4C29E";
+                    g.fillStyle = (x + y + this.colorCorrection) % 2 === 0 ? "#D7B998" : "#E4C29E";
                     g.fillRect(
                         Math.round((x - camera.position.x) * camera.tilesize),
                         Math.round((y - camera.position.y) * camera.tilesize),
@@ -97,12 +110,14 @@ class Board {
                         g.font = `bold ${camera.tilesize / (64 / 48)}px roboto`;
                         g.fillText(tile.value,
                             (x - camera.position.x + 0.5) * camera.tilesize -
-                                    metrics.width / 2,
+                            metrics.width / 2,
                             (y - camera.position.y + 0.5) * camera.tilesize + textHeight * 0.5,
                             camera.tilesize
                         );
                     } else if (tile.value === -1) {
-                        g.fillStyle = "#000";
+                        const partialVal = (x - camera.position.x) * (y - camera.position.y);
+                        const totalVal = (window.innerWidth / camera.tilesize) * (window.innerHeight / camera.tilesize);
+                        g.fillStyle = `hsl(${partialVal / totalVal * 360},100%,50%)`;
                         g.fillRect(
                             Math.round((x - camera.position.x) * camera.tilesize),
                             Math.round((y - camera.position.y) * camera.tilesize),
@@ -179,67 +194,86 @@ class Board {
                 }
             }
         }
-        for(let _ = 0; _ < Settings.settings.animateTileReveal_t; _++) if (this.leftToEmpty.length > 0) {
-            const tileX = parseInt(this.leftToEmpty[0].split(",")[0]);
-            const tileY = parseInt(this.leftToEmpty[0].split(",")[1]);
-            for (let xx = tileX - 1; xx <= tileX + 1; xx++) {
-                for (let yy = tileY - 1; yy <= tileY + 1; yy++) {
-                    if (this.get(xx, yy).covered && this.get(tileX, tileY).value === 0 && !this.leftToEmpty.includes(`${xx},${yy}`)) this.leftToEmpty.push(`${xx},${yy}`);
-                }
-            }
-            this.set(tileX, tileY, { "covered": false, });
-            this.score++;
-            this.leftToEmpty.splice(0, 1);
-        }
+        for (let _ = 0; _ < Settings.settings.animateTileReveal_t; _++) if (this.leftToEmpty.length > 0) this.digQueuedTile(0);
     }
 
     findInitialTile() {
         let index = 0;
         while (!this.initialTile) {
-            for(let y = -1; y <= 1; y++) for(let x = index - 1; x <= index + 1; x++) this.generate(x, y);
+            for (let y = -1; y <= 1; y++) for (let x = index - 1; x <= index + 1; x++) this.generate(x, y);
             this.update(index, 0);
             if (this.get(index, 0).value === 0) this.initialTile = new Vector2(index, 0);
             index++;
         }
+        console.log(this.colorCorrection)
         return this.initialTile;
     }
 
     snapToInitialTile() {
-        if (this.initialTile) {
-            this.camera.position.x = this.initialTile.x - Math.floor(Input.mouse.position.x / this.camera.tilesize);
-            this.camera.position.y = this.initialTile.y - Math.floor(Input.mouse.position.y / this.camera.tilesize);
+        if (!this.initialTile) this.findInitialTile();
+        const d1 = (
+            this.camera.position.x + Math.floor(Input.mouse.position.x / this.camera.tilesize) +
+            this.camera.position.y + Math.floor(Input.mouse.position.y / this.camera.tilesize)
+        ) % 2;
+        this.camera.position.x = this.initialTile.x - Math.floor(Input.mouse.position.x / this.camera.tilesize);
+        this.camera.position.y = this.initialTile.y - Math.floor(Input.mouse.position.y / this.camera.tilesize);
+        const d2 = (
+            this.camera.position.x + Math.floor(Input.mouse.position.x / this.camera.tilesize) +
+            this.camera.position.y + Math.floor(Input.mouse.position.y / this.camera.tilesize)
+        ) % 2;
+        this.colorCorrection = Math.abs(d1 - d2);
+        this.camera.cameraControls = true;
+    }
+
+    digQueuedTile(index) {
+        const tileX = parseInt(this.leftToEmpty[index].split(",")[0]);
+        const tileY = parseInt(this.leftToEmpty[index].split(",")[1]);
+        for (let xx = tileX - 1; xx <= tileX + 1; xx++) {
+            for (let yy = tileY - 1; yy <= tileY + 1; yy++) {
+                if (this.get(xx, yy).covered && this.get(tileX, tileY).value === 0 && !this.leftToEmpty.includes(`${xx},${yy}`)) this.leftToEmpty.push(`${xx},${yy}`);
+            }
         }
+        this.set(tileX, tileY, { "covered": false, });
+        if (Settings.settings.animateFallingTiles) new PoppedTile(this.camera, {
+            "x": tileX * this.camera.tilesize,
+            "y": tileY * this.camera.tilesize,
+        }, (tileX + tileY) % 2);
+        this.score++;
+        this.leftToEmpty.splice(0, 1);
     }
 
     initializeControls() {
         const dig = (x, y) => {
             if (!this.get(x, y).covered || this.get(x, y).flagState > 0) return;
-            this.leftToEmpty.push(`${x},${y}`);
+            this.leftToEmpty.splice(0, 0, `${x},${y}`);
 
-            if (Settings.settings.animateTileReveal) while (this.leftToEmpty.length > 0) {
-                const tileX = parseInt(this.leftToEmpty[0].split(",")[0]);
-                const tileY = parseInt(this.leftToEmpty[0].split(",")[1]);
-                for (let xx = tileX - 1; xx <= tileX + 1; xx++) {
-                    for (let yy = tileY - 1; yy <= tileY + 1; yy++) {
-                        if (this.get(xx, yy).covered && this.get(tileX, tileY).value === 0 && !this.leftToEmpty.includes(`${xx},${yy}`)) this.leftToEmpty.push(`${xx},${yy}`);
-                    }
-                }
-                this.set(tileX, tileY, { "covered": false, });
-                this.score++;
-                this.leftToEmpty.splice(0, 1);
-            };
+            if (!Settings.settings.animateTileReveal) while (this.leftToEmpty.length > 0) this.digQueuedTile(0);
         }
         const toggleFlag = (x, y) => {
             if (!this.get(x, y).covered) return;
-            this.set(x, y, { "flagState": 1 - this.get(x, y).flagState });
+            this.set(x, y, {
+                "flagState": 1 - this.get(x, y).flagState,
+                "flagAnimationFrame": 0,
+            });
+            if (Settings.settings.animateFlags && this.get(x, y).flagState === 0) new PoppedTile(this.camera, {
+                "x": x * this.camera.tilesize,
+                "y": y * this.camera.tilesize,
+            }, 2);
         };
 
         window.addEventListener("mouseup", (event) => {
             if (!this.boardControls) return;
-            const x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
-            const y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
-            if (event.button === 0) dig(x, y);
-            if (event.button === 2) toggleFlag(x, y);
+            let x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
+            let y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
+            if (event.button === 0) {
+                if (this.score === 0) {
+                    this.snapToInitialTile();
+                    x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
+                    y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
+                }
+                dig(x, y);
+            }
+            if (event.button === 2 && this.score > 0) toggleFlag(x, y);
         });
     }
 }

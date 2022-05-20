@@ -1,9 +1,12 @@
 class Settings {
     static settings = {
-        "animateTileReveal": false,
+        "animateFallingTiles": true,
+        "animateTileReveal": true,
         "animateTileReveal_t": 1,
+        "animateFlags": true,
 
         "drawBorders": true,
+        "dragSensitivity": 2,
     }
 }
 

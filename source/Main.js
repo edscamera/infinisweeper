@@ -2,6 +2,7 @@ import Board from "./Board.js";
 import Camera from "./Camera.js";
 import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
+import PoppedTile from "./PoppedTile.js";
 import { Input, Image } from "./Util.js"
 
 /**
@@ -11,7 +12,7 @@ import { Input, Image } from "./Util.js"
 function main() {
     const GUI = new GUIManager("game");
     const canvas = new Canvas("infinisweeper");
-    const camera = new Camera(true);
+    const camera = new Camera(false);
     const board = new Board((Math.random() - 0.5) * 2500, camera, true);
 
     Image.add("flag", "../images/flag.png");
@@ -21,13 +22,13 @@ function main() {
 
     canvas.draw = (g) => {
         board.draw(g);
-        
-        if (board.score === 0) {
-            if (!board.initialTile) board.findInitialTile();
-            board.snapToInitialTile();
-        }
+
+        PoppedTile.drawAllPoppedTiles(g);
     }
-    canvas.update = () => { };
+    canvas.update = () => {
+
+        PoppedTile.updateAllPoppedTiles();
+    };
 }
 
 // Load the game
