@@ -17,6 +17,11 @@ class Board {
         this.leftToEmpty = [];
         this.colorCorrection = 0;
 
+        this.leftMost = null;
+        this.rightMost = null;
+        this.topMost = null;
+        this.bottomMost = null;
+
         this.initializeControls();
     }
     static getAddress(x, y) { return `${x},${y}`; }
@@ -205,7 +210,6 @@ class Board {
             if (this.get(index, 0).value === 0) this.initialTile = new Vector2(index, 0);
             index++;
         }
-        console.log(this.colorCorrection)
         return this.initialTile;
     }
 
@@ -234,6 +238,10 @@ class Board {
             }
         }
         this.set(tileX, tileY, { "covered": false, });
+        if (tileX < this.leftMost) this.leftMost = tileX;
+        if (tileX > this.rightMost) this.rightMost = tileX;
+        if (tileY < this.topMost) this.topMost = tileY;
+        if (tileY > this.bottomMost) this.bottomMost = tileY;
         if (Settings.settings.animateFallingTiles) new PoppedTile(this.camera, {
             "x": tileX * this.camera.tilesize,
             "y": tileY * this.camera.tilesize,
@@ -270,11 +278,28 @@ class Board {
                     this.snapToInitialTile();
                     x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
                     y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
+                    this.leftMost = this.rightMost = x;
+                    this.topMost = this.bottomMost = y;
                 }
                 dig(x, y);
             }
             if (event.button === 2 && this.score > 0) toggleFlag(x, y);
         });
+    }
+
+    zoomToFit() {
+        const verticalDiff = Math.abs(this.bottomMost - this.topMost) + 2;
+        const horizontalDiff = Math.abs(this.rightMost - this.leftMost) + 2;
+
+        const horizontalSize = window.innerWidth / horizontalDiff;
+        const verticalSize = window.innerHeight / verticalDiff;
+
+        this.camera.tilesize = Math.max(16, Math.round(Math.min(horizontalSize, verticalSize)));
+
+        this.camera.position = {
+            "x": (this.rightMost + this.leftMost) / 2 - window.innerWidth / 2 / this.camera.tilesize + 0.5,
+            "y": (this.bottomMost + this.topMost) / 2 - window.innerHeight / 2 / this.camera.tilesize + 0.5,
+        }
     }
 }
 
