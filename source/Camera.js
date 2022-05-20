@@ -7,9 +7,15 @@ class Camera {
         this.position = new Vector2(0, 0);
         /** @type {Number} */
         this.tilesize = 64;
+        this.targetTilesize = null;
+
+        this.centered = null;
 
         this.cameraControls = cameraControls;
-        window.addEventListener("mousedown", () => {
+    }
+
+    initializeControls(canvas) {
+        canvas.addEventListener("mousedown", () => {
             if (!this.cameraControls) return;
             let lockedToDrag = false;
             const mouseMove = (event) => {
@@ -26,7 +32,7 @@ class Camera {
         });
 
         this.oldTouchData = null;
-        window.addEventListener("touchstart", () => {
+        canvas.addEventListener("touchstart", () => {
             if (!this.cameraControls) return;
             let oldTouchData = null;
             let lockedToDrag = false;
@@ -56,6 +62,33 @@ class Camera {
             });
         });
 
+        canvas.addEventListener("wheel", (event) => {
+            if (!this.cameraControls) return;
+            this.setTilesize(Math.max(this.tilesize + Math.sign(event.deltaY) * -5, 14));
+        });
+    }
+
+    setTilesize(tilesize, focus) {
+        const middleX = focus ? focus.x : (this.position.x + window.innerWidth / 2 / this.tilesize);
+        const middleY = focus ? focus.y : (this.position.y + window.innerHeight / 2 / this.tilesize);
+
+        this.tilesize = Math.round(tilesize);
+
+        this.position.x = (focus ? focus.x : middleX) - window.innerWidth / 2 / this.tilesize;
+        this.position.y = (focus ? focus.y : middleY) - window.innerHeight / 2 / this.tilesize;
+    }
+
+    updateTilesize() {
+        if (this.targetTilesize) this.setTilesize(this.tilesize + (this.targetTilesize - this.tilesize) / 15);
+
+        if (this.centered) {
+            this.targetPosition = {
+                "x": (this.centered.right + this.centered.left) / 2 - window.innerWidth / 2 / this.targetTilesize,
+                "y": (this.centered.bottom + this.centered.top) / 2 - window.innerHeight / 2 / this.targetTilesize,
+            };
+            this.position.x += (this.targetPosition.x - this.position.x) / 15;
+            this.position.y += (this.targetPosition.y - this.position.y) / 15;
+        }
     }
 }
 

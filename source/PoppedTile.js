@@ -9,8 +9,8 @@ class PoppedTile {
         this.rotation = 0;
         this.rotationVel = 0;
         this.velocity = {
-            x: (Math.random() - 0.5) * 10 / (64 / camera.tilesize),
-            y: -Math.random() * 10 / (64 / camera.tilesize),
+            x: (Math.random() - 0.5) * 10 / this.camera.tilesize,
+            y: -Math.random() * 10 / this.camera.tilesize,
         };
         this.size = camera.tilesize;
         PoppedTile.tiles.push(this);
@@ -18,7 +18,7 @@ class PoppedTile {
     update() {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
-        this.velocity.y += 0.2;
+        this.velocity.y += 0.2 / this.camera.tilesize;
         this.rotation += this.rotationVel;
         if (Math.abs(this.rotationVel) < 0.1)
             this.rotationVel += 0.005 * Math.sign(this.velocity.x);
@@ -26,8 +26,8 @@ class PoppedTile {
     draw(g) {
         g.save();
         g.translate(
-            this.position.x - this.camera.position.x * this.camera.tilesize + this.size / 2,
-            this.position.y - this.camera.position.y * this.camera.tilesize + this.size / 2
+            (this.position.x - this.camera.position.x) * this.camera.tilesize + this.size / 2,
+            (this.position.y - this.camera.position.y) * this.camera.tilesize + this.size / 2
         );
         g.rotate(this.rotation);
         g.fillStyle = this.type % 2 === 0 ? "#AAD650" : "#A2D048";

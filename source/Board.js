@@ -9,20 +9,34 @@ class Board {
         /** @type {Object} */
         this.board = {};
         this.seed = seed ?? (Math.random() - 0.5) * 2500;
-        this.score = 0;
         this.initialTile = null;
         this.boardControls = boardControls ?? false;
         this.camera = camera ?? null;
 
+        this.mode = "normal";
+
         this.leftToEmpty = [];
         this.colorCorrection = 0;
+
+        this.score = 0;
+        this.flags = 0;
 
         this.leftMost = null;
         this.rightMost = null;
         this.topMost = null;
         this.bottomMost = null;
 
-        this.initializeControls();
+        this.secondsPlayed = 0;
+        this.secondsInterval = window.setInterval(() => {
+            if (this.boardControls) {
+                this.secondsPlayed++;
+                this.updateScoreContainer();
+            }
+        }, 1000);
+
+        if (!localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = 0;
+
+        document.querySelector("#scoreContainer").setAttribute("hide", false);
     }
     static getAddress(x, y) { return `${x},${y}`; }
     exists(x, y) { return this.board.hasOwnProperty(Board.getAddress(x, y)) }
@@ -128,6 +142,18 @@ class Board {
                             Math.round((y - camera.position.y) * camera.tilesize),
                             camera.tilesize, camera.tilesize
                         );
+                        if (!tile.bombAnimation) this.set(x, y, { "bombAnimation": 255, });
+                        this.set(x, y, { "bombAnimation": this.get(x, y).bombAnimation - this.get(x, y).bombAnimation / 150, });
+                        g.fillStyle = `rgb(${(this.get(x, y).bombAnimation + ",").repeat(3).slice(0, -1)})`;
+                        g.beginPath();
+                        g.ellipse(
+                            (x - camera.position.x + 0.5) * camera.tilesize,
+                            (y - camera.position.y + 0.5) * camera.tilesize,
+                            camera.tilesize / 4,
+                            camera.tilesize / 4,
+                            0, 0, Math.PI * 2
+                        );
+                        g.fill();
                     }
                     if (Settings.settings.drawBorders) {
                         g.strokeStyle = g.fillStyle = "#86AE3A";
@@ -225,7 +251,7 @@ class Board {
             this.camera.position.x + Math.floor(Input.mouse.position.x / this.camera.tilesize) +
             this.camera.position.y + Math.floor(Input.mouse.position.y / this.camera.tilesize)
         ) % 2;
-        this.colorCorrection = Math.abs(d1 - d2);
+        this.colorCorrection = Math.round(Math.abs(d1 - d2));
         this.camera.cameraControls = true;
     }
 
@@ -243,14 +269,17 @@ class Board {
         if (tileY < this.topMost) this.topMost = tileY;
         if (tileY > this.bottomMost) this.bottomMost = tileY;
         if (Settings.settings.animateFallingTiles) new PoppedTile(this.camera, {
-            "x": tileX * this.camera.tilesize,
-            "y": tileY * this.camera.tilesize,
+            "x": tileX,
+            "y": tileY,
         }, (tileX + tileY) % 2);
+        if (this.get(tileX, tileY).value === -1) this.loseGame();
         this.score++;
+        if (this.score > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score;
         this.leftToEmpty.splice(0, 1);
+        this.updateScoreContainer();
     }
 
-    initializeControls() {
+    initializeControls(canvas) {
         const dig = (x, y) => {
             if (!this.get(x, y).covered || this.get(x, y).flagState > 0) return;
             this.leftToEmpty.splice(0, 0, `${x},${y}`);
@@ -264,12 +293,14 @@ class Board {
                 "flagAnimationFrame": 0,
             });
             if (Settings.settings.animateFlags && this.get(x, y).flagState === 0) new PoppedTile(this.camera, {
-                "x": x * this.camera.tilesize,
-                "y": y * this.camera.tilesize,
+                "x": x,
+                "y": y,
             }, 2);
+            this.flags += this.get(x, y).flagState;
+            this.updateScoreContainer();
         };
 
-        window.addEventListener("mouseup", (event) => {
+        canvas.addEventListener("mouseup", (event) => {
             if (!this.boardControls) return;
             let x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
             let y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
@@ -285,6 +316,8 @@ class Board {
             }
             if (event.button === 2 && this.score > 0) toggleFlag(x, y);
         });
+
+        this.updateScoreContainer();
     }
 
     zoomToFit() {
@@ -294,12 +327,35 @@ class Board {
         const horizontalSize = window.innerWidth / horizontalDiff;
         const verticalSize = window.innerHeight / verticalDiff;
 
-        this.camera.tilesize = Math.max(16, Math.round(Math.min(horizontalSize, verticalSize)));
+        this.camera.targetTilesize = Math.min(Math.max(16, Math.round(Math.min(horizontalSize, verticalSize))), 128);
 
-        this.camera.position = {
-            "x": (this.rightMost + this.leftMost) / 2 - window.innerWidth / 2 / this.camera.tilesize + 0.5,
-            "y": (this.bottomMost + this.topMost) / 2 - window.innerHeight / 2 / this.camera.tilesize + 0.5,
+        this.camera.centered = {
+            "left": this.leftMost,
+            "right": this.rightMost,
+            "top": this.topMost,
+            "bottom": this.bottomMost,
         }
+    }
+
+    loseGame() {
+        this.boardControls = false;
+        this.camera.cameraControls = false;
+
+        window.setTimeout(() => this.zoomToFit(), 1000);
+        window.clearInterval(this.secondsInterval);
+
+        window.setTimeout(() => {
+            document.querySelector("#scoreContainer").setAttribute("hide", true);
+        }, 2000);
+    }
+
+    updateScoreContainer() {
+        document.querySelector("#label_score").innerText = this.score;
+        document.querySelector("#label_flags").innerText = this.flags;
+        if (this.secondsPlayed < 60) document.querySelector("#label_hours").innerText = `${this.secondsPlayed}s`;
+        else if (this.secondsPlayed < 60 * 60) document.querySelector("#label_hours").innerText = `${(this.secondsPlayed / 60).toFixed(1)}m`;
+        else document.querySelector("#label_hours").innerText = `${(this.secondsPlayed / 60 / 60).toFixed(1)}h`;
+        document.querySelector("#label_highscore").innerText = localStorage[`highScore_${this.mode}`];
     }
 }
 
