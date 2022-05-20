@@ -1,3 +1,4 @@
+import Settings from "./Settings.js";
 /**
  * Returns a pseudo-random number derived from a value and a seed.
  * @param {Number} value
@@ -49,7 +50,7 @@ export class Input {
     }
 }
 export class Image {
-    static imageList = { };
+    static imageList = {};
     static add(name, url) {
         if (Image.imageList.hasOwnProperty(name)) return null;
         Image.imageList[name] = Object.assign(
@@ -60,5 +61,16 @@ export class Image {
     }
     static get(name) {
         return Image.imageList.hasOwnProperty(name) ? Image.imageList[name] : null;
+    }
+}
+
+export class SoundEffect {
+    static audioList = {};
+    static add(name, url) {
+        if (SoundEffect.audioList.hasOwnProperty(name)) return null;
+        SoundEffect.audioList[name] = url;
+    }
+    static play(name) {
+        if (!Settings.settings.muted) new Audio(SoundEffect.audioList[name]).play();
     }
 }

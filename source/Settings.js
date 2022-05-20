@@ -7,6 +7,8 @@ class Settings {
 
         "drawBorders": true,
         "dragSensitivity": 2,
+
+        "muted": false,
     }
 }
 

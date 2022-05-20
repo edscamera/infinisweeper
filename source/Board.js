@@ -1,4 +1,4 @@
-import { prng, Vector2, Input, Image } from "./Util.js";
+import { prng, Vector2, Input, Image, SoundEffect } from "./Util.js";
 import Settings from "./Settings.js";
 import PoppedTile from "./PoppedTile.js";
 
@@ -258,6 +258,7 @@ class Board {
     digQueuedTile(index) {
         const tileX = parseInt(this.leftToEmpty[index].split(",")[0]);
         const tileY = parseInt(this.leftToEmpty[index].split(",")[1]);
+        SoundEffect.play(`blip_${this.get(tileX, tileY).value}`);
         for (let xx = tileX - 1; xx <= tileX + 1; xx++) {
             for (let yy = tileY - 1; yy <= tileY + 1; yy++) {
                 if (this.get(xx, yy).covered && this.get(tileX, tileY).value === 0 && !this.leftToEmpty.includes(`${xx},${yy}`)) this.leftToEmpty.push(`${xx},${yy}`);
