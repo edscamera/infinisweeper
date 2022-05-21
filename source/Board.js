@@ -33,6 +33,25 @@ class Board {
                 this.updateScoreContainer();
             }
         }, 1000);
+        if (Settings.settings.autoSave) {
+            this.autoSaveInterval = window.setInterval(() => {
+                if (this.boardControls && Settings.settings.autoSave) {
+                    const elm = document.querySelector("#saveGame");
+                    if (elm.disabled) return;
+                    elm.disabled = true;
+                    elm.innerText = "Auto Saving 0%";
+                    this.saveGame((d) => {
+                        elm.innerText = `Auto Saving ${Math.round(d * 100)}%`;
+                    }, () => {
+                        elm.innerText = "Auto Saved!";
+                        window.setTimeout(() => {
+                            elm.disabled = false;
+                            elm.innerText = "Save Game";
+                        }, 1000);
+                    });
+                }
+            }, Settings.settings.autoSave_t * 1000 * 60);
+        }
 
         if (!localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = 0;
 
@@ -344,6 +363,8 @@ class Board {
     }
 
     loseGame() {
+        if (this.mode === "normal") localStorage.saved_data = null;
+
         this.boardControls = false;
         this.camera.cameraControls = false;
 
@@ -392,6 +413,29 @@ class Board {
         else if (this.secondsPlayed < 60 * 60) document.querySelector("#label_hours").innerText = `${(this.secondsPlayed / 60).toFixed(1)}m`;
         else document.querySelector("#label_hours").innerText = `${(this.secondsPlayed / 60 / 60).toFixed(1)}h`;
         document.querySelector("#label_highscore").innerText = localStorage[`highScore_${this.mode}`];
+    }
+
+    saveGame(progresscb, endcb) {
+        if (this.mode !== "normal" || !this.boardControls) return;
+        let index = 0;
+        const keys = Object.keys(this.board);
+        let data = `${this.seed},${this.camera.position.x},${this.camera.position.y},${this.camera.tilesize}`;
+        const saveInterval = setInterval(() => {
+            for (let _ = 0; _ < 100; _++) {
+                if (!this.board[keys[index]].covered || this.board[keys[index]].flagState) {
+                    data += `,${keys[index]}`;
+                    data += `,${this.board[keys[index]].covered ? 2 : 0}`
+                }
+                if (progresscb) progresscb(index / keys.length);
+                index++;
+                if (index >= keys.length) {
+                    localStorage.saved_data = data;
+                    clearInterval(saveInterval);
+                    if (endcb) endcb();
+                    break;
+                }
+            }
+        });
     }
 }
 

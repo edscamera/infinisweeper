@@ -3,7 +3,7 @@ import Camera from "./Camera.js";
 import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
 import PoppedTile from "./PoppedTile.js";
-import { SoundEffect, Input, Image } from "./Util.js"
+import { SoundEffect, Input, Image, prng } from "./Util.js"
 
 /**
  * The main function
@@ -84,16 +84,63 @@ function main() {
     $("#share_facebook").addEventListener("click", () => {
         window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(getScoreText())}&p[url]=https://edwardscamera.com/infinisweeper`);
     });
-    $("#playAgain").addEventListener("click", () => {
+    $("#saveGame").addEventListener("click", () => {
+        if ($("#saveGame").disabled) return;
+        $("#saveGame").disabled = true;
+        $("#saveGame").innerText = "Saving 0%";
+        board.saveGame((d) => {
+            $("#saveGame").innerText = `Saving ${Math.round(d * 100)}%`;
+        }, () => {
+            $("#saveGame").innerText = "Saved!";
+            window.setTimeout(() => {
+                $("#saveGame").disabled = false;
+                $("#saveGame").innerText = "Save Game";
+            }, 1000);
+        });
+    });
+
+    window.prng = prng;
+    const newGame = () => {
+        GUI.set("game");
         camera = new Camera(false);
         board = new Board((Math.random() - 0.5) * 2500, camera, true);
         camera.initializeControls(canvas.canvas);
         board.initializeControls(canvas.canvas);
-    });
-    $("#mainMenu").addEventListener("click", () => {
+    };
+    const mainMenu = () => {
         GUI.set("title");
         camera = new Camera(false);
         board = new Board((Math.random() - 0.5) * 2500, camera, false);
+    };
+    $("#playAgain").addEventListener("click", newGame);
+    $("#newGame").addEventListener("click", newGame);
+    $("#mainMenu").addEventListener("click", mainMenu);
+    $("#continueGame").addEventListener("click", () => {
+
+        let data = localStorage.saved_data.split(",");
+
+        camera = new Camera(true);
+        window.c = camera;
+
+        board = new Board(parseFloat(data.shift()), camera, false);
+        window.b = board;
+        camera.position = {
+            "x": parseFloat(data.shift()),
+            "y": parseFloat(data.shift()),
+        };
+        camera.setTilesize(parseFloat(data.shift()));
+        for (let index = 0; index < data.length / 3; index++) {
+            board.generate(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]));
+            board.set(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]), {
+                "flagState": parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0,
+                "covered": parseFloat(data[index * 3 + 2]) != 0,
+            });
+        }
+
+        camera.initializeControls(canvas.canvas);
+        board.initializeControls(canvas.canvas);
+
+        GUI.set("game");
     });
 }
 

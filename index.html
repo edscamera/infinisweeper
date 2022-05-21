@@ -17,6 +17,7 @@
     <canvas id="infinisweeper"></canvas>
     <div class="GUI" GUI="game">
         <div id="scoreContainer" class="container" hide="true">
+            <button id="saveGame">Save Game</button>
             <div><span>Score</span><span id="label_score">0</span></div>
             <div><span>Flags</span><span id="label_flags">0</span></div>
             <div><span>Time</span><span id="label_hours">0</span></div>
@@ -36,7 +37,20 @@
         </div>
     </div>
     <div class="GUI" GUI="title">
-
+        <div id="titleScreen">
+            <div id="titleText">
+                <h1>Infinisweeper</h1>
+                <img src="./images/flag.png">
+            </div>
+            <div id="footer"><span>v2.0</span> | built by <a href="https://edwardscamera.com"
+                    target="_blank">edwardscamera</a>
+            </div>
+            <button id="newGame">New Game</button><br />
+            <button id="continueGame">Continue</button><br />
+            <button>Rush Mode</button><br />
+            <button>High Scores</button><br />
+            <button>Settings</button><br /><br />
+        </div>
     </div>
 </body>
 

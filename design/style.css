@@ -14,6 +14,12 @@ canvas {
     top: 0px;
     left: 0px;
 }
+a {
+    color: blue;
+    text-decoration: none;
+    transition: .1s ease-in-out;
+}
+a:hover { color: rgb(0, 110, 255); }
 
 button {
 	width: 150px;
@@ -24,7 +30,7 @@ button {
     font-weight: bold;
     margin: 2px 0px;
 }
-button:hover { background-color: #d7b998; }
+button:not(:disabled):hover { background-color: #d7b998; }
 button:first-of-type {
     border-radius: 15px 15px 0px 0px;
     margin-top: 0px;
@@ -69,6 +75,10 @@ button:only-of-type {
 }
 #scoreContainer > div > :first-child { padding-right: 30px; }
 #scoreContainer > div > :last-child { float: right; }
+#saveGame {
+    width: 100%;
+    margin-bottom: 15px;
+}
 
 #loseContainer {
     position: fixed;
@@ -86,6 +96,22 @@ button:only-of-type {
 }
 #loseContainer > img:hover { transform: scale(115%); }
 
+#titleScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#titleText > * {
+    display: inline-block;
+    vertical-align: middle;
+    max-height: 38px;
+}
+#titleScreen #footer {
+    margin-bottom: 50px;
+}
+
 @media only screen and (max-device-width: 480px) {
     #loseContainer {
         width: calc(100% - 60px);
@@ -96,4 +122,5 @@ button:only-of-type {
         width: calc(100% - 60px);
         font-size: 1.5em;
     }
+    #titleText > img { display: none;}
 }

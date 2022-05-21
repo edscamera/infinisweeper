@@ -9,6 +9,8 @@ class Settings {
         "dragSensitivity": 2,
 
         "muted": false,
+        "autoSave": true,
+        "autoSave_t": .25,
     }
 }
 
