@@ -23,12 +23,10 @@ function main() {
         localStorage.removeItem("edwardscamera.infinisweeper.saveData");
     }
 
-    const GUI = new GUIManager("game");
+    const GUI = new GUIManager("title");
     const canvas = new Canvas("infinisweeper");
-    const camera = new Camera(false);
-    const board = new Board((Math.random() - 0.5) * 2500, camera, true);
-    window.a = camera;
-    window.b = board;
+    let camera = new Camera(false);
+    let board = new Board((Math.random() - 0.5) * 2500, camera, false);
 
     Image.add("flag", "../images/flag.png");
     Image.add("flag_animation", "../images/flag_animation.png");
@@ -46,18 +44,57 @@ function main() {
     SoundEffect.add("reveal", "../audio/reveal.mp3");
 
     Input.initialize();
-    board.initializeControls(canvas.canvas);
     camera.initializeControls(canvas.canvas);
+    board.initializeControls(canvas.canvas);
 
     canvas.draw = (g) => {
         board.draw(g);
-
         PoppedTile.drawAllPoppedTiles(g);
     }
     canvas.update = () => {
         camera.updateTilesize();
         PoppedTile.updateAllPoppedTiles();
+        if (GUI.state === "title") {
+            camera.position.x += -0.01;
+            camera.position.y += -0.01;
+        }
     };
+
+    const $ = (selector) => document.querySelector(selector);
+    const getScoreText = () => `I got a new score of ${(board.score).toString().split("").map((j) => {
+        switch (parseFloat(j)) {
+            case 0: return "0️⃣";
+            case 1: return "1️⃣";
+            case 2: return "2️⃣";
+            case 3: return "3️⃣";
+            case 4: return "4️⃣";
+            case 5: return "5️⃣";
+            case 6: return "6️⃣";
+            case 7: return "7️⃣";
+            case 8: return "8️⃣";
+            case 9: return "9️⃣";
+        }
+    }).join("")} in Infinisweeper${board.mode === "normal" ? "" : " " + board.mode.toUpperCase() + " MODE"}! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
+    $("#share_copy").addEventListener("click", () => {
+        if (navigator.clipboard) navigator.clipboard.writeText(getScoreText());
+    });
+    $("#share_twitter").addEventListener("click", () => {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURI(getScoreText())}`, "_blank");
+    });
+    $("#share_facebook").addEventListener("click", () => {
+        window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(getScoreText())}&p[url]=https://edwardscamera.com/infinisweeper`);
+    });
+    $("#playAgain").addEventListener("click", () => {
+        camera = new Camera(false);
+        board = new Board((Math.random() - 0.5) * 2500, camera, true);
+        camera.initializeControls(canvas.canvas);
+        board.initializeControls(canvas.canvas);
+    });
+    $("#mainMenu").addEventListener("click", () => {
+        GUI.set("title");
+        camera = new Camera(false);
+        board = new Board((Math.random() - 0.5) * 2500, camera, false);
+    });
 }
 
 // Load the game

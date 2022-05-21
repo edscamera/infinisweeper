@@ -12,6 +12,7 @@ class Camera {
         this.centered = null;
 
         this.cameraControls = cameraControls;
+        this.scaling = false;
     }
 
     initializeControls(canvas) {
@@ -62,9 +63,30 @@ class Camera {
             });
         });
 
-        canvas.addEventListener("wheel", (event) => {
+        window.addEventListener("wheel", (event) => {
             if (!this.cameraControls) return;
             this.setTilesize(Math.max(this.tilesize + Math.sign(event.deltaY) * -5, 14));
+        });
+
+        window.addEventListener("touchstart", (event) => {
+            if (!this.cameraControls) return;
+            if (event.touches.length === 2) {
+                const originalTilesize = this.tilesize;
+                const originalPinch = Math.hypot(
+                    event.touches[0].pageX - event.touches[1].pageX,
+                    event.touches[0].pageY - event.touches[1].pageY) / 2;
+                const pinch = (event) => {
+                    event.preventDefault();
+                    const newPinch = Math.hypot(
+                        event.touches[0].pageX - event.touches[1].pageX,
+                        event.touches[0].pageY - event.touches[1].pageY) / 2;
+                    this.setTilesize(originalTilesize + (newPinch - originalPinch));
+                };
+                window.addEventListener("touchmove", pinch);
+                window.addEventListener("touchend", () => {
+                    window.removeEventListener("touchmove", pinch);
+                }, { "once": true, });
+            }
         });
     }
 
@@ -73,6 +95,7 @@ class Camera {
         const middleY = focus ? focus.y : (this.position.y + window.innerHeight / 2 / this.tilesize);
 
         this.tilesize = Math.round(tilesize);
+        this.tilesize = Math.max(16, this.tilesize);
 
         this.position.x = (focus ? focus.x : middleX) - window.innerWidth / 2 / this.tilesize;
         this.position.y = (focus ? focus.y : middleY) - window.innerHeight / 2 / this.tilesize;

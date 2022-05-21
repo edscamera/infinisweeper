@@ -1,17 +1,43 @@
 @font-face {
     font-family: "roboto";
     src: url("../fonts/Roboto-Regular.ttf");
+    font-display: swap;
 }
 html {
     overflow: hidden;
     overscroll-behavior: none;
     font-family: "Roboto";
+    font-weight: bold;
 }
 canvas {
     position: absolute;
     top: 0px;
     left: 0px;
 }
+
+button {
+	width: 150px;
+	padding: 5px;
+	background-color: #e4c29e;
+	border: 2px solid #b99e81;
+    font-family: "Roboto";
+    font-weight: bold;
+    margin: 2px 0px;
+}
+button:hover { background-color: #d7b998; }
+button:first-of-type {
+    border-radius: 15px 15px 0px 0px;
+    margin-top: 0px;
+}
+button:last-of-type {
+    border-radius: 0px 0px 15px 15px;
+    margin-bottom: 0px;
+}
+button:only-of-type {
+    border-radius: 15px;
+    margin: 0px;
+}
+
 .GUI {
     position: absolute;
     top: 0px;
@@ -40,7 +66,34 @@ canvas {
     bottom: 0px;
 
     font-size: 2em;
-    font-weight: bold;
 }
 #scoreContainer > div > :first-child { padding-right: 30px; }
 #scoreContainer > div > :last-child { float: right; }
+
+#loseContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#loseContainer > h1 { margin: 0px; }
+#loseContainer > img {
+    width: 32px;
+    height: 32px;
+    transition: .3s ease-in-out;
+    cursor: pointer;
+}
+#loseContainer > img:hover { transform: scale(115%); }
+
+@media only screen and (max-device-width: 480px) {
+    #loseContainer {
+        width: calc(100% - 60px);
+        left: 0px;
+        transform: translate(0px, -50%);
+    }
+    #scoreContainer {
+        width: calc(100% - 60px);
+        font-size: 1.5em;
+    }
+}

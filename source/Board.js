@@ -10,7 +10,7 @@ class Board {
         this.board = {};
         this.seed = seed ?? (Math.random() - 0.5) * 2500;
         this.initialTile = null;
-        this.boardControls = boardControls ?? false;
+        this.boardControls = boardControls;
         this.camera = camera ?? null;
 
         this.mode = "normal";
@@ -37,6 +37,7 @@ class Board {
         if (!localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = 0;
 
         document.querySelector("#scoreContainer").setAttribute("hide", false);
+        document.querySelector("#loseContainer").setAttribute("hide", true);
     }
     static getAddress(x, y) { return `${x},${y}`; }
     exists(x, y) { return this.board.hasOwnProperty(Board.getAddress(x, y)) }
@@ -272,8 +273,11 @@ class Board {
         if (Settings.settings.animateFallingTiles) new PoppedTile(this.camera, {
             "x": tileX,
             "y": tileY,
-        }, (tileX + tileY) % 2);
-        if (this.get(tileX, tileY).value === -1) this.loseGame();
+        }, Math.abs((tileX + tileY) % 2));
+        if (this.get(tileX, tileY).value === -1) {
+            SoundEffect.play("confetti");
+            this.loseGame();
+        }
         this.score++;
         if (this.score > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score;
         this.leftToEmpty.splice(0, 1);
@@ -298,6 +302,7 @@ class Board {
                 "y": y,
             }, 2);
             this.flags += this.get(x, y).flagState;
+            SoundEffect.play(this.get(x, y).flagState === 0 ? "flag_up" : "flag_down");
             this.updateScoreContainer();
         };
 
@@ -322,8 +327,8 @@ class Board {
     }
 
     zoomToFit() {
-        const verticalDiff = Math.abs(this.bottomMost - this.topMost) + 2;
-        const horizontalDiff = Math.abs(this.rightMost - this.leftMost) + 2;
+        const verticalDiff = Math.abs(this.bottomMost - this.topMost);
+        const horizontalDiff = Math.abs(this.rightMost - this.leftMost);
 
         const horizontalSize = window.innerWidth / horizontalDiff;
         const verticalSize = window.innerHeight / verticalDiff;
@@ -345,8 +350,38 @@ class Board {
         window.setTimeout(() => this.zoomToFit(), 1000);
         window.clearInterval(this.secondsInterval);
 
+        const flagBonus = Object.keys(this.board).filter(key => this.board[key].value === -1 && this.board[key].flagState).length;
+        const missedFlag = Object.keys(this.board).filter(key => this.board[key].value !== -1 && this.board[key].flagState).length > 0;
+
+        document.querySelector("#pointCount").innerHTML = "";
+        if (missedFlag || flagBonus > 0) document.querySelector("#pointCount").innerHTML = `<span>${this.score} Tile Points</span><br />`
+        if (missedFlag) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">NO FLAG BONUS!</span><br /><br />`;
+        else if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">+${flagBonus} Flag Bonus</span><br /><br />`;
+        document.querySelector("#pointCount").innerHTML += `<span style="color: green;">${this.score + flagBonus} Points!</span><br />`
+
+        const flavorText = [
+            "Better luck next time!",
+            "Get a move on!",
+            "You could do better than that...",
+            "Have a nice day!",
+            "That's it?",
+            `Only ${this.score + flagBonus} points?`,
+            `That +${flagBonus} flag bonus came in handy.`,
+            "There was a mine right there.",
+            "Grant Burns finished the music theory test before you.",
+            "C'mon. One more game.",
+            "Getting better.",
+            "You could use a hand.",
+            "Hahaha.",
+            "I'm disappointed.",
+            "You've lost.",
+            "Idiot. Idiot. Idiot.",
+        ];
+        document.querySelector("#lossFlavortext").innerText = flavorText[Math.floor(flavorText.length * Math.random())];
+
         window.setTimeout(() => {
             document.querySelector("#scoreContainer").setAttribute("hide", true);
+            document.querySelector("#loseContainer").setAttribute("hide", false);
         }, 2000);
     }
 
