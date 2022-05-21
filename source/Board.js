@@ -26,11 +26,17 @@ class Board {
         this.topMost = null;
         this.bottomMost = null;
 
+        this.rushTimeLeft = 5;
+
         this.secondsPlayed = 0;
         this.secondsInterval = window.setInterval(() => {
             if (this.boardControls) {
                 this.secondsPlayed++;
                 this.updateScoreContainer();
+            }
+            if (this.score > 0 && this.mode === "rush") {
+                this.rushTimeLeft--;
+                if (this.rushTimeLeft < 0) this.loseGame();
             }
         }, 1000);
         if (Settings.settings.autoSave) {
@@ -42,7 +48,7 @@ class Board {
                     elm.innerText = "Auto Saving 0%";
                     this.saveGame((d) => {
                         elm.innerText = `Auto Saving ${Math.round(d * 100)}%`;
-                    }, () => {
+                    }, (e) => {
                         elm.innerText = "Auto Saved!";
                         window.setTimeout(() => {
                             elm.disabled = false;
@@ -296,7 +302,7 @@ class Board {
         if (this.get(tileX, tileY).value === -1) {
             SoundEffect.play("confetti");
             this.loseGame();
-        }
+        } else this.rushTimeLeft = 5;
         this.score++;
         if (this.score > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score;
         this.leftToEmpty.splice(0, 1);
@@ -371,14 +377,16 @@ class Board {
         window.setTimeout(() => this.zoomToFit(), 1000);
         window.clearInterval(this.secondsInterval);
 
-        const flagBonus = Object.keys(this.board).filter(key => this.board[key].value === -1 && this.board[key].flagState).length;
+        const flagBonus = Object.keys(this.board).filter(key => this.board[key].value === -1 && this.board[key].flagState).length * (this.mode === "rush" ? 5 : 1);
         const missedFlag = Object.keys(this.board).filter(key => this.board[key].value !== -1 && this.board[key].flagState).length > 0;
 
         document.querySelector("#pointCount").innerHTML = "";
         if (missedFlag || flagBonus > 0) document.querySelector("#pointCount").innerHTML = `<span>${this.score} Tile Points</span><br />`
         if (missedFlag) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">NO FLAG BONUS!</span><br /><br />`;
-        else if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">+${flagBonus} Flag Bonus</span><br /><br />`;
+        else if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">+${flagBonus}${this.mode === "rush" ? " RUSH" : ""} Flag Bonus</span><br /><br />`;
         document.querySelector("#pointCount").innerHTML += `<span style="color: green;">${this.score + flagBonus} Points!</span><br />`
+
+        if (this.score + flagBonus > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score + flagBonus;
 
         const flavorText = [
             "Better luck next time!",
@@ -407,19 +415,27 @@ class Board {
     }
 
     updateScoreContainer() {
+        document.querySelector("#saveGame").style.display = this.mode === "normal" ? "block" : "none";
         document.querySelector("#label_score").innerText = this.score;
         document.querySelector("#label_flags").innerText = this.flags;
-        if (this.secondsPlayed < 60) document.querySelector("#label_hours").innerText = `${this.secondsPlayed}s`;
+        document.querySelector("#label_hours").style.color = "#000";
+        if (this.mode === "rush") {
+            document.querySelector("#label_hours").innerText = `${this.rushTimeLeft}s`;
+            document.querySelector("#label_hours").style.color = "#F00";
+        } else if (this.secondsPlayed < 60) document.querySelector("#label_hours").innerText = `${this.secondsPlayed}s`;
         else if (this.secondsPlayed < 60 * 60) document.querySelector("#label_hours").innerText = `${(this.secondsPlayed / 60).toFixed(1)}m`;
         else document.querySelector("#label_hours").innerText = `${(this.secondsPlayed / 60 / 60).toFixed(1)}h`;
         document.querySelector("#label_highscore").innerText = localStorage[`highScore_${this.mode}`];
     }
 
     saveGame(progresscb, endcb) {
-        if (this.mode !== "normal" || !this.boardControls) return;
+        if (this.mode !== "normal" || !this.boardControls) {
+            if (endcb) endcb(false);
+            return;
+        }
         let index = 0;
         const keys = Object.keys(this.board);
-        let data = `${this.seed},${this.camera.position.x},${this.camera.position.y},${this.camera.tilesize}`;
+        let data = `${this.seed},${this.camera.position.x},${this.camera.position.y},${this.camera.tilesize},${this.secondsPlayed}`;
         const saveInterval = setInterval(() => {
             for (let _ = 0; _ < 100; _++) {
                 if (!this.board[keys[index]].covered || this.board[keys[index]].flagState) {
@@ -431,7 +447,7 @@ class Board {
                 if (index >= keys.length) {
                     localStorage.saved_data = data;
                     clearInterval(saveInterval);
-                    if (endcb) endcb();
+                    if (endcb) endcb(true);
                     break;
                 }
             }

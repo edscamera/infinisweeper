@@ -90,8 +90,8 @@ function main() {
         $("#saveGame").innerText = "Saving 0%";
         board.saveGame((d) => {
             $("#saveGame").innerText = `Saving ${Math.round(d * 100)}%`;
-        }, () => {
-            $("#saveGame").innerText = "Saved!";
+        }, (e) => {
+            $("#saveGame").innerText = e ? "Saved!" : "Could Not Save";
             window.setTimeout(() => {
                 $("#saveGame").disabled = false;
                 $("#saveGame").innerText = "Save Game";
@@ -100,10 +100,12 @@ function main() {
     });
 
     window.prng = prng;
-    const newGame = () => {
+    const newGame = (mode) => {
         GUI.set("game");
         camera = new Camera(false);
         board = new Board((Math.random() - 0.5) * 2500, camera, true);
+        board.mode = mode;
+        if (!localStorage[`highScore_${board.mode}`]) localStorage[`highScore_${board.mode}`] = 0;
         camera.initializeControls(canvas.canvas);
         board.initializeControls(canvas.canvas);
     };
@@ -112,29 +114,32 @@ function main() {
         camera = new Camera(false);
         board = new Board((Math.random() - 0.5) * 2500, camera, false);
     };
-    $("#playAgain").addEventListener("click", newGame);
-    $("#newGame").addEventListener("click", newGame);
+    $("#playAgain").addEventListener("click", () => newGame(board.mode));
+    $("#newGame").addEventListener("click", () => newGame("normal"));
+    $("#newGameRush").addEventListener("click", () => newGame("rush"));
     $("#mainMenu").addEventListener("click", mainMenu);
     $("#continueGame").addEventListener("click", () => {
 
         let data = localStorage.saved_data.split(",");
 
         camera = new Camera(true);
-        window.c = camera;
+        board = new Board(parseFloat(data.shift()), camera, true);
 
-        board = new Board(parseFloat(data.shift()), camera, false);
-        window.b = board;
         camera.position = {
             "x": parseFloat(data.shift()),
             "y": parseFloat(data.shift()),
         };
         camera.setTilesize(parseFloat(data.shift()));
+        board.secondsPlayed = parseFloat(data.shift());
+
         for (let index = 0; index < data.length / 3; index++) {
             board.generate(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]));
             board.set(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]), {
                 "flagState": parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0,
                 "covered": parseFloat(data[index * 3 + 2]) != 0,
             });
+            board.score += parseFloat(data[index * 3 + 2]) != 0 ? 0 : 1;
+            board.flags += parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0;
         }
 
         camera.initializeControls(canvas.canvas);
