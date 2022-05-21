@@ -11,6 +11,9 @@ html {
 }
 canvas {
     position: absolute;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
     top: 0px;
     left: 0px;
 }
@@ -111,6 +114,35 @@ button:only-of-type {
 #titleScreen #footer {
     margin-bottom: 50px;
 }
+#changelog { transition: .3s ease-in-out }
+#innerChangelog :first-child { margin-top: 0px; }
+#innerChangelog {
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+    max-width: 300px;
+    padding-right: 15px;
+}
+#innerChangelog::-webkit-scrollbar {
+    width: 5px;
+    transform: translateX(-50%)
+}
+#innerChangelog::-webkit-scrollbar-track {
+    display: none;
+    border-radius: 10px;
+    transform: translateX(-50%)
+}
+#innerChangelog::-webkit-scrollbar-thumb {
+    border-radius: 15px;
+    background-color: #ccc;
+    transform: translateX(-50%)
+}
+
+#loadingDisplay {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
 
 @media only screen and (max-device-width: 480px) {
     #loseContainer {
@@ -123,4 +155,7 @@ button:only-of-type {
         font-size: 1.5em;
     }
     #titleText > img { display: none;}
+}
+@media only screen and (max-width: 1000px) {
+    #changelog { opacity: 0; }
 }

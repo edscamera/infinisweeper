@@ -10,6 +10,10 @@ class GUIManager {
             if (GUIPanel.getAttribute("GUI") === this.state)
                 GUIPanel.style.display = "block";
         });
+        const $ = (selector) => document.querySelector(selector);
+        if (this.state === "title") {
+            $("#continueGameBR").style.display = $("#continueGame").style.display = (typeof localStorage.saved_data == "string" && localStorage.saved_data.includes(",")) ? "inline-block" : "none";
+        }
     }
 }
 

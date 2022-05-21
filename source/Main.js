@@ -61,6 +61,7 @@ function main() {
     };
 
     const $ = (selector) => document.querySelector(selector);
+    $("#versionText").innerText = `${$("#innerChangelog").querySelector("span").innerText} | `
     const getScoreText = () => `I got a new score of ${(board.score).toString().split("").map((j) => {
         switch (parseFloat(j)) {
             case 0: return "0️⃣";
@@ -119,7 +120,7 @@ function main() {
     $("#newGameRush").addEventListener("click", () => newGame("rush"));
     $("#mainMenu").addEventListener("click", mainMenu);
     $("#continueGame").addEventListener("click", () => {
-
+        GUI.set("loading");
         let data = localStorage.saved_data.split(",");
 
         camera = new Camera(true);
@@ -132,20 +133,30 @@ function main() {
         camera.setTilesize(parseFloat(data.shift()));
         board.secondsPlayed = parseFloat(data.shift());
 
-        for (let index = 0; index < data.length / 3; index++) {
-            board.generate(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]));
-            board.set(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]), {
-                "flagState": parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0,
-                "covered": parseFloat(data[index * 3 + 2]) != 0,
-            });
-            board.score += parseFloat(data[index * 3 + 2]) != 0 ? 0 : 1;
-            board.flags += parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0;
-        }
+        let index = 0;
+        $("#loadingDisplay").innerText = "Loading 0%";
+        const loadInterval = window.setInterval(() => {
+            for (let _ = 0; _ < 100; _++) {
+                board.generate(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]));
+                board.set(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]), {
+                    "flagState": parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0,
+                    "covered": parseFloat(data[index * 3 + 2]) != 0,
+                });
+                board.score += parseFloat(data[index * 3 + 2]) != 0 ? 0 : 1;
+                board.flags += parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0;
+                index++;
+                $("#loadingDisplay").innerText = `Loading ${Math.round(index / (data.length / 3) * 100)}%`
+                if (index > data.length / 3) {
+                    camera.initializeControls(canvas.canvas);
+                    board.initializeControls(canvas.canvas);
 
-        camera.initializeControls(canvas.canvas);
-        board.initializeControls(canvas.canvas);
+                    GUI.set("game");
 
-        GUI.set("game");
+                    window.clearInterval(loadInterval);
+                    break;
+                }
+            }
+        });
     });
 }
 
