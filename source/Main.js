@@ -11,6 +11,23 @@ import { SoundEffect, Input, Image, prng, Particle } from "./Util.js"
  * @returns {Void}
  */
 function main() {
+    const $ = (selector) => document.querySelector(selector);
+    window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        window.deferredPrompt = event;
+        $("#installBtn").setAttribute("hide", false);
+    });
+    $("#installBtn").addEventListener("click", async () => {
+        const promptEvent = window.deferredPrompt;
+        if (!promptEvent) return;
+        promptEvent.prompt();
+        const result = await promptEvent.userChoice;
+        window.deferredPrompt = null;
+        $("#installBtn").setAttribute("hide", true);
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register("./sw.js");
+
     if (localStorage["edwardscamera.infinisweeper.highScore.normal"]) {
         localStorage.highScore_normal = localStorage["edwardscamera.infinisweeper.highScore.normal"];
         localStorage.removeItem("edwardscamera.infinisweeper.highScore.normal");
@@ -64,7 +81,6 @@ function main() {
         }
     };
 
-    const $ = (selector) => document.querySelector(selector);
     $("#versionText").innerText = `${$("#innerChangelog").querySelector("span").innerText} | `
     const getScoreText = () => `I got a new score of ${(board.score).toString().split("").map((j) => {
         switch (parseFloat(j)) {

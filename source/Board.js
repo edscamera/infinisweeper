@@ -418,6 +418,7 @@ class Board {
         });
 
         canvas.addEventListener("touchstart", (event) => {
+            event.preventDefault();
             this.holding = {
                 "x": Math.floor(this.camera.position.x + event.touches[0].pageX / this.camera.tilesize),
                 "y": Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize),

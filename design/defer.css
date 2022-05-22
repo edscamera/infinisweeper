@@ -1,0 +1,57 @@
+#scoreContainer {
+    position: fixed;
+    left: 0px;
+    bottom: 0px;
+
+    font-size: 2em;
+}
+#scoreContainer > div > :first-child { padding-right: 30px; }
+#scoreContainer > div > :last-child { float: right; }
+#scoreContainer button { width: 100%; }
+#scoreContainer button:last-of-type { margin-bottom: 15px; }
+
+#loseContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#loseContainer > h1 { margin: 0px; }
+#loseContainer > img {
+    width: 32px;
+    height: 32px;
+    transition: .3s ease-in-out;
+    cursor: pointer;
+}
+#loseContainer > img:hover { transform: scale(115%); }
+#loadingDisplay {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#settingsContainer {
+    top: 50%;
+    left: 50%;
+    position: fixed;
+    min-width: 300px;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#settingsContainer p {
+    margin: 0px;
+    text-align: left;
+    font-weight: normal;
+}
+.settings_entry {
+    display:flex;
+    justify-content:space-between;
+    margin-top: 15px;
+    text-align: left;
+}
+.settings_entry:first-of-type {margin-top:0px;}
+.settings_input {
+    margin-left: 15px;
+}

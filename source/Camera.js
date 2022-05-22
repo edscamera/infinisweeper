@@ -33,7 +33,8 @@ class Camera {
         });
 
         this.oldTouchData = null;
-        canvas.addEventListener("touchstart", () => {
+        canvas.addEventListener("touchstart", (event) => {
+            event.preventDefault();
             if (!this.cameraControls) return;
             let oldTouchData = null;
             this.lockedToDrag = false;
