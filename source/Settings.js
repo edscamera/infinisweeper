@@ -4,6 +4,7 @@ class Settings {
         "animateTileReveal": true,
         "animateTileReveal_t": 1,
         "animateFlags": true,
+        "cameraShake": true,
 
         "drawBorders": true,
         "dragSensitivity": 2,
@@ -33,6 +34,11 @@ class Settings {
             "desc": "When disabled, flags will not be animated. Helps performance.",
             "type": "checkbox",
         },
+        "cameraShake": {
+            "display": "Camera Shake",
+            "desc": "When enabled, the camera will shake when large amounts of tiles are revealed.",
+            "type": "checkbox",
+        },
         "drawBorders": {
             "display": "Draw Borders",
             "desc": "When disabled, borders will not be drawn between covered and uncovered tiles. Helps performance.",
@@ -60,10 +66,13 @@ class Settings {
     }
     static settings = Settings.defaultSettings;
     static initialize() {
-        if (!localStorage.settings) localStorage.settings = JSON.stringify(Settings.defaultSettings);
         Settings.settings = Object.assign(Settings.settings, JSON.parse(localStorage.settings));
+        Object.keys(Settings.defaultSettings).forEach(key => {
+            if (!Settings.settings.hasOwnProperty(key)) Settings.settings[key] = Settings.defaultSettings[key];
+            localStorage.settings = JSON.stringify(Settings.settings);
+        });
+        if (!localStorage.settings) localStorage.settings = JSON.stringify(Settings.defaultSettings);
         Settings.updateSettings();
-
     }
     static updateSettings() {
         const $ = (selector) => document.querySelector(selector);

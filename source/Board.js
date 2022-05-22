@@ -251,7 +251,13 @@ class Board {
                 }
             }
         }
-        for (let _ = 0; _ < Settings.settings.animateTileReveal_t; _++) if (this.leftToEmpty.length > 0) this.digQueuedTile(0);
+        for (let _ = 0; _ < Settings.settings.animateTileReveal_t; _++) if (this.leftToEmpty.length > 0) {
+            this.digQueuedTile(0);
+            if (Settings.settings.cameraShake) {
+                this.camera.position.x += (Math.random() - 0.5) * this.leftToEmpty.length * 0.025;
+                this.camera.position.y += (Math.random() - 0.5) * this.leftToEmpty.length * 0.025;
+            }
+        }
     }
 
     findInitialTile() {
@@ -284,7 +290,8 @@ class Board {
     digQueuedTile(index) {
         const tileX = parseInt(this.leftToEmpty[index].split(",")[0]);
         const tileY = parseInt(this.leftToEmpty[index].split(",")[1]);
-        SoundEffect.play(`blip_${this.get(tileX, tileY).value}`);
+        if (Settings.settings.animateTileReveal) SoundEffect.play(`blip_${this.get(tileX, tileY).value}`);
+        let highestNumber = 1;
         for (let xx = tileX - 1; xx <= tileX + 1; xx++) {
             for (let yy = tileY - 1; yy <= tileY + 1; yy++) {
                 if (this.get(xx, yy).covered && this.get(tileX, tileY).value === 0 && !this.leftToEmpty.includes(`${xx},${yy}`)) this.leftToEmpty.push(`${xx},${yy}`);
@@ -299,6 +306,7 @@ class Board {
             "x": tileX,
             "y": tileY,
         }, Math.abs((tileX + tileY) % 2));
+        if (this.get(tileX, tileY).value > highestNumber) highestNumber = this.get(tileX, tileY).value;
         if (this.get(tileX, tileY).value === -1) {
             SoundEffect.play("confetti");
             this.loseGame();
@@ -307,6 +315,7 @@ class Board {
         if (this.score > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score;
         this.leftToEmpty.splice(0, 1);
         this.updateScoreContainer();
+        return this.get(tileX, tileY).value === -1 ? -1 : highestNumber;
     }
 
     initializeControls(canvas) {
@@ -314,7 +323,19 @@ class Board {
             if (!this.get(x, y).covered || this.get(x, y).flagState > 0) return;
             this.leftToEmpty.splice(0, 0, `${x},${y}`);
 
-            if (!Settings.settings.animateTileReveal) while (this.leftToEmpty.length > 0) this.digQueuedTile(0);
+            let highestNumber = 0;
+            let tilesDug = 0;
+            if (!Settings.settings.animateTileReveal) while (this.leftToEmpty.length > 0) {
+                let num = this.digQueuedTile(0);
+                tilesDug++;
+                if (num > highestNumber) highestNumber = num;
+                if (num === -1) highestNumber = -1;
+            }
+            if (tilesDug > 20) {
+                SoundEffect.play("reveal");
+                this.camera.shake(0.3);
+            }
+            else if (highestNumber !== -1) SoundEffect.play(`blip_${highestNumber}`);
         }
         const toggleFlag = (x, y) => {
             if (!this.get(x, y).covered) return;

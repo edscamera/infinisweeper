@@ -101,6 +101,15 @@ class Camera {
         this.position.y = (focus ? focus.y : middleY) - window.innerHeight / 2 / this.tilesize;
     }
 
+    shake(time) {
+        if (!Settings.settings.cameraShake) return;
+        let shakeInterval = window.setInterval(() => {
+            this.position.x += (Math.random() - 0.5) * 0.1;
+            this.position.y += (Math.random() - 0.5) * 0.1;
+        });
+        window.setTimeout(() => clearInterval(shakeInterval), time * 1000);
+    }
+
     updateTilesize() {
         if (this.targetTilesize) this.setTilesize(this.tilesize + (this.targetTilesize - this.tilesize) / 15);
 
