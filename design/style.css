@@ -144,6 +144,22 @@ button:only-of-type {
     transform: translate(-50%, -50%);
 }
 
+#settingsContainer {
+    top: 50%;
+    left: 50%;
+    position: fixed;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.settings_entry { padding: 15px 0px; }
+.settings_entry:first-of-type { padding-top: 0px; }
+.settings_entry:last-of-type { padding-bottom: 0px; }
+.settings_label {
+    float: left;
+    margin-right: 15px;
+}
+.settings_input { float: right; }
+
 @media only screen and (max-device-width: 480px) {
     #loseContainer {
         width: calc(100% - 60px);
@@ -157,5 +173,8 @@ button:only-of-type {
     #titleText > img { display: none;}
 }
 @media only screen and (max-width: 1000px) {
-    #changelog { opacity: 0; }
+    #changelog {
+        opacity: 0;
+        pointer-events: none;
+    }
 }

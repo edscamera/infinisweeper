@@ -3,6 +3,7 @@ import Camera from "./Camera.js";
 import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
 import PoppedTile from "./PoppedTile.js";
+import Settings from "./Settings.js";
 import { SoundEffect, Input, Image, prng } from "./Util.js"
 
 /**
@@ -115,10 +116,11 @@ function main() {
         camera = new Camera(false);
         board = new Board((Math.random() - 0.5) * 2500, camera, false);
     };
+
     $("#playAgain").addEventListener("click", () => newGame(board.mode));
-    $("#newGame").addEventListener("click", () => newGame("normal"));
-    $("#newGameRush").addEventListener("click", () => newGame("rush"));
     $("#mainMenu").addEventListener("click", mainMenu);
+
+    $("#newGame").addEventListener("click", () => newGame("normal"));
     $("#continueGame").addEventListener("click", () => {
         GUI.set("loading");
         let data = localStorage.saved_data.split(",");
@@ -158,6 +160,21 @@ function main() {
             }
         });
     });
+    $("#newGameRush").addEventListener("click", () => newGame("rush"));
+    $("#settingsMenu").addEventListener("click", () => {
+        Settings.updateSettings();
+        GUI.set("settings");
+    });
+
+    $("#settingsMainMenu").addEventListener("click", () => {
+        Settings.menu();
+        mainMenu();
+    });
+    $("#settingsSave").addEventListener("click", () => {
+        Settings.save();
+        mainMenu();
+    });
+    Settings.initialize();
 }
 
 // Load the game
