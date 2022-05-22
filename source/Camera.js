@@ -18,10 +18,10 @@ class Camera {
     initializeControls(canvas) {
         canvas.addEventListener("mousedown", () => {
             if (!this.cameraControls) return;
-            let lockedToDrag = false;
+            this.lockedToDrag = false;
             const mouseMove = (event) => {
-                if (lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > Settings.settings.dragSensitivity) {
-                    lockedToDrag = true;
+                if (this.lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > Settings.settings.dragSensitivity) {
+                    this.lockedToDrag = true;
                     this.position.x -= event.movementX / this.tilesize;
                     this.position.y -= event.movementY / this.tilesize;
                 }
@@ -36,15 +36,13 @@ class Camera {
         canvas.addEventListener("touchstart", () => {
             if (!this.cameraControls) return;
             let oldTouchData = null;
-            let lockedToDrag = false;
+            this.lockedToDrag = false;
             const touchMove = (event) => {
-                event.preventDefault();
-
                 event.movementX = oldTouchData ? event.touches[0].pageX - oldTouchData.x : 0;
                 event.movementY = oldTouchData ? event.touches[0].pageY - oldTouchData.y : 0;
 
-                if (lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > 5) {
-                    lockedToDrag = true;
+                if (this.lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > 5) {
+                    this.lockedToDrag = true;
                     this.position.x -= event.movementX / this.tilesize;
                     this.position.y -= event.movementY / this.tilesize;
                 }
@@ -57,9 +55,11 @@ class Camera {
             window.addEventListener("touchmove", touchMove);
             window.addEventListener("touchend", () => {
                 window.removeEventListener("touchmove", touchMove);
+                this.lockedToDrag = false;
             });
             window.addEventListener("touchcancel", () => {
                 window.removeEventListener("touchmove", touchMove);
+                this.lockedToDrag = false;
             });
         });
 
@@ -74,12 +74,11 @@ class Camera {
                 const originalTilesize = this.tilesize;
                 const originalPinch = Math.hypot(
                     event.touches[0].pageX - event.touches[1].pageX,
-                    event.touches[0].pageY - event.touches[1].pageY) / 2;
+                    event.touches[0].pageY - event.touches[1].pageY) / 4;
                 const pinch = (event) => {
-                    event.preventDefault();
                     const newPinch = Math.hypot(
                         event.touches[0].pageX - event.touches[1].pageX,
-                        event.touches[0].pageY - event.touches[1].pageY) / 2;
+                        event.touches[0].pageY - event.touches[1].pageY) / 4;
                     this.setTilesize(originalTilesize + (newPinch - originalPinch));
                 };
                 window.addEventListener("touchmove", pinch);

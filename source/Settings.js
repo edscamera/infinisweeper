@@ -7,6 +7,7 @@ class Settings {
         "cameraShake": true,
 
         "drawBorders": true,
+        "drawParticles": true,
         "dragSensitivity": 2,
 
         "muted": false,
@@ -44,6 +45,11 @@ class Settings {
             "desc": "When disabled, borders will not be drawn between covered and uncovered tiles. Helps performance.",
             "type": "checkbox",
         },
+        "drawParticles": {
+            "display": "Draw Particles",
+            "desc": "When disabled, mines will not spread particles when triggered. Helps performance.",
+            "type": "checkbox",
+        },
         "dragSensitivity": {
             "display": "Camera Move Sensitivity",
             "desc": "How much you should move your mouse/finger to move the camera.",
@@ -66,6 +72,7 @@ class Settings {
     }
     static settings = Settings.defaultSettings;
     static initialize() {
+        if (!localStorage.settings) localStorage.settings = JSON.stringify(Settings.defaultSettings);
         Settings.settings = Object.assign(Settings.settings, JSON.parse(localStorage.settings));
         Object.keys(Settings.defaultSettings).forEach(key => {
             if (!Settings.settings.hasOwnProperty(key)) Settings.settings[key] = Settings.defaultSettings[key];

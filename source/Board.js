@@ -1,4 +1,4 @@
-import { prng, Vector2, Input, Image, SoundEffect } from "./Util.js";
+import { prng, Vector2, Input, Image, SoundEffect, Particle } from "./Util.js";
 import Settings from "./Settings.js";
 import PoppedTile from "./PoppedTile.js";
 
@@ -13,10 +13,14 @@ class Board {
         this.boardControls = boardControls;
         this.camera = camera ?? null;
 
+        Particle.particles = [];
+        PoppedTile.tiles = [];
+
         this.mode = "normal";
 
         this.leftToEmpty = [];
         this.colorCorrection = 0;
+        this.spreadParticles = false;
 
         this.score = 0;
         this.flags = 0;
@@ -58,6 +62,29 @@ class Board {
                 }
             }, Settings.settings.autoSave_t * 1000 * 60);
         }
+        window.setInterval(() => {
+            if (this.spreadParticles) {
+                for (let x = Math.floor(this.camera.position.x); x <= this.camera.position.x + window.innerWidth / this.camera.tilesize; x++) {
+                    for (let y = Math.floor(this.camera.position.y); y <= this.camera.position.y + window.innerHeight / this.camera.tilesize; y++) {
+                        if (this.get(x, y).value === -1 && this.get(x, y).covered) {
+                            this.set(x, y, {
+                                "covered": false,
+                            });
+
+                            const partialVal = (x - this.camera.position.x) * (y - this.camera.position.y);
+                            const totalVal = (window.innerWidth / this.camera.tilesize) * (window.innerHeight / this.camera.tilesize);
+                            const colorVal = `hsl(${partialVal / totalVal * 360},100%,50%)`;
+                            Particle.fullExplosion(
+                                this.camera,
+                                { "x": x + .5, "y": y + .5 },
+                                0.15,
+                                5, [colorVal], 0.5, 0.5);
+                            return;
+                        }
+                    }
+                }
+            }
+        }, 50);
 
         if (!localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = 0;
 
@@ -113,19 +140,28 @@ class Board {
                         camera.tilesize, camera.tilesize
                     );
                     if (tile.flagState > 0) {
-                        if (Settings.settings.animateFlags) {
-                            g.drawImage(
-                                Image.get("flag_animation"), 1, 81 * tile.flagAnimationFrame, 81, 80,
-                                Math.round((x - camera.position.x) * camera.tilesize),
-                                Math.round((y - camera.position.y) * camera.tilesize),
-                                camera.tilesize, camera.tilesize
-                            );
-                            if (tile.flagAnimationFrame < 9) this.set(x, y, {
-                                "flagAnimationFrame": tile.flagAnimationFrame + 1,
-                            });
+                        if (!tile.incorrectFlag) {
+                            if (Settings.settings.animateFlags) {
+                                g.drawImage(
+                                    Image.get("flag_animation"), 1, 81 * tile.flagAnimationFrame, 81, 80,
+                                    Math.round((x - camera.position.x) * camera.tilesize),
+                                    Math.round((y - camera.position.y) * camera.tilesize),
+                                    camera.tilesize, camera.tilesize
+                                );
+                                if (tile.flagAnimationFrame < 9) this.set(x, y, {
+                                    "flagAnimationFrame": tile.flagAnimationFrame + 1,
+                                });
+                            } else {
+                                g.drawImage(
+                                    Image.get("flag"),
+                                    Math.round((x - camera.position.x) * camera.tilesize),
+                                    Math.round((y - camera.position.y) * camera.tilesize),
+                                    camera.tilesize, camera.tilesize
+                                );
+                            }
                         } else {
                             g.drawImage(
-                                Image.get("flag"),
+                                Image.get("incorrect_flag"),
                                 Math.round((x - camera.position.x) * camera.tilesize),
                                 Math.round((y - camera.position.y) * camera.tilesize),
                                 camera.tilesize, camera.tilesize
@@ -254,8 +290,8 @@ class Board {
         for (let _ = 0; _ < Settings.settings.animateTileReveal_t; _++) if (this.leftToEmpty.length > 0) {
             this.digQueuedTile(0);
             if (Settings.settings.cameraShake) {
-                this.camera.position.x += (Math.random() - 0.5) * this.leftToEmpty.length * 0.025;
-                this.camera.position.y += (Math.random() - 0.5) * this.leftToEmpty.length * 0.025;
+                this.camera.position.x += (Math.random() - 0.5) * Math.min(this.leftToEmpty.length, 30) * 0.025;
+                this.camera.position.y += (Math.random() - 0.5) * Math.min(this.leftToEmpty.length, 30) * 0.025;
             }
         }
     }
@@ -309,6 +345,14 @@ class Board {
         if (this.get(tileX, tileY).value > highestNumber) highestNumber = this.get(tileX, tileY).value;
         if (this.get(tileX, tileY).value === -1) {
             SoundEffect.play("confetti");
+            const partialVal = (tileX - this.camera.position.x) * (tileY - this.camera.position.y);
+            const totalVal = (window.innerWidth / this.camera.tilesize) * (window.innerHeight / this.camera.tilesize);
+            const colorVal = `hsl(${partialVal / totalVal * 360},100%,50%)`;
+            Particle.fullExplosion(
+                this.camera,
+                { "x": tileX + .5, "y": tileY + .5 },
+                0.15,
+                40, [colorVal], 0.5, 0.5);
             this.loseGame();
         } else this.rushTimeLeft = 5;
         this.score++;
@@ -354,6 +398,10 @@ class Board {
 
         canvas.addEventListener("mouseup", (event) => {
             if (!this.boardControls) return;
+            if (this.holdingDelay) {
+                this.holdingDelay = false;
+                return;
+            }
             let x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
             let y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
             if (event.button === 0) {
@@ -369,6 +417,27 @@ class Board {
             if (event.button === 2 && this.score > 0) toggleFlag(x, y);
         });
 
+        canvas.addEventListener("touchstart", (event) => {
+            this.holding = {
+                "x": Math.floor(this.camera.position.x + event.touches[0].pageX / this.camera.tilesize),
+                "y": Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize),
+            };
+            window.setTimeout(() => {
+                if (this.holding) {
+                    if (!this.boardControls || this.camera.lockedToDrag == true) return;
+                    if (this.score > 0) toggleFlag(this.holding.x, this.holding.y);
+                    this.holding = false;
+                    this.holdingDelay = true;
+                }
+            }, 100);
+        });
+        canvas.addEventListener("touchend", (event) => {
+            this.holding = false;
+        });
+        canvas.addEventListener("touchcancel", (event) => {
+            this.holding = false;
+        });
+
         this.updateScoreContainer();
     }
 
@@ -379,13 +448,13 @@ class Board {
         const horizontalSize = window.innerWidth / horizontalDiff;
         const verticalSize = window.innerHeight / verticalDiff;
 
-        this.camera.targetTilesize = Math.min(Math.max(16, Math.round(Math.min(horizontalSize, verticalSize))), 128);
+        this.camera.targetTilesize = Math.min(Math.max(12, Math.round(Math.min(horizontalSize, verticalSize))), 128);
 
         this.camera.centered = {
-            "left": this.leftMost,
-            "right": this.rightMost,
-            "top": this.topMost,
-            "bottom": this.bottomMost,
+            "left": this.leftMost - 1,
+            "right": this.rightMost + 1,
+            "top": this.topMost - 1,
+            "bottom": this.bottomMost + 1,
         }
     }
 
@@ -399,7 +468,15 @@ class Board {
         window.clearInterval(this.secondsInterval);
 
         const flagBonus = Object.keys(this.board).filter(key => this.board[key].value === -1 && this.board[key].flagState).length * (this.mode === "rush" ? 5 : 1);
-        const missedFlag = Object.keys(this.board).filter(key => this.board[key].value !== -1 && this.board[key].flagState).length > 0;
+        let missedFlag = Object.keys(this.board).filter(key => this.board[key].value !== -1 && this.board[key].flagState);
+        missedFlag.forEach(key => {
+            if (Settings.settings.animateFlags) new PoppedTile(this.camera, {
+                "x": parseFloat(key.split(",")[0]),
+                "y": parseFloat(key.split(",")[1]),
+            }, 2);
+            this.board[key].incorrectFlag = true;
+        });
+        missedFlag = missedFlag.length > 0
 
         document.querySelector("#pointCount").innerHTML = "";
         if (missedFlag || flagBonus > 0) document.querySelector("#pointCount").innerHTML = `<span>${this.score} Tile Points</span><br />`
@@ -432,6 +509,7 @@ class Board {
         window.setTimeout(() => {
             document.querySelector("#scoreContainer").setAttribute("hide", true);
             document.querySelector("#loseContainer").setAttribute("hide", false);
+            this.spreadParticles = true;
         }, 2000);
     }
 

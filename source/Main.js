@@ -4,7 +4,7 @@ import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
 import PoppedTile from "./PoppedTile.js";
 import Settings from "./Settings.js";
-import { SoundEffect, Input, Image, prng } from "./Util.js"
+import { SoundEffect, Input, Image, prng, Particle } from "./Util.js"
 
 /**
  * The main function
@@ -31,6 +31,7 @@ function main() {
 
     Image.add("flag", "../images/flag.png");
     Image.add("flag_animation", "../images/flag_animation.png");
+    Image.add("incorrect_flag", "../images/incorrect_flag.png");
     SoundEffect.add("blip_1", "../audio/blip_1.mp3");
     SoundEffect.add("blip_2", "../audio/blip_2.mp3");
     SoundEffect.add("blip_3", "../audio/blip_3.mp3");
@@ -51,10 +52,12 @@ function main() {
     canvas.draw = (g) => {
         board.draw(g);
         PoppedTile.drawAllPoppedTiles(g);
+        Particle.drawAllParticles(g);
     }
     canvas.update = () => {
         camera.updateTilesize();
         PoppedTile.updateAllPoppedTiles();
+        Particle.updateAllParticles();
         if (["title", "settings"].includes(GUI.state)) {
             camera.position.x += -0.01;
             camera.position.y += -0.01;
@@ -105,6 +108,7 @@ function main() {
     const newGame = (mode) => {
         GUI.set("game");
         camera = new Camera(false);
+        if (board) board.spreadParticles = false;
         board = new Board((Math.random() - 0.5) * 2500, camera, true);
         board.mode = mode;
         if (!localStorage[`highScore_${board.mode}`]) localStorage[`highScore_${board.mode}`] = 0;
