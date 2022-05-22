@@ -15,26 +15,32 @@ class Settings {
     static dictionary = {
         "animateFallingTiles": {
             "display": "Animate Falling Tiles",
+            "desc": "When enabled, tiles will pop off the board and fall. No jumpscare. Helps performance.",
             "type": "checkbox",
         },
         "animateTileReveal": {
             "display": "Animate Tile Reveal",
+            "desc": "When enabled, tiles will gradually be revealed.",
             "type": "checkbox",
         },
         "animateTileReveal_t": {
             "display": "Animate Tile Reveal Time",
+            "desc": "The speed at which tiles are gradually revealed.",
             "type": "number",
         },
         "animateFlags": {
             "display": "Animate Flags",
+            "desc": "When disabled, flags will not be animated. Helps performance.",
             "type": "checkbox",
         },
         "drawBorders": {
             "display": "Draw Borders",
+            "desc": "When disabled, borders will not be drawn between covered and uncovered tiles. Helps performance.",
             "type": "checkbox",
         },
         "dragSensitivity": {
             "display": "Camera Move Sensitivity",
+            "desc": "How much you should move your mouse/finger to move the camera.",
             "type": "number",
         },
         "muted": {
@@ -43,10 +49,12 @@ class Settings {
         },
         "autoSave": {
             "display": "Auto Save",
+            "desc": "When enabled, the game will automatically be saved at an interval.",
             "type": "checkbox",
         },
         "autoSave_t": {
-            "display": "Auto Save Interval (minutes)",
+            "display": "Auto Save Interval (Minutes)",
+            "desc": "How often the game will be automatically saved (minutes).",
             "type": "number",
         }
     }
@@ -55,21 +63,39 @@ class Settings {
         if (!localStorage.settings) localStorage.settings = JSON.stringify(Settings.defaultSettings);
         Settings.settings = Object.assign(Settings.settings, JSON.parse(localStorage.settings));
         Settings.updateSettings();
+
     }
     static updateSettings() {
         const $ = (selector) => document.querySelector(selector);
-        Settings.settings = JSON.parse(localStorage.settings);
+        const $$ = (selector) => {
+            if (!document.getElementsByClassName(selector)) return [];
+            return Array.from(document.getElementsByClassName(selector));
+        }
         $("#settingsSubcontainer").innerHTML = "";
         Object.keys(Settings.settings).forEach(key => {
-            const div = document.createElement("div");
-            div.classList.add("settings_entry");
-            div.innerHTML = `
-                <span class="settings_label">${Settings.dictionary[key].display}</span>
-                <input type="${Settings.dictionary[key].type}" class="settings_input" />
-            `;
-            div.setAttribute("settingsID", key);
-            div.querySelector("input")[Settings.dictionary[key].type === "checkbox" ? "checked" : "value"] = Settings.settings[key];
-            $("#settingsSubcontainer").appendChild(div);
+            if (!["animateTileReveal_t"].includes(key)) {
+                const div = document.createElement("div");
+                div.classList.add("settings_entry", `_${key}`);
+                div.innerHTML = `
+                <span class="settings_label">${Settings.dictionary[key].display}</span><br />
+                <input class="__${key}" type="${Settings.dictionary[key].type}" class="settings_input" />
+                `;
+                setTimeout(() => {
+                    $(`.__${key}`).addEventListener("input", () => {
+                        if ($$(`_${key}_t`).length > 0) $$(`_${key}_t`).forEach(elm => elm.style.display = $(`.__${key}`).checked ? "flex" : "none");
+                    });
+                    if ($$(`_${key}_t`).length > 0) $$(`_${key}_t`).forEach(elm => elm.style.display = $(`.__${key}`).checked ? "flex" : "none");
+                }, 1);
+                div.setAttribute("settingsID", key);
+                div.querySelector("input")[Settings.dictionary[key].type === "checkbox" ? "checked" : "value"] = Settings.settings[key];
+                $("#settingsSubcontainer").appendChild(div);
+                if (Settings.dictionary[key].desc) {
+                    const p = document.createElement("p");
+                    p.innerText = Settings.dictionary[key].desc;
+                    p.classList.add(`_${key}`);
+                    $("#settingsSubcontainer").appendChild(p);
+                }
+            }
         });
     }
     static menu() {
@@ -78,10 +104,10 @@ class Settings {
     static save() {
         Settings.settings = JSON.parse(localStorage.settings);
         const $ = (selector) => document.querySelector(selector);
-        Array.from($("#settingsSubcontainer").children).forEach(elm => {
-            Settings.settings[elm.getAttribute("settingsID")] = elm.children[1].value;
+        Array.from(document.getElementsByClassName("settings_entry")).forEach(elm => {
+            Settings.settings[elm.getAttribute("settingsID")] = elm.children[2].value;
             if (Settings.dictionary[elm.getAttribute("settingsID")].type === "checkbox") {
-                Settings.settings[elm.getAttribute("settingsID")] = elm.children[1].checked;
+                Settings.settings[elm.getAttribute("settingsID")] = elm.children[2].checked;
             }
         });
         localStorage.settings = JSON.stringify(Settings.settings);

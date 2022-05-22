@@ -55,7 +55,7 @@ function main() {
     canvas.update = () => {
         camera.updateTilesize();
         PoppedTile.updateAllPoppedTiles();
-        if (GUI.state === "title") {
+        if (["title", "settings"].includes(GUI.state)) {
             camera.position.x += -0.01;
             camera.position.y += -0.01;
         }
@@ -162,6 +162,7 @@ function main() {
     });
     $("#newGameRush").addEventListener("click", () => newGame("rush"));
     $("#settingsMenu").addEventListener("click", () => {
+        Settings.settings = JSON.parse(localStorage.settings);
         Settings.updateSettings();
         GUI.set("settings");
     });
