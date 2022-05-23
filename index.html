@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Infinite, never-ending Minesweeper. Good luck." />
     <meta name="theme-color" content="#A2D048">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src http://* https://* 'self' ">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src http://* https://* 'self'; connect-src wss://* https://*; frame-src *; ">
     <link rel="apple-touch-icon" href="./images/flag_192.png">
 
     <title>Infinisweeper</title>
@@ -39,14 +39,19 @@
             <button id="onlineBtn">Sign In</button><br />
             <button id="playAgain">Play Again</button><br />
             <button id="mainMenu">Main Menu</button><br /><br />
-            <img id="share_copy" alt="Copy your score to the clipboard." src="./images/copy.ico">
-            <img id="share_twitter" alt="Share your score on Twitter." src="./images/twitter.ico">
-            <img id="share_facebook" alt="Share your score on Facebook." src="./images/facebook.ico">
+            <img defer id="share_copy" alt="Copy your score to the clipboard." src="./images/copy.ico">
+            <img defer id="share_twitter" alt="Share your score on Twitter." src="./images/twitter.ico">
+            <img defer id="share_facebook" alt="Share your score on Facebook." src="./images/facebook.ico">
         </div>
     </div>
     <div class="GUI" GUI="highScores">
-        <button id="refreshScores">Refresh Scores</button>
-        <button id="highScoresBack">Main Menu</button>
+        <div id="highScoresContainer" class="container">
+            <table id="normalScoreTable"><tbody></tbody></table>
+            <table id="rushScoreTable"><tbody></tbody></table>
+            <br />
+            <br /><button id="refreshScores">Refresh Scores</button>
+            <br /><button id="highScoresBack">Main Menu</button>
+        </div>
     </div>
     <div class="GUI" GUI="loading">
         <h1 id="loadingDisplay">Loading</h1>
@@ -60,6 +65,10 @@
         </div>
     </div>
     <div class="GUI" GUI="title">
+        <div id="login">
+                <button hide="false" id="signin">Sign In</button>
+                <button hide="true" id="signout">Sign Out</button>
+            </div>
         <div id="titleScreen">
             <div id="titleText">
                 <h1>Infinisweeper</h1>
@@ -190,6 +199,13 @@
             </div>
         </div>
     </div>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script defer src="firebase_config.js"></script>
 </body>
 
 </html>

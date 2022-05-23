@@ -187,9 +187,31 @@ function main() {
         GUI.set("highScores");
     });
     $("#highScoresBack").addEventListener("click", () => mainMenu());
-    $("#refreshScores").addEventListener("click", () => {
-
-    });
+    const getScores = () => {
+        if (typeof window.db === "object") {
+            ["Normal", "Rush"].forEach(mode => {
+                const mode2 = mode.toLowerCase();
+                $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML = "";
+                db.ref(`/scores/${mode2}/`).once('value').then(snapshot => {
+                    const table = Object.values(snapshot.val()).sort((a, b) => b.score - a.score).slice(0, 10);
+                    $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML += `<th>${mode} Mode</th>`
+                    table.forEach(index => {
+                        $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML += `<tr><td id="_${mode2}_${index.uid}">Loading</td><td>${index.score}</td></tr>`;
+                        db.ref(`/names/${index.uid}/`).once('value').then(data => {
+                            $(`#_${mode2}_${index.uid}`).innerText = data.val();
+                        });
+                    });
+                });
+            });
+        } else {
+            ["Normal", "Rush"].forEach(mode => {
+                const mode2 = mode.toLowerCase();
+                $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML = "Could Not Connect";
+            });
+        }
+    };
+    $("#refreshScores").addEventListener("click", getScores);
+    getScores();
     $("#settingsMenu").addEventListener("click", () => {
         Settings.settings = JSON.parse(localStorage.settings);
         Settings.updateSettings();
@@ -205,6 +227,35 @@ function main() {
         mainMenu();
     });
     Settings.initialize();
+
+    const onAuthStateChanged = () => {
+        if (typeof window.firebase === "object" && typeof window.db === "object") {
+            if (firebase.auth().currentUser != null) {
+                $("#signin").setAttribute("hide", true);
+                $("#signout").setAttribute("hide", false);
+            } else {
+                $("#signin").setAttribute("hide", false);
+                $("#signout").setAttribute("hide", true);
+            }
+        }
+    }
+    firebase.auth().onAuthStateChanged(onAuthStateChanged);
+    $("#signin").addEventListener("click", () => {
+        if (firebase.auth().currentUser) return;
+    
+        const provider = new firebase.auth.GoogleAuthProvider();
+    
+        firebase.auth().signInWithPopup(provider).then((result) => {
+            console.log(result.user.displayName);
+            onAuthStateChanged();
+        }).catch((error) => {
+            $("#signin").innerText = error;
+            $("#signin").addEventListener("mouseout", () => {
+                $("#signin").innerText = "Sign In";
+            }, { "once": true, });
+            console.error(error);
+        });
+    });
 }
 
 // Load the game

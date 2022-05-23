@@ -33,12 +33,22 @@
     transform: translate(-50%, -50%);
 }
 
+#highScoresContainer {
+    text-align: center;
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
+}
+#highScoresContainer table {
+    display: inline-block;
+    text-align: left;
+}
+
 #settingsContainer {
-    top: 50%;
-    left: 50%;
-    position: fixed;
-    min-width: 300px;
-    transform: translate(-50%, -50%);
+    margin: 15px auto;
+    overflow-y: auto;
+    width: calc(70% - 60px);
+    height: calc(100vh - 60px);
+    overflow-y: auto;
     text-align: center;
 }
 #settingsContainer p {

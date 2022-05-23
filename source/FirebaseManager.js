@@ -1,5 +1,5 @@
-import { initializeApp } from "http://www.gstatic.com/firebasejs/9.8.1/firebase-app.js";
-import { getDatabase } from "http://www.gstatic.com/firebasejs/9.8.1/firebase-database.js";
+/*import { initializeApp } from "http://www.gstatic.com/firebasejs/9.6.4/firebase-app.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyD1vGYCL-rOxFggOBTKjzPlu7I2nB5MBJ4",
     authDomain: "edwardscamera-infinisweeper.firebaseapp.com",
@@ -11,6 +11,10 @@ const firebaseConfig = {
     measurementId: "G-LZPD1CY2HM"
 };
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
-export { app, database };
+import { getDatabase } from "http://www.gstatic.com/firebasejs/9.6.4/firebase-database.js";
+
+const db = getDatabase(app);
+
+
+export { app, db };*/
