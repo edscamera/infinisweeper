@@ -12,6 +12,7 @@ import { SoundEffect, Input, Image, prng, Particle } from "./Util.js"
  */
 function main() {
     const $ = (selector) => document.querySelector(selector);
+
     window.addEventListener("beforeinstallprompt", (event) => {
         event.preventDefault();
         window.deferredPrompt = event;
@@ -75,7 +76,7 @@ function main() {
         camera.updateTilesize();
         PoppedTile.updateAllPoppedTiles();
         Particle.updateAllParticles();
-        if (["title", "settings"].includes(GUI.state)) {
+        if (["title", "settings", "highScores"].includes(GUI.state)) {
             camera.position.x += -0.01;
             camera.position.y += -0.01;
         }
@@ -119,6 +120,7 @@ function main() {
             }, 1000);
         });
     });
+    $("#mainMenuGame").addEventListener("click", () => window.location.reload());
 
     window.prng = prng;
     const newGame = (mode) => {
@@ -181,6 +183,13 @@ function main() {
         });
     });
     $("#newGameRush").addEventListener("click", () => newGame("rush"));
+    $("#highScoresMenu").addEventListener("click", () => {
+        GUI.set("highScores");
+    });
+    $("#highScoresBack").addEventListener("click", () => mainMenu());
+    $("#refreshScores").addEventListener("click", () => {
+
+    });
     $("#settingsMenu").addEventListener("click", () => {
         Settings.settings = JSON.parse(localStorage.settings);
         Settings.updateSettings();

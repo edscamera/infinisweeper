@@ -1,4 +1,4 @@
-const cacheName = "infinisweeper-v2.0b4";
+const cacheName = "infinisweeper-v2.0b6";
 const addResourcesToCache = async (resources) => {
     const cache = await caches.open(cacheName);
     await cache.addAll(resources);
@@ -36,7 +36,8 @@ self.addEventListener("install", (event) => {
             "./source/Main.js",
             "./source/PoppedTile.js",
             "./source/Settings.js",
-            "./source/Util.js"
+            "./source/Util.js",
+            "./source/FirebaseManager.js"
         ])
     );
 });

@@ -4,6 +4,7 @@
     bottom: 0px;
 
     font-size: 2em;
+    padding-top: 0px;
 }
 #scoreContainer > div > :first-child { padding-right: 30px; }
 #scoreContainer > div > :last-child { float: right; }

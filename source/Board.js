@@ -431,7 +431,7 @@ class Board {
                     this.holdingDelay = true;
                 }
             }, 100);
-        });
+        }, { "passive": true, });
         canvas.addEventListener("touchend", (event) => {
             this.holding = false;
         });

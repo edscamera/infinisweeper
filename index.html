@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Infinite, never-ending Minesweeper. Good luck." />
     <meta name="theme-color" content="#A2D048">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src http://* https://* 'self' ">
     <link rel="apple-touch-icon" href="./images/flag_192.png">
 
     <title>Infinisweeper</title>
@@ -14,13 +15,16 @@
     <link defer rel="stylesheet" href="./design/defer.css" />
     <link rel="icon" type="image/x-icon" href="./images/flag.png" media="screen">
     <link rel="manifest" href="manifest.webmanifest">
+    <script type="module" src="source/FirebaseManager.js"></script>
     <script type="module" src="source/Main.js?v=2.0"></script>
+
 </head>
 
 <body>
     <canvas id="infinisweeper"></canvas>
     <div class="GUI" GUI="game">
         <div id="scoreContainer" class="container" hide="true">
+            <button id="mainMenuGame">Main Menu</button>
             <button id="saveGame">Save Game</button>
             <div><span>Score</span><span id="label_score">0</span></div>
             <div><span>Flags</span><span id="label_flags">0</span></div>
@@ -39,6 +43,10 @@
             <img id="share_twitter" alt="Share your score on Twitter." src="./images/twitter.ico">
             <img id="share_facebook" alt="Share your score on Facebook." src="./images/facebook.ico">
         </div>
+    </div>
+    <div class="GUI" GUI="highScores">
+        <button id="refreshScores">Refresh Scores</button>
+        <button id="highScoresBack">Main Menu</button>
     </div>
     <div class="GUI" GUI="loading">
         <h1 id="loadingDisplay">Loading</h1>
@@ -63,7 +71,7 @@
             <button id="newGame">New Game</button><br />
             <button id="continueGame">Continue</button><br id="continueGameBR">
             <button id="newGameRush">Rush Mode</button><br />
-            <button>High Scores</button><br />
+            <button id="highScoresMenu">High Scores</button><br />
             <button id="settingsMenu">Settings</button><br /><br />
         </div>
         <div class="footer"><button id="installBtn" hide="true">Install App</button></div>
