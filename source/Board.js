@@ -431,7 +431,7 @@ class Board {
                     this.holdingDelay = true;
                 }
             }, 100);
-        }, { "passive": true, });
+        });
         canvas.addEventListener("touchend", (event) => {
             this.holding = false;
         });
@@ -481,9 +481,13 @@ class Board {
 
         document.querySelector("#pointCount").innerHTML = "";
         if (missedFlag || flagBonus > 0) document.querySelector("#pointCount").innerHTML = `<span>${this.score} Tile Points</span><br />`
-        if (missedFlag) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">NO FLAG BONUS!</span><br /><br />`;
-        else if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span style="color: red;">+${flagBonus}${this.mode === "rush" ? " RUSH" : ""} Flag Bonus</span><br /><br />`;
-        document.querySelector("#pointCount").innerHTML += `<span style="color: green;">${this.score + flagBonus} Points!</span><br />`
+        if (missedFlag) document.querySelector("#pointCount").innerHTML += `<span id="flagbonusdisplay">NO FLAG BONUS!</span><br /><br />`;
+        else if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span id="flagbonusdisplay">+${flagBonus}${this.mode === "rush" ? " RUSH" : ""} Flag Bonus</span><br /><br />`;
+        document.querySelector("#pointCount").innerHTML += `<span id="pointsdisplay">${this.score + flagBonus} Points!</span><br />`
+        setTimeout(() => {
+            if (document.querySelector("#flagbonusdisplay")) document.querySelector("#flagbonusdisplay").style.color = "red";
+            document.querySelector("#pointsdisplay").style.color = "green";
+        }, 1);
 
         if (this.score + flagBonus > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score + flagBonus;
 

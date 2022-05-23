@@ -62,7 +62,7 @@ class Camera {
                 window.removeEventListener("touchmove", touchMove);
                 this.lockedToDrag = false;
             });
-        }, { "passive": true, });
+        });
 
         window.addEventListener("wheel", (event) => {
             if (!this.cameraControls) return;
