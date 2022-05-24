@@ -58,6 +58,10 @@ button:only-of-type {
     top: 0px;
     left: 0px;
     height: 100vh;
+    pointer-events: none;
+}
+.GUI > * {
+    pointer-events: all;
 }
 *[hide=false] {
     opacity: 1;
@@ -88,6 +92,11 @@ button:only-of-type {
     top: 0px;
     right: 0px;
 }
+#accountName {
+    position: absolute;
+    right: 0px;
+    top: 45px;
+}
 
 #titleScreen {
     position: fixed;
@@ -112,16 +121,16 @@ button:only-of-type {
     max-width: 100%;
     padding-right: 15px;
 }
-#innerChangelog::-webkit-scrollbar {
+*::-webkit-scrollbar {
     width: 5px;
     transform: translateX(-50%)
 }
-#innerChangelog::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
     display: none;
     border-radius: 10px;
     transform: translateX(-50%)
 }
-#innerChangelog::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     border-radius: 15px;
     background-color: #ccc;
     transform: translateX(-50%)

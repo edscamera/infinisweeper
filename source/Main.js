@@ -229,16 +229,33 @@ function main() {
     Settings.initialize();
 
     const onAuthStateChanged = () => {
+        $("#accountName").innerText = "Connecting...";
         if (typeof window.firebase === "object" && typeof window.db === "object") {
             if (firebase.auth().currentUser != null) {
                 $("#signin").setAttribute("hide", true);
                 $("#signout").setAttribute("hide", false);
+                db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(snapshot => {
+                    if (!snapshot.val() || snapshot.val() == null) {
+                        let username = "";
+                        do {
+                            username = prompt("Enter a username: (4-24 characters, YOU CAN NOT CHANGE THIS)").replace(/\s/g, "");
+                        } while (username.length < 4 || username.legth > 24 || username == "" || !username);
+                        $("#accountName").innerText = `Logged in: ${username}`;
+                        db.ref(`/names/${firebase.auth().getUid()}`).set(username);
+                    } else {
+                        $("#accountName").innerText = `Logged in: ${snapshot.val()}`;
+                    }
+                });
             } else {
                 $("#signin").setAttribute("hide", false);
                 $("#signout").setAttribute("hide", true);
+                $("#accountName").innerText = "Signed Out";
             }
+        } else {
+            $("#accountName").innerText = "Could Not Connect";
         }
     }
+
     firebase.auth().onAuthStateChanged(onAuthStateChanged);
     $("#signin").addEventListener("click", () => {
         if (firebase.auth().currentUser) return;
@@ -255,6 +272,10 @@ function main() {
             }, { "once": true, });
             console.error(error);
         });
+    });
+    $("#signout").addEventListener("click", () => {
+        if (!firebase.auth().currentUser) return;
+        firebase.auth().signOut();
     });
 }
 

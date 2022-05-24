@@ -1,3 +1,5 @@
+.FullButton { border-radius: 15px!important; }
+
 #scoreContainer {
     position: fixed;
     left: 0px;

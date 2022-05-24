@@ -363,6 +363,16 @@ class Board {
     }
 
     initializeControls(canvas) {
+        const deviceType = () => {
+            const ua = navigator.userAgent;
+            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                return "mobile";
+            }
+            else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                return "mobile";
+            }
+            return "desktop";
+        };
         const dig = (x, y) => {
             if (!this.get(x, y).covered || this.get(x, y).flagState > 0) return;
             this.leftToEmpty.splice(0, 0, `${x},${y}`);
@@ -396,48 +406,62 @@ class Board {
             this.updateScoreContainer();
         };
 
-        canvas.addEventListener("mouseup", (event) => {
-            if (!this.boardControls) return;
-            if (this.holdingDelay) {
-                this.holdingDelay = false;
-                return;
-            }
-            let x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
-            let y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
-            if (event.button === 0) {
+        if (deviceType() === "desktop") {
+            canvas.onmouseup = event => {
+                if (!this.boardControls) return;
+                if (this.holdingDelay) {
+                    this.holdingDelay = false;
+                    return;
+                }
+                let x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
+                let y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
+                if (this.score > 0 && (event.button === 2 || (event.button === 0 && (event.ctrlKey || event.shiftKey)))) return toggleFlag(x, y);
+                if (event.button === 0) {
+                    if (this.score === 0) {
+                        this.snapToInitialTile();
+                        x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
+                        y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
+                        this.leftMost = this.rightMost = x;
+                        this.topMost = this.bottomMost = y;
+                    }
+                    dig(x, y);
+                }
+            };
+        }
+
+        if (deviceType() === "mobile") {
+            this.og = {};
+            this.holdingDelay = false;
+            document.querySelector("canvas").addEventListener("touchstart", (event) => {
+                if (!this.boardControls) return;
+                this.holding = true;
+                let x = Math.floor(this.camera.position.x + event.touches[0].pageX / this.camera.tilesize);
+                let y = Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize);
+                this.og = {"x": x, "y": y,};
+                setTimeout(() => {
+                    if (this.holding && this.score > 0) {
+                        toggleFlag(x, y);
+                        this.holdingDelay = true;
+                    }
+                }, 500);
+            });
+            canvas.addEventListener("touchend", (event) => {
+                this.holding = false;
+                if (this.holdingDelay) return this.holdingDelay = false;
+                const x = this.og.x;
+                const y = this.og.y;
                 if (this.score === 0) {
                     this.snapToInitialTile();
-                    x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
-                    y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
                     this.leftMost = this.rightMost = x;
                     this.topMost = this.bottomMost = y;
                 }
                 dig(x, y);
-            }
-            if (event.button === 2 && this.score > 0) toggleFlag(x, y);
-        });
-
-        canvas.addEventListener("touchstart", (event) => {
-            event.preventDefault();
-            this.holding = {
-                "x": Math.floor(this.camera.position.x + event.touches[0].pageX / this.camera.tilesize),
-                "y": Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize),
-            };
-            window.setTimeout(() => {
-                if (this.holding) {
-                    if (!this.boardControls || this.camera.lockedToDrag == true) return;
-                    if (this.score > 0) toggleFlag(this.holding.x, this.holding.y);
-                    this.holding = false;
-                    this.holdingDelay = true;
-                }
-            }, 100);
-        });
-        canvas.addEventListener("touchend", (event) => {
-            this.holding = false;
-        });
-        canvas.addEventListener("touchcancel", (event) => {
-            this.holding = false;
-        });
+            });
+            canvas.addEventListener("touchcancel", (event) => {
+                this.holding = false;
+                if (this.holdingDelay) return this.holdingDelay = false;
+            });
+        }
 
         this.updateScoreContainer();
     }
@@ -491,6 +515,50 @@ class Board {
 
         if (this.score + flagBonus > localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = this.score + flagBonus;
 
+        const myBtn = document.querySelector("#onlineBtn");
+        if (typeof window.firebase === "undefined" || typeof window.db === "undefined") {
+            myBtn.onclick = () => { };
+            myBtn.innerText = "Can't Connect";
+            myBtn.disabled = true;
+        } else {
+            myBtn.disabled = false;
+            if (firebase.auth().currentUser) {
+                myBtn.onclick = () => {
+                    myBtn.innerText = "Uploading...";
+                    db.ref(`/scores/${this.mode}/${firebase.auth().getUid()}/score`).once('value').then(snapshot => {
+                        if (snapshot.val() < this.score + flagBonus) {
+                            db.ref(`/scores/${this.mode}/${firebase.auth().getUid()}`).set({
+                                "score": this.score + flagBonus,
+                                "uid": firebase.auth().getUid(),
+                                "timestamp": new Date().getTime(),
+                            });
+                            myBtn.innerText = "Uploaded!";
+                        } else {
+                            myBtn.innerText = "Score already Uploaded!";
+                        }
+                        myBtn.addEventListener("mouseout", () => {
+                            myBtn.innerText = "Upload Score";
+                        }, {"once": true});
+                    });
+                };
+                myBtn.innerText = "Upload Score";
+            } else {
+                myBtn.onclick = () => {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    firebase.auth().signInWithPopup(provider).then((result) => {
+                        onAuthStateChanged();
+                    }).catch((error) => {
+                        myBtn.innerText = "Error";
+                        myBtn.addEventListener("mouseout", () => {
+                            myBtn.innerText = "Sign In";
+                        }, {"once": true});
+                        console.error(error);
+                    });
+                };
+                myBtn.innerText = "Sign In";
+            }
+        }
+
         const flavorText = [
             "Better luck next time!",
             "Get a move on!",
@@ -519,6 +587,7 @@ class Board {
     }
 
     updateScoreContainer() {
+        document.querySelector("#mainMenuGame").classList[this.mode === "normal" ? "remove" : "add"]("FullButton");
         document.querySelector("#saveGame").style.display = this.mode === "normal" ? "block" : "none";
         document.querySelector("#label_score").innerText = this.score;
         document.querySelector("#label_flags").innerText = this.flags;
