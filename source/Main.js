@@ -236,12 +236,21 @@ function main() {
                 $("#signout").setAttribute("hide", false);
                 db.ref(`/names/${firebase.auth().getUid()}`).once('value').then(snapshot => {
                     if (!snapshot.val() || snapshot.val() == null) {
-                        let username = "";
-                        do {
-                            username = prompt("Enter a username: (4-24 characters, YOU CAN NOT CHANGE THIS)").replace(/\s/g, "");
-                        } while (username.length < 4 || username.legth > 24 || username == "" || !username);
-                        $("#accountName").innerText = `Logged in: ${username}`;
-                        db.ref(`/names/${firebase.auth().getUid()}`).set(username);
+                        GUI.set("nameChange");
+                        const input = document.querySelector("#inputname")
+                        const submit = document.querySelector("#submitName");
+                        submit.disabled = true;
+                        input.oninput = () => {
+                            const val = input.value.replace(/\s/g, "");
+                            submit.disabled = val.length < 4 || val.length > 24;
+                        };
+                        submit.onclick = () => {
+                            const val = input.value.replace(/\s/g, "");
+                            if (val.length < 4 || val.length > 24) return;
+                            $("#accountName").innerText = `Logged in: ${val}`;
+                            db.ref(`/names/${firebase.auth().getUid()}`).set(val);
+                            GUI.set("title");
+                        };
                     } else {
                         $("#accountName").innerText = `Logged in: ${snapshot.val()}`;
                     }
@@ -263,7 +272,6 @@ function main() {
         const provider = new firebase.auth.GoogleAuthProvider();
     
         firebase.auth().signInWithPopup(provider).then((result) => {
-            console.log(result.user.displayName);
             onAuthStateChanged();
         }).catch((error) => {
             $("#signin").innerText = error;

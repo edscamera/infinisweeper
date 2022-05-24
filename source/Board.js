@@ -321,6 +321,7 @@ class Board {
         ) % 2;
         this.colorCorrection = Math.round(Math.abs(d1 - d2));
         this.camera.cameraControls = true;
+        return this.initialTile;
     }
 
     digQueuedTile(index) {
@@ -334,10 +335,10 @@ class Board {
             }
         }
         this.set(tileX, tileY, { "covered": false, });
-        if (tileX < this.leftMost) this.leftMost = tileX;
-        if (tileX > this.rightMost) this.rightMost = tileX;
-        if (tileY < this.topMost) this.topMost = tileY;
-        if (tileY > this.bottomMost) this.bottomMost = tileY;
+        if (tileX - 2 < this.leftMost) this.leftMost = tileX - 2;
+        if (tileX + 2 > this.rightMost) this.rightMost = tileX + 2;
+        if (tileY - 2 < this.topMost) this.topMost = tileY - 2;
+        if (tileY + 2 > this.bottomMost) this.bottomMost = tileY + 2;
         if (Settings.settings.animateFallingTiles) new PoppedTile(this.camera, {
             "x": tileX,
             "y": tileY,
@@ -363,16 +364,32 @@ class Board {
     }
 
     initializeControls(canvas) {
+        const $ = (selector) => document.querySelector(selector);
         const deviceType = () => {
+            $("#mainMenuGame").style.display = "block";
             const ua = navigator.userAgent;
+            
+            $("#zoomIN").style.display = "none";
+            $("#zoomOUT").style.display = "none";
             if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
                 return "mobile";
             }
             else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
                 return "mobile";
             }
+            $("#zoomIN").style.display = "block";
+            $("#zoomOUT").style.display = "block";
             return "desktop";
         };
+        $("#zoomIN").onclick = () => {
+            this.camera.setTilesize(this.camera.tilesize + 8);
+            this.camera.tilesize = Math.round(this.camera.tilesize);
+        }
+        $("#zoomOUT").onclick = () => {
+            if (this.camera.tilesize > 8) this.camera.setTilesize(this.camera.tilesize - 8);
+            else this.camera.tilesize = this.camera.targetTilesize = 8;
+            this.camera.tilesize = Math.round(this.camera.tilesize);
+        }
         const dig = (x, y) => {
             if (!this.get(x, y).covered || this.get(x, y).flagState > 0) return;
             this.leftToEmpty.splice(0, 0, `${x},${y}`);
@@ -421,15 +438,17 @@ class Board {
                         this.snapToInitialTile();
                         x = Math.floor(this.camera.position.x + Input.mouse.position.x / this.camera.tilesize);
                         y = Math.floor(this.camera.position.y + Input.mouse.position.y / this.camera.tilesize);
-                        this.leftMost = this.rightMost = x;
-                        this.topMost = this.bottomMost = y;
+                        this.leftMost = x - 2;
+                        this.rightMost = x + 2;
+                        this.topMost = y - 2;
+                        this.bottomMost = y + 2;
                     }
                     dig(x, y);
                 }
             };
         }
 
-        if (deviceType() === "mobile") {
+        //if (deviceType() === "mobile") {
             this.og = {};
             this.holdingDelay = false;
             document.querySelector("canvas").addEventListener("touchstart", (event) => {
@@ -439,29 +458,36 @@ class Board {
                 let y = Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize);
                 this.og = {"x": x, "y": y,};
                 setTimeout(() => {
-                    if (this.holding && this.score > 0) {
+                    if (this.holding && this.score > 0 && !this.camera.lockedToDrag) {
                         toggleFlag(x, y);
                         this.holdingDelay = true;
                     }
-                }, 500);
+                }, 150);
             });
             canvas.addEventListener("touchend", (event) => {
+                if (!this.boardControls) return;
                 this.holding = false;
                 if (this.holdingDelay) return this.holdingDelay = false;
                 const x = this.og.x;
                 const y = this.og.y;
-                if (this.score === 0) {
-                    this.snapToInitialTile();
-                    this.leftMost = this.rightMost = x;
-                    this.topMost = this.bottomMost = y;
+                if (!this.camera.lockedToDrag) {
+                    if (this.score === 0) {
+                        this.snapToInitialTile();
+                        this.leftMost = x - 2;
+                        this.rightMost = x + 2;
+                        this.topMost = y - 2;
+                        this.bottomMost = y + 2;
+                        dig(this.initialTile.x, this.initialTile.y);
+                    } else {
+                        dig(x, y);
+                    }
                 }
-                dig(x, y);
             });
             canvas.addEventListener("touchcancel", (event) => {
                 this.holding = false;
                 if (this.holdingDelay) return this.holdingDelay = false;
             });
-        }
+       // }
 
         this.updateScoreContainer();
     }
@@ -476,10 +502,10 @@ class Board {
         this.camera.targetTilesize = Math.min(Math.max(12, Math.round(Math.min(horizontalSize, verticalSize))), 128);
 
         this.camera.centered = {
-            "left": this.leftMost - 1,
-            "right": this.rightMost + 1,
-            "top": this.topMost - 1,
-            "bottom": this.bottomMost + 1,
+            "left": this.leftMost - 2,
+            "right": this.rightMost + 2,
+            "top": this.topMost - 2,
+            "bottom": this.bottomMost + 2,
         }
     }
 

@@ -23,6 +23,8 @@
     <canvas id="infinisweeper"></canvas>
     <div class="GUI" GUI="game">
         <div id="scoreContainer" class="container" hide="true">
+            <button id="zoomIN">Zoom In</button>
+            <button id="zoomOUT">Zoom Out</button>
             <button id="mainMenuGame">Main Menu</button>
             <button id="saveGame">Save Game</button>
             <div><span>Score</span><span id="label_score">0</span></div>
@@ -50,6 +52,17 @@
             <br />
             <br /><button id="refreshScores">Refresh Scores</button>
             <br /><button id="highScoresBack">Main Menu</button>
+        </div>
+    </div>
+    <div class="GUI" GUI="nameChange">
+        <div class="container" id="nameChangeContainer">
+            <h1>Please choose a Username!</h1>
+            <ul>
+                <li>Your username must be 4-24 characters.</li>
+                <li>You cannot change this username.</li>
+            </ul>
+            <input type="text" id="inputname" placeholder="Enter Username">
+            <button id="submitName">Submit</button>
         </div>
     </div>
     <div class="GUI" GUI="loading">

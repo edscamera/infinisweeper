@@ -152,6 +152,14 @@ button:only-of-type {
         width: calc(100% - 60px);
         font-size: 1.5em;
     }
+    button {
+        font-size: .8em;
+        width: 5em;
+    }
+    .GUI[gui=title] button {
+        font-size: 1.5em;
+        width: 10em;
+    }
     #titleText > img { display: none; }
     #settingsContainer {
         width: calc(100% - 60px)!important;
@@ -166,6 +174,7 @@ button:only-of-type {
         top: 0px!important;
         transform: translateY(0px)!important;
     }
+    #nameChangeContainer { width: calc(100% - 60px)!important; }
 }
 @media only screen and (max-width: 1000px) {
     #changelog {
