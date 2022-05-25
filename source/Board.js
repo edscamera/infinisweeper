@@ -527,12 +527,9 @@ class Board {
             }, 2);
             this.board[key].incorrectFlag = true;
         });
-        missedFlag = missedFlag.length > 0
 
-        document.querySelector("#pointCount").innerHTML = "";
-        if (missedFlag || flagBonus > 0) document.querySelector("#pointCount").innerHTML = `<span>${this.score} Tile Points</span><br />`
-        if (missedFlag) document.querySelector("#pointCount").innerHTML += `<span id="flagbonusdisplay">NO FLAG BONUS!</span><br /><br />`;
-        else if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span id="flagbonusdisplay">+${flagBonus}${this.mode === "rush" ? " RUSH" : ""} Flag Bonus</span><br /><br />`;
+        document.querySelector("#pointCount").innerHTML = flagBonus === 0 ? "" : `<span>${this.score} Tile Points</span><br />`;
+        if (flagBonus > 0) document.querySelector("#pointCount").innerHTML += `<span id="flagbonusdisplay">+${flagBonus}${this.mode === "rush" ? " RUSH" : ""} Flag Bonus</span><br /><br />`;
         document.querySelector("#pointCount").innerHTML += `<span id="pointsdisplay">${this.score + flagBonus} Points!</span><br />`
         setTimeout(() => {
             if (document.querySelector("#flagbonusdisplay")) document.querySelector("#flagbonusdisplay").style.color = "red";

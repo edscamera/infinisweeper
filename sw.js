@@ -1,4 +1,4 @@
-const cacheName = `infinisweeper-v2.0.1d`;
+const cacheName = `infinisweeper-v2.0.2a1`;
 console.log(cacheName);
 const addResourcesToCache = async (resources) => {
     const cache = await caches.open(cacheName);
@@ -51,25 +51,9 @@ self.addEventListener("fetch", (e) => {
         return response;
     })());
 });
-self.addEventListener('activate', (e) => {
-    e.waitUntil(caches.keys().then((keyList) => {
-        return Promise.all(keyList.map((key) => {
-            if (key === cacheName) { return; }
-            return caches.delete(key);
-        }))
-    }));
+self.addEventListener('activate', async (e) => {
+    const myCaches = await caches.keys();
+    myCaches.forEach(cache => {
+        if (cache !== cacheName) caches.delete(cache);
+    });
 });
-/*
-self.addEventListener('fetch', function (event) {
-    event.respondWith(async function () {
-        try {
-            var res = await fetch(event.request);
-            var cache = await caches.open('cache');
-            cache.put(event.request.url, res.clone());
-            return res;
-        }
-        catch (error) {
-            return caches.match(event.request);
-        }
-    }());
-});*/
