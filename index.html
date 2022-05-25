@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="Infinite, never-ending Minesweeper. Good luck." />
     <meta name="theme-color" content="#A2D048">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src http://* https://* 'self'; connect-src wss://* https://*; frame-src *; ">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src http://* https://* 'self'; connect-src wss://* https://*; frame-src *; ">
     <link rel="apple-touch-icon" href="./images/flag_192.png">
 
     <title>Infinisweeper</title>
@@ -47,8 +48,12 @@
     </div>
     <div class="GUI" GUI="highScores">
         <div id="highScoresContainer" class="container">
-            <table id="normalScoreTable"><tbody></tbody></table>
-            <table id="rushScoreTable"><tbody></tbody></table>
+            <table id="normalScoreTable">
+                <tbody></tbody>
+            </table>
+            <table id="rushScoreTable">
+                <tbody></tbody>
+            </table>
             <br />
             <br /><button id="refreshScores">Refresh Scores</button>
             <br /><button id="highScoresBack">Main Menu</button>
@@ -78,10 +83,10 @@
     </div>
     <div class="GUI" GUI="title">
         <div id="login">
-                <button hide="true" id="signin">Sign In</button>
-                <button hide="true" id="signout">Sign Out</button>
-                <span id="accountName">Connecting...</span>
-            </div>
+            <button hide="true" id="signin">Sign In</button>
+            <button hide="true" id="signout">Sign Out</button>
+            <span id="accountName">Connecting...</span>
+        </div>
         <div id="titleScreen">
             <div id="titleText">
                 <h1>Infinisweeper</h1>
@@ -125,6 +130,8 @@
                     <li>Added pinch to zoom on mobile</li>
                     <li>Added new flavor texts</li>
                     <li>Added some GUI animations</li>
+                    <li>Added PWA Support</li>
+                    <li>Added choose username screen</li>
                 </ul>
                 <span>v1.4.3</span>
                 <ul>

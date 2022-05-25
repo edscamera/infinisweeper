@@ -1,4 +1,4 @@
-const cacheName = `infinisweeper-v2.0b13`;
+const cacheName = `infinisweeper-v2.0`;
 console.log(cacheName);
 const addResourcesToCache = async (resources) => {
     const cache = await caches.open(cacheName);

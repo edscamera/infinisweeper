@@ -268,9 +268,9 @@ function main() {
     firebase.auth().onAuthStateChanged(onAuthStateChanged);
     $("#signin").addEventListener("click", () => {
         if (firebase.auth().currentUser) return;
-    
+
         const provider = new firebase.auth.GoogleAuthProvider();
-    
+
         firebase.auth().signInWithPopup(provider).then((result) => {
             onAuthStateChanged();
         }).catch((error) => {
