@@ -1,0 +1,184 @@
+@font-face {
+    font-family: "roboto";
+    src: url("../fonts/Roboto-Regular.ttf");
+    font-display: swap;
+}
+html {
+    overflow: hidden;
+    overscroll-behavior: none;
+    font-family: "Roboto";
+    font-weight: bold;
+}
+canvas {
+    position: absolute;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    top: 0px;
+    left: 0px;
+}
+a {
+    color: blue;
+    text-decoration: none;
+    transition: .1s ease-in-out;
+}
+a:hover { color: rgb(0, 110, 255); }
+input[type=number] {
+    width: 50px;
+    font-family: "Roboto";
+    font-weight: bold;
+}
+
+button {
+	width: 150px;
+	padding: 5px;
+	background-color: #e4c29e;
+	border: 2px solid #b99e81;
+    font-family: "Roboto";
+    font-weight: bold;
+    margin: 2px 0px;
+}
+button:not(:disabled):hover { background-color: #d7b998; }
+button:first-of-type {
+    border-radius: 15px 15px 0px 0px;
+    margin-top: 0px;
+}
+button:last-of-type {
+    border-radius: 0px 0px 15px 15px;
+    margin-bottom: 0px;
+}
+button:only-of-type {
+    border-radius: 15px;
+    margin: 0px;
+}
+
+.GUI {
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100vh;
+    pointer-events: none;
+}
+.GUI > * {
+    pointer-events: all;
+}
+*[hide=false] {
+    opacity: 1;
+    pointer-events: all;
+    transition: .3s ease-in-out;
+}
+*[hide=true] {
+    opacity: 0;
+    pointer-events: none;
+    transition: .3s ease-in-out;
+}
+.container {
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 15px;
+    margin: 15px;
+    border-radius: 15px;
+}
+
+
+#login {
+    position: relative;
+    top: 15px;
+    right: 15px;
+}
+#login button {
+    border-radius: 15px;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+#accountName {
+    position: absolute;
+    right: 0px;
+    top: 45px;
+}
+
+#titleScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#titleText > * {
+    display: inline-block;
+    vertical-align: middle;
+    max-height: 38px;
+}
+#titleScreen #footer {
+    margin-bottom: 50px;
+}
+#changelog { transition: .3s ease-in-out; width: 300px; }
+#innerChangelog :first-child { margin-top: 0px; }
+#innerChangelog {
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+    max-width: 100%;
+    padding-right: 15px;
+}
+*::-webkit-scrollbar {
+    width: 5px;
+    transform: translateX(-50%)
+}
+*::-webkit-scrollbar-track {
+    display: none;
+    border-radius: 10px;
+    transform: translateX(-50%)
+}
+*::-webkit-scrollbar-thumb {
+    border-radius: 15px;
+    background-color: #ccc;
+    transform: translateX(-50%)
+}
+.footer {
+    position: fixed;
+    text-align: center;
+    width: 100%;
+    bottom: 15px;
+}
+
+@media only screen and (max-device-width: 480px) {
+    #loseContainer {
+        width: calc(100% - 60px);
+        left: 0px;
+        transform: translate(0px, -50%);
+    }
+    #scoreContainer {
+        width: calc(100% - 60px);
+        font-size: 1.5em;
+    }
+    button {
+        font-size: .8em;
+        width: 5em;
+    }
+    .GUI[gui=title] button {
+        font-size: 1.5em;
+        width: 10em;
+    }
+    #titleText > img { display: none; }
+    #settingsContainer {
+        width: calc(100% - 60px)!important;
+        max-width: unset!important;
+        position: block!important;
+        top: 0px!important;
+        transform: translateY(0px)!important;
+    }
+    #highScoresContainer {
+        width: calc(100% - 60px)!important;
+        position: block!important;
+        top: 0px!important;
+        transform: translateY(0px)!important;
+    }
+    #nameChangeContainer { width: calc(100% - 60px)!important; }
+}
+@media only screen and (max-width: 1000px) {
+    #changelog {
+        opacity: 0;
+        pointer-events: none;
+    }
+}

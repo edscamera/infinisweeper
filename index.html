@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Infinite, never-ending Minesweeper. Good luck." />
+    <meta name="theme-color" content="#A2D048">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src http://* https://* 'self'; connect-src wss://* https://*; frame-src *; ">
+    <link rel="apple-touch-icon" href="./images/flag_192.png">
+
+    <title>Infinisweeper</title>
+    <link rel="stylesheet" href="./design/style.css" />
+    <link defer rel="stylesheet" href="./design/defer.css" />
+    <link rel="icon" type="image/x-icon" href="./images/flag.png" media="screen">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script type="module" src="source/Main.js?v=2.0"></script>
+
+</head>
+
+<body>
+    <canvas id="infinisweeper"></canvas>
+    <div class="GUI" GUI="game">
+        <div id="scoreContainer" class="container" hide="true">
+            <button id="zoomIN">Zoom In</button>
+            <button id="zoomOUT">Zoom Out</button>
+            <button id="mainMenuGame">Main Menu</button>
+            <button id="saveGame">Save Game</button>
+            <div><span>Score</span><span id="label_score">0</span></div>
+            <div><span>Flags</span><span id="label_flags">0</span></div>
+            <div><span>Time</span><span id="label_hours">0</span></div>
+            <br />
+            <div><span>High Score</span><span id="label_highscore">0</span></div>
+        </div>
+        <div id="loseContainer" class="container" hide="true">
+            <h1>You've been sweeped!</h1>
+            <div id="lossFlavortext"></div><br />
+            <div id="pointCount"></div><br />
+            <button id="onlineBtn">Can't Connect</button><br />
+            <button id="playAgain">Play Again</button><br />
+            <button id="mainMenu">Main Menu</button><br /><br />
+            <img defer id="share_copy" alt="Copy your score to the clipboard." src="./images/copy.ico">
+            <img defer id="share_twitter" alt="Share your score on Twitter." src="./images/twitter.ico">
+            <img defer id="share_facebook" alt="Share your score on Facebook." src="./images/facebook.ico">
+        </div>
+    </div>
+    <div class="GUI" GUI="highScores">
+        <div id="highScoresContainer" class="container">
+            <table id="normalScoreTable">
+                <tbody></tbody>
+            </table>
+            <table id="rushScoreTable">
+                <tbody></tbody>
+            </table>
+            <br />
+            <br /><button id="refreshScores">Refresh Scores</button>
+            <br /><button id="highScoresBack">Main Menu</button>
+        </div>
+    </div>
+    <div class="GUI" GUI="nameChange">
+        <div class="container" id="nameChangeContainer">
+            <h1>Please choose a Username!</h1>
+            <ul>
+                <li>Your username must be 4-24 characters.</li>
+                <li>You cannot change this username.</li>
+            </ul>
+            <input type="text" id="inputname" placeholder="Enter Username">
+            <button id="submitName">Submit</button>
+        </div>
+    </div>
+    <div class="GUI" GUI="loading">
+        <h1 id="loadingDisplay">Loading</h1>
+    </div>
+    <div class="GUI" GUI="settings">
+        <div id="settingsContainer" class="container">
+            <div id="settingsSubcontainer"></div>
+            <br />
+            <button id="settingsSave">Save & Exit</button><br />
+            <button id="settingsMainMenu">Discard & Exit</button>
+        </div>
+    </div>
+    <div class="GUI" GUI="title">
+        <div id="login">
+            <button hide="true" id="signin">Sign In</button>
+            <button hide="true" id="signout">Sign Out</button>
+            <span id="accountName">Connecting...</span>
+        </div>
+        <div id="titleScreen">
+            <div id="titleText">
+                <h1>Infinisweeper</h1>
+                <img src="./images/flag.png">
+            </div>
+            <div id="footer"><span id="versionText"></span>built by <a href="https://edwardscamera.com"
+                    target="_blank">edwardscamera</a>
+            </div>
+            <button id="newGame">New Game</button><br />
+            <button id="continueGame">Continue</button><br id="continueGameBR">
+            <button id="newGameRush">Rush Mode</button><br />
+            <button id="highScoresMenu">High Scores</button><br />
+            <button id="settingsMenu">Settings</button><br /><br />
+        </div>
+        <div class="footer"><button id="installBtn" hide="true">Install App</button></div>
+        <div id="changelog" class="container">
+            <div id="innerChangelog">
+                <h2>How to Play</h2>
+                <ul>
+                    <li>Left click or tap to dig.</li>
+                    <li>Right click, press & hold, or shift + click to place a flag.</li>
+                    <li>The number on a tile represents how many mines are adjacent to the tile.</li>
+                    <li>Place flags to keep track of where the mines are.</li>
+                    <li>Every tile without a mine dug up is worth one point.</li>
+                    <li>Correctly placed flags are worth bonus points.</li>
+                    <li>Don't dig up a mine, or else it's game over!</li>
+                    <li>Compete with friends to see who can get the most points.</li>
+                    <li>Rush Mode: You have 5 seconds to dig up a tile. If you use all 5 seconds, you lose.</li>
+                </ul>
+                <hr>
+                <h2>Changelog</h2>
+                <span>v2.0</span>
+                <ul>
+                    <li>Completely new code base</li>
+                    <li>Massive speed optomization everywhere</li>
+                    <li>Added markers to show if an incorrect flag is placed</li>
+                    <li>Added settings menu</li>
+                    <li>Added animated tile reveals</li>
+                    <li>Added game timer</li>
+                    <li>Added auto-save system</li>
+                    <li>Added pinch to zoom on mobile</li>
+                    <li>Added new flavor texts</li>
+                    <li>Added some GUI animations</li>
+                    <li>Added PWA Support</li>
+                    <li>Added choose username screen</li>
+                </ul>
+                <span>v1.4.3</span>
+                <ul>
+                    <li>Added a loading display screen when continuing a game</li>
+                </ul>
+                <span>v1.4.2</span>
+                <ul>
+                    <li>Added a mute button</li>
+                    <li>Fixed bug where first dig doesn't give a reveal on mobile</li>
+                </ul>
+                <span>v1.4.1</span>
+                <ul>
+                    <li>Added loading indicator to continue button</li>
+                    <li>Online functionality loads asynchronously to avoid extra load time</li>
+                    <li>Fixed bug where only one sound of a type could play at once</li>
+                    <li>Fixed bug where holding down would select the screen on the Safari browser</li>
+                    <li>Fixed bug where you can continue a game after you lost - no more cheating Mr. Graf!</li>
+                    <li>Fixed bug where sometimes high scores won't sort correctly</li>
+                    <li>Fixed bug where some high score names don't load</li>
+                    <li>Fixed bug where rush mode goes insane</li>
+                </ul>
+                <span>v1.4</span>
+                <ul>
+                    <li>Added global score board</li>
+                    <li>Added rush mode</li>
+                    <li>Added loss text</li>
+                    <li>George's scroll wheel now controls zoom level</li>
+                    <li>Fixed bug where lose screen would overlap with score data</li>
+                    <li>Fixed bug where you can still move and dig briefly after you lost</li>
+                </ul>
+                <span>v1.3.1</span>
+                <ul>
+                    <li>Zoom level now saves with saved games</li>
+                    <li>Separated Play Again, Main Menu buttons</li>
+                    <li>Continue Game no longer starts a new game if there is no game saved</li>
+                    <li>Bomb explosions now emit particles in full circle radius instead of just the outside</li>
+                    <li>Fixed bug where removing flag on touchscreen sometimes registers as a dig</li>
+                    <li>Fixed bug where dragging screen to move was too sensitive</li>
+                    <li>Fixed bug where zooming does not zoom in to the correct position</li>
+                </ul>
+                <span>v1.3</span>
+                <ul>
+                    <li>Now can place flags using shift + click or ctrl + click. Hooray for mac users and orchestra
+                        teachers everywhere!</li>
+                    <li>Added "How to Play" section</li>
+                    <li>Added zoom in/out buttons</li>
+                </ul>
+                <span>v1.2</span>
+                <ul>
+                    <li>Added social buttons</li>
+                    <li>Added play again button</li>
+                </ul>
+                <span>Hotfix v1.1.1</span>
+                <ul>
+                    <li>Fixed scrolling slow-down glitch on mobile</li>
+                </ul>
+                <span>v1.1</span>
+                <ul>
+                    <li>Mobile support</li>
+                    <li>Sound effects added</li>
+                    <li>Changelog added</li>
+                    <li>Bomb & Dialog animations</li>
+                    <li>Bomb particles slow down reduction</li>
+                    <li>Fixed bomb particle vanish bug</li>
+                    <li>Fixed graphical "white grid" bug</li>
+                </ul>
+                <span>Initial Release</span>
+                <ul>
+                    <li>
+                        Concept & Programming by
+                        <a href="https://edwardscamera.com">edwardscamera</a>
+                    </li>
+                    <li>
+                        "Infinisweeper" name and "You've been sweeped!"
+                        phrase created by heidrekursson
+                    </li>
+                    <li>
+                        Loss text by swag
+                    </li>
+                    <li>
+                        Art design, flag art and sound effects from Google
+                        Minesweeper
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script defer type="application/javascript"
+        src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script defer src="firebase_config.js"></script>
+</body>
+
+</html>
