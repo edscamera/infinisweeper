@@ -47,21 +47,21 @@ function main() {
     let camera = new Camera(false);
     let board = new Board((Math.random() - 0.5) * 2500, camera, false);
 
-    Image.add("flag", "../images/flag.png");
-    Image.add("flag_animation", "../images/flag_animation.png");
-    Image.add("incorrect_flag", "../images/incorrect_flag.png");
-    SoundEffect.add("blip_1", "../audio/blip_1.mp3");
-    SoundEffect.add("blip_2", "../audio/blip_2.mp3");
-    SoundEffect.add("blip_3", "../audio/blip_3.mp3");
-    SoundEffect.add("blip_4", "../audio/blip_4.mp3");
-    SoundEffect.add("blip_5", "../audio/blip_5.mp3");
-    SoundEffect.add("blip_6", "../audio/blip_6.mp3");
-    SoundEffect.add("blip_7", "../audio/blip_7.mp3");
-    SoundEffect.add("blip_8", "../audio/blip_8.mp3");
-    SoundEffect.add("confetti", "../audio/confetti.mp3");
-    SoundEffect.add("flag_down", "../audio/flag_down.mp3");
-    SoundEffect.add("flag_up", "../audio/flag_up.mp3");
-    SoundEffect.add("reveal", "../audio/reveal.mp3");
+    Image.add("flag", "./images/flag.png");
+    Image.add("flag_animation", "./images/flag_animation.png");
+    Image.add("incorrect_flag", "./images/incorrect_flag.png");
+    SoundEffect.add("blip_1", "./audio/blip_1.mp3");
+    SoundEffect.add("blip_2", "./audio/blip_2.mp3");
+    SoundEffect.add("blip_3", "./audio/blip_3.mp3");
+    SoundEffect.add("blip_4", "./audio/blip_4.mp3");
+    SoundEffect.add("blip_5", "./audio/blip_5.mp3");
+    SoundEffect.add("blip_6", "./audio/blip_6.mp3");
+    SoundEffect.add("blip_7", "./audio/blip_7.mp3");
+    SoundEffect.add("blip_8", "./audio/blip_8.mp3");
+    SoundEffect.add("confetti", "./audio/confetti.mp3");
+    SoundEffect.add("flag_down", "./audio/flag_down.mp3");
+    SoundEffect.add("flag_up", "./audio/flag_up.mp3");
+    SoundEffect.add("reveal", "./audio/reveal.mp3");
 
     Input.initialize();
     camera.initializeControls(canvas.canvas);

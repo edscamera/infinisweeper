@@ -16,7 +16,7 @@
     <link defer rel="stylesheet" href="./design/defer.css" />
     <link rel="icon" type="image/x-icon" href="./images/flag.png" media="screen">
     <link rel="manifest" href="manifest.webmanifest">
-    <script type="module" src="source/Main.js?v=2.0"></script>
+    <script type="module" src="source/Main.js?v=2.0.1"></script>
 
 </head>
 
@@ -31,8 +31,7 @@
             <div><span>Score</span><span id="label_score">0</span></div>
             <div><span>Flags</span><span id="label_flags">0</span></div>
             <div><span>Time</span><span id="label_hours">0</span></div>
-            <br />
-            <div><span>High Score</span><span id="label_highscore">0</span></div>
+            <div id="bottomStuff"><span>High Score</span><span id="label_highscore">0</span></div>
         </div>
         <div id="loseContainer" class="container" hide="true">
             <h1>You've been sweeped!</h1>
@@ -118,10 +117,15 @@
                 </ul>
                 <hr>
                 <h2>Changelog</h2>
+                <span>Hotfix v2.0.1</span>
+                <ul>
+                    <li>Fixed images and sounds not loading</li>
+                    <li>Fixed spelling mistakes</li>
+                </ul>
                 <span>v2.0</span>
                 <ul>
                     <li>Completely new code base</li>
-                    <li>Massive speed optomization everywhere</li>
+                    <li>Massive speed optimization everywhere</li>
                     <li>Added markers to show if an incorrect flag is placed</li>
                     <li>Added settings menu</li>
                     <li>Added animated tile reveals</li>

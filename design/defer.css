@@ -18,13 +18,13 @@
 }
 #nameChangeContainer ul { text-align: left; }
 #nameChangeContainer h1 { margin-top: 0px; }
-
+#bottomStuff { margin-top: 15px; }
 #scoreContainer {
     position: fixed;
     left: 0px;
     bottom: 0px;
 
-    font-size: 2em;
+    font-size: 1.3em;
 }
 #scoreContainer > div > :first-child { padding-right: 30px; }
 #scoreContainer > div > :last-child { float: right; }
