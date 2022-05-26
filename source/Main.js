@@ -165,6 +165,7 @@ function main() {
                 board.set(parseFloat(data[index * 3]), parseFloat(data[index * 3 + 1]), {
                     "flagState": parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0,
                     "covered": parseFloat(data[index * 3 + 2]) != 0,
+                    "flagAnimationFrame": parseFloat(data[index * 3 + 2]) == 2 ? 9 : 0
                 });
                 board.score += parseFloat(data[index * 3 + 2]) != 0 ? 0 : 1;
                 board.flags += parseFloat(data[index * 3 + 2]) == 2 ? 1 : 0;

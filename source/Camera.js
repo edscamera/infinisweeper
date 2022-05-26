@@ -13,24 +13,39 @@ class Camera {
 
         this.cameraControls = cameraControls;
         this.scaling = false;
+
+        this.pinchZoom = 0;
     }
 
     initializeControls(canvas) {
-        canvas.addEventListener("mousedown", () => {
-            if (!this.cameraControls) return;
-            this.lockedToDrag = false;
-            const mouseMove = (event) => {
-                if (this.lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > Settings.settings.dragSensitivity) {
-                    this.lockedToDrag = true;
-                    this.position.x -= event.movementX / this.tilesize;
-                    this.position.y -= event.movementY / this.tilesize;
-                }
-            };
-            window.addEventListener("mousemove", mouseMove);
-            window.addEventListener("mouseup", () => {
-                window.removeEventListener("mousemove", mouseMove);
-            }, { "once": true, });
-        });
+        const deviceType = () => {
+            const ua = navigator.userAgent;
+
+            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                return "mobile";
+            }
+            else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                return "mobile";
+            }
+            return "desktop";
+        };
+        if (deviceType() === "desktop") {
+            canvas.addEventListener("mousedown", () => {
+                if (!this.cameraControls) return;
+                this.lockedToDrag = false;
+                const mouseMove = (event) => {
+                    if (this.lockedToDrag || Math.abs(event.movementX) + Math.abs(event.movementY) > Settings.settings.dragSensitivity) {
+                        this.lockedToDrag = true;
+                        this.position.x -= event.movementX / this.tilesize;
+                        this.position.y -= event.movementY / this.tilesize;
+                    }
+                };
+                window.addEventListener("mousemove", mouseMove);
+                window.addEventListener("mouseup", () => {
+                    window.removeEventListener("mousemove", mouseMove);
+                }, { "once": true, });
+            });
+        }
 
         this.oldTouchData = null;
         canvas.addEventListener("touchstart", (event) => {
@@ -57,12 +72,9 @@ class Camera {
             window.addEventListener("touchend", () => {
                 window.removeEventListener("touchmove", touchMove);
                 this.lockedToDrag = false;
-            });
-            window.addEventListener("touchcancel", () => {
-                window.removeEventListener("touchmove", touchMove);
-                this.lockedToDrag = false;
-            });
+            }, { "once": true });
         });
+
 
         window.addEventListener("wheel", (event) => {
             if (!this.cameraControls) return;
@@ -71,7 +83,9 @@ class Camera {
 
         window.addEventListener("touchstart", (event) => {
             if (!this.cameraControls) return;
+            this.lockedToDrag = true;
             if (event.touches.length === 2) {
+                this.pinchZoom = 2;
                 const originalTilesize = this.tilesize;
                 const originalPinch = Math.hypot(
                     event.touches[0].pageX - event.touches[1].pageX,
@@ -83,9 +97,14 @@ class Camera {
                     this.setTilesize(originalTilesize + (newPinch - originalPinch));
                 };
                 window.addEventListener("touchmove", pinch);
-                window.addEventListener("touchend", () => {
+
+                const endListener = () => {
                     window.removeEventListener("touchmove", pinch);
-                }, { "once": true, });
+                    this.lockedToDrag = false;
+                    this.pinchZoom--;
+                    if (this.pinchZoom === 0) window.removeEventListener("touchend", endListener)
+                };
+                window.addEventListener("touchend", endListener);
             }
         });
     }

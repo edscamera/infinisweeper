@@ -141,12 +141,16 @@ button:only-of-type {
     width: 100%;
     bottom: 15px;
 }
-
+.TopButton { border-radius: 0px; }
+.FullButton {
+    border-radius: 0px 0px 15px 15px;
+    margin-bottom: 15px;
+}
 @media only screen and (max-device-width: 480px) {
     #loseContainer {
-        width: calc(100% - 60px);
-        left: 0px;
-        transform: translate(0px, -50%);
+        width: calc(100% - 60px)!important;
+        left: 0px!important;
+        transform: translate(0px, -50%)!important;
     }
     #scoreContainer {
         width: calc(100% - 60px);
@@ -175,6 +179,11 @@ button:only-of-type {
         transform: translateY(0px)!important;
     }
     #nameChangeContainer { width: calc(100% - 60px)!important; }
+    .TopButton { border-radius: 15px 15px 0px 0px!important; }
+    .FullButton {
+        border-radius: 15px 15px 15px 15px!important;
+        margin-bottom: 15px;
+    }
 }
 @media only screen and (max-width: 1000px) {
     #changelog {

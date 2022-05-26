@@ -368,7 +368,7 @@ class Board {
         const deviceType = () => {
             $("#mainMenuGame").style.display = "block";
             const ua = navigator.userAgent;
-            
+
             $("#zoomIN").style.display = "none";
             $("#zoomOUT").style.display = "none";
             if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
@@ -425,7 +425,7 @@ class Board {
 
         if (deviceType() === "desktop") {
             canvas.onmouseup = event => {
-                if (!this.boardControls) return;
+                if (!this.boardControls || this.camera.lockedToDrag) return;
                 if (this.holdingDelay) {
                     this.holdingDelay = false;
                     return;
@@ -448,46 +448,45 @@ class Board {
             };
         }
 
-        //if (deviceType() === "mobile") {
-            this.og = {};
-            this.holdingDelay = false;
-            document.querySelector("canvas").addEventListener("touchstart", (event) => {
-                if (!this.boardControls) return;
-                this.holding = true;
-                let x = Math.floor(this.camera.position.x + event.touches[0].pageX / this.camera.tilesize);
-                let y = Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize);
-                this.og = {"x": x, "y": y,};
-                setTimeout(() => {
-                    if (this.holding && this.score > 0 && !this.camera.lockedToDrag) {
-                        toggleFlag(x, y);
-                        this.holdingDelay = true;
-                    }
-                }, 150);
-            });
-            canvas.addEventListener("touchend", (event) => {
-                if (!this.boardControls) return;
-                this.holding = false;
-                if (this.holdingDelay) return this.holdingDelay = false;
-                const x = this.og.x;
-                const y = this.og.y;
-                if (!this.camera.lockedToDrag) {
-                    if (this.score === 0) {
-                        this.snapToInitialTile();
-                        this.leftMost = x - 2;
-                        this.rightMost = x + 2;
-                        this.topMost = y - 2;
-                        this.bottomMost = y + 2;
-                        dig(this.initialTile.x, this.initialTile.y);
-                    } else {
-                        dig(x, y);
-                    }
+        this.og = {};
+        this.holdingDelay = false;
+        canvas.addEventListener("touchstart", (event) => {
+            if (!this.boardControls || this.camera.pinchZoom > 0) return;
+            this.holding = true;
+            let x = Math.floor(this.camera.position.x + event.touches[0].pageX / this.camera.tilesize);
+            let y = Math.floor(this.camera.position.y + event.touches[0].pageY / this.camera.tilesize);
+            this.og = { "x": x, "y": y, };
+            setTimeout(() => {
+                if (this.holding && this.score > 0 && !this.camera.lockedToDrag && this.camera.pinchZoom == 0) {
+                    toggleFlag(x, y);
+                    this.holdingDelay = true;
                 }
-            });
-            canvas.addEventListener("touchcancel", (event) => {
-                this.holding = false;
-                if (this.holdingDelay) return this.holdingDelay = false;
-            });
-       // }
+            }, 550);
+        });
+        canvas.addEventListener("touchend", (event) => {
+            if (!this.boardControls) return;
+            if (this.camera.lockedToDrag || this.camera.pinchZoom > 0) return;
+            this.holding = false;
+            if (this.holdingDelay) return this.holdingDelay = false;
+            const x = this.og.x;
+            const y = this.og.y;
+            if (!this.camera.lockedToDrag) {
+                if (this.score === 0) {
+                    this.snapToInitialTile();
+                    this.leftMost = x - 2;
+                    this.rightMost = x + 2;
+                    this.topMost = y - 2;
+                    this.bottomMost = y + 2;
+                    dig(this.initialTile.x, this.initialTile.y);
+                } else {
+                    dig(x, y);
+                }
+            }
+        });
+        canvas.addEventListener("touchcancel", (event) => {
+            this.holding = false;
+            if (this.holdingDelay) return this.holdingDelay = false;
+        });
 
         this.updateScoreContainer();
     }
@@ -561,7 +560,7 @@ class Board {
                         }
                         myBtn.addEventListener("mouseout", () => {
                             myBtn.innerText = "Upload Score";
-                        }, {"once": true});
+                        }, { "once": true });
                     });
                 };
                 myBtn.innerText = "Upload Score";
@@ -574,7 +573,7 @@ class Board {
                         myBtn.innerText = "Error";
                         myBtn.addEventListener("mouseout", () => {
                             myBtn.innerText = "Sign In";
-                        }, {"once": true});
+                        }, { "once": true });
                         console.error(error);
                     });
                 };
@@ -610,8 +609,15 @@ class Board {
     }
 
     updateScoreContainer() {
-        document.querySelector("#mainMenuGame").classList[this.mode === "normal" ? "remove" : "add"]("FullButton");
-        document.querySelector("#saveGame").style.display = this.mode === "normal" ? "block" : "none";
+        if (this.mode === "normal") {
+            document.querySelector("#mainMenuGame").classList.add("TopButton");
+            document.querySelector("#mainMenuGame").classList.remove("FullButton");
+            document.querySelector("#saveGame").style.display = "block";
+        } else {
+            document.querySelector("#mainMenuGame").classList.remove("TopButton");
+            document.querySelector("#mainMenuGame").classList.add("FullButton");
+            document.querySelector("#saveGame").style.display = "none";
+        }
         document.querySelector("#label_score").innerText = this.score;
         document.querySelector("#label_flags").innerText = this.flags;
         document.querySelector("#label_hours").style.color = "#000";
