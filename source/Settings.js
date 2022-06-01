@@ -1,3 +1,5 @@
+import { $ } from "./Util.js";
+
 class Settings {
     static defaultSettings = {
         "animateFallingTiles": true,
@@ -10,6 +12,7 @@ class Settings {
         "drawParticles": true,
         "dragSensitivity": 2,
 
+        "scrollToZoom": true,
         "muted": false,
         "autoSave": true,
         "autoSave_t": .25,
@@ -55,6 +58,11 @@ class Settings {
             "desc": "How much you should move your mouse/finger to move the camera.",
             "type": "number",
         },
+        "scrollToZoom": {
+            "display": "Scroll To Zoom",
+            "desc": "Enables zooming using the scroll wheel.",
+            "type": "checkbox",
+        },
         "muted": {
             "display": "Mute Sound Effects",
             "type": "checkbox",
@@ -82,7 +90,6 @@ class Settings {
         Settings.updateSettings();
     }
     static updateSettings() {
-        const $ = (selector) => document.querySelector(selector);
         const $$ = (selector) => {
             if (!document.getElementsByClassName(selector)) return [];
             return Array.from(document.getElementsByClassName(selector));
@@ -119,7 +126,6 @@ class Settings {
     }
     static save() {
         Settings.settings = JSON.parse(localStorage.settings);
-        const $ = (selector) => document.querySelector(selector);
         Array.from(document.getElementsByClassName("settings_entry")).forEach(elm => {
             Settings.settings[elm.getAttribute("settingsID")] = elm.children[2].value;
             if (Settings.dictionary[elm.getAttribute("settingsID")].type === "checkbox") {

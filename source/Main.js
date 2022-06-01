@@ -4,15 +4,13 @@ import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
 import PoppedTile from "./PoppedTile.js";
 import Settings from "./Settings.js";
-import { SoundEffect, Input, Image, prng, Particle } from "./Util.js"
+import { SoundEffect, Input, Image, prng, Particle, $ } from "./Util.js"
 
 /**
  * The main function
  * @returns {Void}
  */
 function main() {
-    const $ = (selector) => document.querySelector(selector);
-
     window.addEventListener("beforeinstallprompt", (event) => {
         event.preventDefault();
         window.deferredPrompt = event;
@@ -45,7 +43,7 @@ function main() {
     const GUI = new GUIManager("title");
     const canvas = new Canvas("infinisweeper");
     let camera = new Camera(false);
-    let board = new Board((Math.random() - 0.5) * 2500, camera, false);
+    let board = new Board(0, camera, false);
 
     Image.add("flag", "./images/flag.png");
     Image.add("flag_animation", "./images/flag_animation.png");
@@ -127,7 +125,7 @@ function main() {
         GUI.set("game");
         camera = new Camera(false);
         if (board) board.spreadParticles = false;
-        board = new Board((Math.random() - 0.5) * 2500, camera, true);
+        board = new Board(10 + Math.random() * 5000 * Math.sign(Math.random() - 0.5), camera, true);
         board.mode = mode;
         if (!localStorage[`highScore_${board.mode}`]) localStorage[`highScore_${board.mode}`] = 0;
         camera.initializeControls(canvas.canvas);
@@ -136,7 +134,7 @@ function main() {
     const mainMenu = () => {
         GUI.set("title");
         camera = new Camera(false);
-        board = new Board((Math.random() - 0.5) * 2500, camera, false);
+        board = new Board(0, camera, false);
     };
 
     $("#playAgain").addEventListener("click", () => newGame(board.mode));

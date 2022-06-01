@@ -17,6 +17,27 @@ export function prng(value, seed) {
     })();
 };
 
+export function $(selector) {
+    let ret = null;
+    if (selector[0] === ".") ret = Array.from(document.getElementsByClassName(selector.slice(1)));
+    else if (selector[0] === "#") ret = document.querySelector(selector);
+    else ret = Array.from(document.getElementsByTagName(selector));
+    if (Array.isArray(ret) && ret.length === 1) return ret[0];
+    return ret;
+}
+
+export function deviceType() {
+    const ua = navigator.userAgent;
+
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+        return "mobile";
+    }
+    else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+        return "mobile";
+    }
+    return "desktop";
+};
+
 export class Vector2 {
     /**
      * Represents an ordered pair.

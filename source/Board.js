@@ -1,4 +1,4 @@
-import { prng, Vector2, Input, Image, SoundEffect, Particle } from "./Util.js";
+import { prng, Vector2, Input, Image, SoundEffect, Particle, $, deviceType } from "./Util.js";
 import Settings from "./Settings.js";
 import PoppedTile from "./PoppedTile.js";
 
@@ -364,23 +364,13 @@ class Board {
     }
 
     initializeControls(canvas) {
-        const $ = (selector) => document.querySelector(selector);
-        const deviceType = () => {
-            $("#mainMenuGame").style.display = "block";
-            const ua = navigator.userAgent;
-
-            $("#zoomIN").style.display = "none";
-            $("#zoomOUT").style.display = "none";
-            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-                return "mobile";
-            }
-            else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-                return "mobile";
-            }
+        if (deviceType() === "desktop") {
             $("#zoomIN").style.display = "block";
             $("#zoomOUT").style.display = "block";
-            return "desktop";
-        };
+        } else {
+            $("#zoomIN").style.display = "none";
+            $("#zoomOUT").style.display = "none";
+        }
         $("#zoomIN").onclick = () => {
             this.camera.setTilesize(this.camera.tilesize + 8);
             this.camera.tilesize = Math.round(this.camera.tilesize);
@@ -461,7 +451,7 @@ class Board {
                     toggleFlag(x, y);
                     this.holdingDelay = true;
                 }
-            }, 550);
+            }, 150);
         });
         canvas.addEventListener("touchend", (event) => {
             if (!this.boardControls) return;
@@ -470,17 +460,16 @@ class Board {
             if (this.holdingDelay) return this.holdingDelay = false;
             const x = this.og.x;
             const y = this.og.y;
-            if (!this.camera.lockedToDrag) {
-                if (this.score === 0) {
-                    this.snapToInitialTile();
-                    this.leftMost = x - 2;
-                    this.rightMost = x + 2;
-                    this.topMost = y - 2;
-                    this.bottomMost = y + 2;
-                    dig(this.initialTile.x, this.initialTile.y);
-                } else {
-                    dig(x, y);
-                }
+            if (this.score === 0) {
+                this.snapToInitialTile();
+                this.leftMost = x - 2;
+                this.rightMost = x + 2;
+                this.topMost = y - 2;
+                this.bottomMost = y + 2;
+                dig(this.initialTile.x, this.initialTile.y);
+            } else {
+                console.log("CHUGGUS")
+                dig(x, y);
             }
         });
         canvas.addEventListener("touchcancel", (event) => {

@@ -1,5 +1,5 @@
 import Settings from "./Settings.js";
-import { Vector2 } from "./Util.js"
+import { Vector2, deviceType } from "./Util.js"
 
 class Camera {
     constructor(cameraControls) {
@@ -18,17 +18,6 @@ class Camera {
     }
 
     initializeControls(canvas) {
-        const deviceType = () => {
-            const ua = navigator.userAgent;
-
-            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-                return "mobile";
-            }
-            else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-                return "mobile";
-            }
-            return "desktop";
-        };
         if (deviceType() === "desktop") {
             canvas.addEventListener("mousedown", () => {
                 if (!this.cameraControls) return;
@@ -77,14 +66,14 @@ class Camera {
 
 
         window.addEventListener("wheel", (event) => {
-            if (!this.cameraControls) return;
+            if (!this.cameraControls || !Settings.settings.scrollToZoom) return;
             this.setTilesize(Math.max(this.tilesize + Math.sign(event.deltaY) * -5, 14));
         });
 
         window.addEventListener("touchstart", (event) => {
             if (!this.cameraControls) return;
-            this.lockedToDrag = true;
             if (event.touches.length === 2) {
+                this.lockedToDrag = true;
                 this.pinchZoom = 2;
                 const originalTilesize = this.tilesize;
                 const originalPinch = Math.hypot(
