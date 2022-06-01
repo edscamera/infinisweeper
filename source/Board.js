@@ -88,7 +88,7 @@ class Board {
 
         if (!localStorage[`highScore_${this.mode}`]) localStorage[`highScore_${this.mode}`] = 0;
 
-        document.querySelector("#scoreContainer").setAttribute("hide", false);
+        document.querySelector("#gameGUI").setAttribute("hide", false);
         document.querySelector("#loseContainer").setAttribute("hide", true);
     }
     static getAddress(x, y) { return `${x},${y}`; }
@@ -364,13 +364,6 @@ class Board {
     }
 
     initializeControls(canvas) {
-        if (deviceType() === "desktop") {
-            $("#zoomIN").style.display = "block";
-            $("#zoomOUT").style.display = "block";
-        } else {
-            $("#zoomIN").style.display = "none";
-            $("#zoomOUT").style.display = "none";
-        }
         $("#zoomIN").onclick = () => {
             this.camera.setTilesize(this.camera.tilesize + 8);
             this.camera.tilesize = Math.round(this.camera.tilesize);
@@ -468,7 +461,6 @@ class Board {
                 this.bottomMost = y + 2;
                 dig(this.initialTile.x, this.initialTile.y);
             } else {
-                console.log("CHUGGUS")
                 dig(x, y);
             }
         });
@@ -591,22 +583,14 @@ class Board {
         document.querySelector("#lossFlavortext").innerText = flavorText[Math.floor(flavorText.length * Math.random())];
 
         window.setTimeout(() => {
-            document.querySelector("#scoreContainer").setAttribute("hide", true);
+            document.querySelector("#gameGUI").setAttribute("hide", true);
             document.querySelector("#loseContainer").setAttribute("hide", false);
             this.spreadParticles = true;
         }, 2000);
     }
 
     updateScoreContainer() {
-        if (this.mode === "normal") {
-            document.querySelector("#mainMenuGame").classList.add("TopButton");
-            document.querySelector("#mainMenuGame").classList.remove("FullButton");
-            document.querySelector("#saveGame").style.display = "block";
-        } else {
-            document.querySelector("#mainMenuGame").classList.remove("TopButton");
-            document.querySelector("#mainMenuGame").classList.add("FullButton");
-            document.querySelector("#saveGame").style.display = "none";
-        }
+        document.querySelector("#saveGame").style.display = this.mode === "normal" ? "block" : "none";
         document.querySelector("#label_score").innerText = this.score;
         document.querySelector("#label_flags").innerText = this.flags;
         document.querySelector("#label_hours").style.color = "#000";

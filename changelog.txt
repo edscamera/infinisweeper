@@ -1,0 +1,79 @@
+v2.0.5
+-Improved loading time
+-Global high score will be used instead of local high score when signed in
+-Added setting to disable scroll to zoom
+-Fixed bug where particles don't go away
+-Removed infinite board chance
+Hotfix v2.0.4
+-Fixed critical bug where you can't dig on mobile
+v2.0.3
+-Fixed bug where dragging with mouse digs tile
+-Fixed bug where flags don't appear on continue
+-Fixed bug where display of loss screen was off-centered on mobile
+-Fixed bug where pinching to zoom on mobile sometimes triggered tile digging
+-Fixed bug where border radius of buttons were wrong sometimes
+v2.0.2
+-Reverted flag bonus to previous calculation
+-Fixed cache issues
+Hotfix v2.0.1
+-Fixed images and sounds not loading
+-Fixed spelling mistakes
+v2.0
+-Completely new code base
+-Massive speed optimization everywhere
+-Added markers to show if an incorrect flag is placed
+-Added settings menu
+-Added animated tile reveals
+-Added game timer
+-Added auto-save system
+-Added pinch to zoom on mobile
+-Added new flavor texts
+-Added some GUI animations
+-Added PWA Support
+-Added choose username screen
+v1.4.3
+-Added a loading display screen when continuing a game
+v1.4.2
+-Added a mute button
+-Fixed bug where first dig doesn't give a reveal on mobile
+v1.4.1
+-Added loading indicator to continue button
+-Online functionality loads asynchronously to avoid extra load time
+-Fixed bug where only one sound of a type could play at once
+-Fixed bug where holding down would select the screen on the Safari browser
+-Fixed bug where you can continue a game after you lost - no more cheating Mr. Graf!
+-Fixed bug where sometimes high scores won't sort correctly
+-Fixed bug where some high score names don't load
+-Fixed bug where rush mode goes insane
+v1.4
+-Added global score board
+-Added rush mode
+-Added loss text
+-George's scroll wheel now controls zoom level
+-Fixed bug where lose screen would overlap with score data
+-Fixed bug where you can still move and dig briefly after you lost
+v1.3.1
+-Zoom level now saves with saved games
+-Separated Play Again, Main Menu buttons
+-Continue Game no longer starts a new game if there is no game saved
+-Bomb explosions now emit particles in full circle radius instead of just the outside
+-Fixed bug where removing flag on touchscreen sometimes registers as a dig
+-Fixed bug where dragging screen to move was too sensitive
+-Fixed bug where zooming does not zoom in to the correct position
+v1.3
+-Now can place flags using shift + click or ctrl + click. Hooray for mac users and orchestra teachers everywhere!
+-Added "How to Play" section
+-Added zoom in/out buttons
+v1.2
+-Added social buttons
+-Added play again button
+Hotfix v1.1.1
+-Fixed scrolling slow-down glitch on mobile
+v1.1
+-Mobile support
+-Sound effects added
+-Changelog added
+-Bomb & Dialog animations
+-Bomb particles slow down reduction
+-Fixed bomb particle vanish bug
+-Fixed graphical "white grid" bug

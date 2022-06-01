@@ -4,7 +4,7 @@ import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
 import PoppedTile from "./PoppedTile.js";
 import Settings from "./Settings.js";
-import { SoundEffect, Input, Image, prng, Particle, $ } from "./Util.js"
+import { SoundEffect, Input, Image, prng, Particle, $, deviceType } from "./Util.js"
 
 /**
  * The main function
@@ -80,7 +80,6 @@ function main() {
         }
     };
 
-    $("#versionText").innerText = `${$("#innerChangelog").querySelector("span").innerText} | `
     const getScoreText = () => `I got a new score of ${(board.score).toString().split("").map((j) => {
         switch (parseFloat(j)) {
             case 0: return "0️⃣";
@@ -141,6 +140,14 @@ function main() {
     $("#mainMenu").addEventListener("click", mainMenu);
 
     $("#newGame").addEventListener("click", () => newGame("normal"));
+    $("#menuButton").addEventListener("click", () => {
+        $("#gameMobileMenu").setAttribute("hide", $("#gameMobileMenu").getAttribute("hide") !== "true");
+    });
+    if (deviceType() === "mobile") {
+        $("#gameMobileMenuContainer").appendChild($("#movableContainer"));
+        $("#scoreContainer").style.display = "none";
+    }
+
     $("#continueGame").addEventListener("click", () => {
         GUI.set("loading");
         let data = localStorage.saved_data.split(",");
@@ -227,6 +234,7 @@ function main() {
     });
     Settings.initialize();
 
+    // Firebase
     const onAuthStateChanged = () => {
         $("#accountName").innerText = "Connecting...";
         if (typeof window.firebase === "object" && typeof window.db === "object") {
@@ -253,6 +261,11 @@ function main() {
                     } else {
                         $("#accountName").innerText = `Logged in: ${snapshot.val()}`;
                     }
+                });
+                ["normal", "rush"].forEach(mode => {
+                    db.ref(`/scores/${mode}/${firebase.auth().getUid()}/score`).once('value').then(snapshot => {
+                        if (Number.isInteger(snapshot.val()) && snapshot.val() > localStorage[`highScore_${mode}`]) localStorage[`highScore_${mode}`] = snapshot.val();
+                    });
                 });
             } else {
                 $("#signin").setAttribute("hide", false);
@@ -283,6 +296,22 @@ function main() {
     $("#signout").addEventListener("click", () => {
         if (!firebase.auth().currentUser) return;
         firebase.auth().signOut();
+    });
+
+    // Load Changelog
+    if (deviceType() === "desktop") fetch("../changelog.txt").then(r => r.text()).then(data => {
+        data = data.split("\n");
+        for(let lineNum = 0; lineNum < data.length; lineNum++) {
+            if (data[lineNum].startsWith("-")) {
+                data[lineNum] = `<li>${data[lineNum].slice(1)}</li>`;
+            } else {
+                data[lineNum] = `</ul><span>${data[lineNum]}</span><ul>`;
+            }
+        };
+        data[0] = data[0].slice(5);
+        data[data.length - 1] = data[data.length - 1].slice(0, -4);
+        $("#fetchChangelog").innerHTML = data.join("");
+        $("#versionText").innerText = `${$("#innerChangelog").querySelector("span").innerText} | `;
     });
 }
 

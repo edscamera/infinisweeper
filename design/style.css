@@ -80,47 +80,6 @@ button:only-of-type {
     border-radius: 15px;
 }
 
-
-#login {
-    position: relative;
-    top: 15px;
-    right: 15px;
-}
-#login button {
-    border-radius: 15px;
-    position: absolute;
-    top: 0px;
-    right: 0px;
-}
-#accountName {
-    position: absolute;
-    right: 0px;
-    top: 45px;
-}
-
-#titleScreen {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-#titleText > * {
-    display: inline-block;
-    vertical-align: middle;
-    max-height: 38px;
-}
-#titleScreen #footer {
-    margin-bottom: 50px;
-}
-#changelog { transition: .3s ease-in-out; width: 300px; }
-#innerChangelog :first-child { margin-top: 0px; }
-#innerChangelog {
-    overflow-y: auto;
-    height: calc(100vh - 60px);
-    max-width: 100%;
-    padding-right: 15px;
-}
 *::-webkit-scrollbar {
     width: 5px;
     transform: translateX(-50%)
@@ -135,27 +94,7 @@ button:only-of-type {
     background-color: #ccc;
     transform: translateX(-50%)
 }
-.footer {
-    position: fixed;
-    text-align: center;
-    width: 100%;
-    bottom: 15px;
-}
-.TopButton { border-radius: 0px; }
-.FullButton {
-    border-radius: 0px 0px 15px 15px;
-    margin-bottom: 15px;
-}
 @media only screen and (max-device-width: 480px) {
-    #loseContainer {
-        width: calc(100% - 60px)!important;
-        left: 0px!important;
-        transform: translate(0px, -50%)!important;
-    }
-    #scoreContainer {
-        width: calc(100% - 60px);
-        font-size: 1.5em;
-    }
     button {
         font-size: .8em;
         width: 5em;
@@ -164,7 +103,6 @@ button:only-of-type {
         font-size: 1.5em;
         width: 10em;
     }
-    #titleText > img { display: none; }
     #settingsContainer {
         width: calc(100% - 60px)!important;
         max-width: unset!important;
@@ -179,15 +117,4 @@ button:only-of-type {
         transform: translateY(0px)!important;
     }
     #nameChangeContainer { width: calc(100% - 60px)!important; }
-    .TopButton { border-radius: 15px 15px 0px 0px!important; }
-    .FullButton {
-        border-radius: 15px 15px 15px 15px!important;
-        margin-bottom: 15px;
-    }
-}
-@media only screen and (max-width: 1000px) {
-    #changelog {
-        opacity: 0;
-        pointer-events: none;
-    }
 }

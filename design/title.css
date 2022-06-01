@@ -1,0 +1,56 @@
+#login {
+    position: relative;
+    top: 15px;
+    right: 15px;
+}
+#login button {
+    border-radius: 15px;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+#accountName {
+    position: absolute;
+    right: 0px;
+    top: 45px;
+}
+
+#titleScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#titleText > * {
+    display: inline-block;
+    vertical-align: middle;
+    max-height: 38px;
+}
+#version { margin-bottom: 50px; }
+#changelog { transition: .3s ease-in-out; width: 300px; }
+#innerChangelog :first-child { margin-top: 0px; }
+#innerChangelog {
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+    max-width: 100%;
+    padding-right: 15px;
+}
+
+#installApp {
+    position: fixed;
+    text-align: center;
+    width: 100%;
+    bottom: 15px;
+}
+
+@media only screen and (max-device-width: 480px) {
+    #titleText > img { display: none; }
+}
+
+@media only screen and (max-width: 1000px) {
+    #changelog {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
