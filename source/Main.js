@@ -200,9 +200,9 @@ function main() {
                 $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML = "";
                 db.ref(`/scores/${mode2}/`).once('value').then(snapshot => {
                     const table = Object.values(snapshot.val()).sort((a, b) => b.score - a.score).slice(0, 10);
-                    $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML += `<th>${mode} Mode</th>`
+                    $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML += `<th colspan="3">${mode} Mode</th>`
                     table.forEach(index => {
-                        $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML += `<tr><td id="_${mode2}_${index.uid}">Loading</td><td>${index.score}</td></tr>`;
+                        $(`#${mode2}ScoreTable`).querySelector("tbody").innerHTML += `<tr><td>${table.indexOf(index) + 1}.</td><td id="_${mode2}_${index.uid}">Loading</td><td>${index.score}</td></tr>`;
                         db.ref(`/names/${index.uid}/`).once('value').then(data => {
                             $(`#_${mode2}_${index.uid}`).innerText = data.val();
                         });
@@ -301,7 +301,7 @@ function main() {
     // Load Changelog
     if (deviceType() === "desktop") fetch("../changelog.txt").then(r => r.text()).then(data => {
         data = data.split("\n");
-        for(let lineNum = 0; lineNum < data.length; lineNum++) {
+        for (let lineNum = 0; lineNum < data.length; lineNum++) {
             if (data[lineNum].startsWith("-")) {
                 data[lineNum] = `<li>${data[lineNum].slice(1)}</li>`;
             } else {

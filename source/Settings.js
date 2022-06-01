@@ -20,27 +20,27 @@ class Settings {
     static dictionary = {
         "animateFallingTiles": {
             "display": "Animate Falling Tiles",
-            "desc": "When enabled, tiles will pop off the board and fall. No jumpscare. Helps performance.",
+            "desc": "Enables tiles to pop off the board and fall. No jumpscare. Helps performance.",
             "type": "checkbox",
         },
         "animateTileReveal": {
             "display": "Animate Tile Reveal",
-            "desc": "When enabled, tiles will gradually be revealed.",
+            "desc": "Enables a gradual animation of large tile reveals.",
             "type": "checkbox",
         },
         "animateTileReveal_t": {
             "display": "Animate Tile Reveal Time",
-            "desc": "The speed at which tiles are gradually revealed.",
+            "desc": "Sets the speed at which tiles are gradually revealed.",
             "type": "number",
         },
         "animateFlags": {
             "display": "Animate Flags",
-            "desc": "When disabled, flags will not be animated. Helps performance.",
+            "desc": "Enables flag animations. Helps performance.",
             "type": "checkbox",
         },
         "cameraShake": {
             "display": "Camera Shake",
-            "desc": "When enabled, the camera will shake when large amounts of tiles are revealed.",
+            "desc": "Enables camera shake when large amounts of tiles are revealed.",
             "type": "checkbox",
         },
         "drawBorders": {
@@ -55,12 +55,12 @@ class Settings {
         },
         "dragSensitivity": {
             "display": "Camera Move Sensitivity",
-            "desc": "How much you should move your mouse/finger to move the camera.",
+            "desc": "Sets how much you should move your mouse/finger to move the camera.",
             "type": "number",
         },
         "scrollToZoom": {
-            "display": "Scroll To Zoom",
-            "desc": "Enables zooming using the scroll wheel.",
+            "display": "Scroll/Pinch To Zoom",
+            "desc": "Enables scrolling using the scroll wheel on a mouse and pinching on a touchscreen.",
             "type": "checkbox",
         },
         "muted": {
@@ -69,12 +69,12 @@ class Settings {
         },
         "autoSave": {
             "display": "Auto Save",
-            "desc": "When enabled, the game will automatically be saved at an interval.",
+            "desc": "Enables automatic saving of your game at an interval.",
             "type": "checkbox",
         },
         "autoSave_t": {
             "display": "Auto Save Interval (Minutes)",
-            "desc": "How often the game will be automatically saved (minutes).",
+            "desc": "Controls how often the game will be automatically saved (minutes).",
             "type": "number",
         }
     }
@@ -99,10 +99,15 @@ class Settings {
             if (!["animateTileReveal_t"].includes(key)) {
                 const div = document.createElement("div");
                 div.classList.add("settings_entry", `_${key}`);
-                div.innerHTML = `
+                try {
+
+                    div.innerHTML = `
                 <span class="settings_label">${Settings.dictionary[key].display}</span><br />
                 <input class="__${key}" type="${Settings.dictionary[key].type}" class="settings_input" />
                 `;
+                } catch (e) {
+                    console.log(e, key)
+                }
                 setTimeout(() => {
                     $(`.__${key}`).addEventListener("input", () => {
                         if ($$(`_${key}_t`).length > 0) $$(`_${key}_t`).forEach(elm => elm.style.display = $(`.__${key}`).checked ? "flex" : "none");

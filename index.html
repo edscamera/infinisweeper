@@ -17,14 +17,16 @@
     <link rel="icon" type="image/x-icon" href="./images/flag.png" media="screen">
     <link rel="manifest" href="manifest.webmanifest">
     <script type="module" src="source/Main.js?v=2.0.1"></script>
-
 </head>
 
 <body>
     <canvas id="infinisweeper"></canvas>
     <div class="GUI" GUI="game">
         <div id="gameGUI" hide="true">
-            <button id="menuButton">☰</button>
+            <div id="menuButtonContainer">
+                <button id="menuButton">☰</button>
+                <div>Score: <span class="label_score"></span></div>
+            </div>
             <div id="zoomContainer">
                 <button id="zoomIN">+</button><br />
                 <button id="zoomOUT">-</button>
@@ -33,7 +35,7 @@
                 <div id="movableContainer">
                     <button id="mainMenuGame">Main Menu</button>
                     <button id="saveGame">Save Game</button>
-                    <div><span>Score</span><span id="label_score">0</span></div>
+                    <div><span>Score</span><span class="label_score">0</span></div>
                     <div><span>Flags</span><span id="label_flags">0</span></div>
                     <div><span>Time</span><span id="label_hours">0</span></div>
                     <div id="bottomStuff"><span>High Score</span><span id="label_highscore">0</span></div>

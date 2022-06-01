@@ -37,6 +37,7 @@ button {
     font-family: "Roboto";
     font-weight: bold;
     margin: 2px 0px;
+    color: black;
 }
 button:not(:disabled):hover { background-color: #d7b998; }
 button:first-of-type {

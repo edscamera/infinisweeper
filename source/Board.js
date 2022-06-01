@@ -591,7 +591,7 @@ class Board {
 
     updateScoreContainer() {
         document.querySelector("#saveGame").style.display = this.mode === "normal" ? "block" : "none";
-        document.querySelector("#label_score").innerText = this.score;
+        Array.from(document.getElementsByClassName("label_score")).forEach(elm => elm.innerText = this.score);
         document.querySelector("#label_flags").innerText = this.flags;
         document.querySelector("#label_hours").style.color = "#000";
         if (this.mode === "rush") {

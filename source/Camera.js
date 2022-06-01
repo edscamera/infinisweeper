@@ -71,7 +71,7 @@ class Camera {
         });
 
         window.addEventListener("touchstart", (event) => {
-            if (!this.cameraControls) return;
+            if (!this.cameraControls || !Settings.settings.scrollToZoom) return;
             if (event.touches.length === 2) {
                 this.lockedToDrag = true;
                 this.pinchZoom = 2;

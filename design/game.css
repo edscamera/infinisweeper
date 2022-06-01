@@ -5,10 +5,10 @@
 
     font-size: 1.3em;
 }
-#scoreContainer > div > :first-child { padding-right: 30px; }
-#scoreContainer > div > :last-child { float: right; }
-#scoreContainer button { width: 100%; }
-#scoreContainer button:last-of-type { margin-bottom: 15px; }
+#movableContainer > div > :first-child { padding-right: 30px; }
+#movableContainer > div > :last-child { float: right; }
+#movableContainer button { width: 100%; }
+#movableContainer button:last-of-type { margin-bottom: 15px; }
 
 #loseContainer {
     position: fixed;
@@ -39,15 +39,20 @@
     font-size: 1em;
     display: block;
 }
-#menuButton {
+#menuButtonContainer {
     position: absolute;
     top: 0px;
     left: 0px;
     margin: 15px;
+    display: none;
+}
+#menuButtonContainer > * { display: inline-block; }
+#menuButtonContainer > div { margin-left: 10px; }
+#menuButton {
+    position: relative;
     width: 3em;
     height: 3em;
     border-radius: 100%;
-    display: none;
     z-index: 3;
 }
 #gameMobileMenu {
@@ -62,6 +67,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: fit-content;
+    font-size: 1.5em;
 }
 
 @media only screen and (max-device-width: 480px) {
@@ -74,5 +81,5 @@
         width: calc(100% - 60px);
         font-size: 1.5em;
     }
-    #menuButton { display: block!important; }
+    #menuButtonContainer { display: block!important; }
 }
