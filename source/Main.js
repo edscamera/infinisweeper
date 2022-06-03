@@ -299,7 +299,7 @@ function main() {
     });
 
     // Load Changelog
-    if (deviceType() === "desktop") fetch("../changelog.txt").then(r => r.text()).then(data => {
+    if (deviceType() === "desktop") fetch(window.location.href + "./changelog.txt").then(r => r.text()).then(data => {
         data = data.split("\n");
         for (let lineNum = 0; lineNum < data.length; lineNum++) {
             if (data[lineNum].startsWith("-")) {

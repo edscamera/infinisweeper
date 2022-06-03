@@ -26,16 +26,18 @@
 }
 
 #highScoresContainer {
-    margin: 15px auto;
-    overflow-y: auto;
     width: fit-content;
+    max-width: calc(100% - 60px);
     max-height: calc(100vh - 60px);
-    overflow-y: auto;
-    text-align: center;
+
+    margin: 15px auto;
 
     position: relative;
     top: calc(50% - 15px);
     transform: translateY(-50%);
+    
+    overflow-y: auto;
+    text-align: center;
 }
 #highScoresContainer > table {
     display: inline-block;
@@ -49,17 +51,21 @@
 #highScoresContainer > table td:nth-child(2) { width: 100%; }
 
 #settingsContainer {
-    margin: 15px auto;
-    overflow-y: auto;
-    width: calc(70% - 60px);
+    width: clamp(
+        100% - 60px,
+        calc(70% - 60px),
+        650px
+    );
     max-height: calc(100vh - 120px);
-    overflow-y: auto;
-    text-align: center;
-    max-width: 650px;
 
+    margin: 15px auto;
+    
     position: relative;
     top: calc(50% - 15px);
     transform: translateY(-50%);
+
+    overflow-y: auto;
+    text-align: center;
 }
 #settingsContainer p {
     margin: 0px;
@@ -67,15 +73,14 @@
     font-weight: normal;
 }
 .settings_entry {
-    display:flex;
-    justify-content:space-between;
+    display: flex;
+    justify-content: space-between;
     margin-top: 15px;
     text-align: left;
 }
 .settings_entry:first-of-type {margin-top: 0px;}
-.settings_input {
-    margin-left: 15px;
-}
+.settings_input { margin-left: 15px; }
+
 @media only screen and (max-device-width: 480px) {
     #highScoresContainer > table {
         display: inline-block;
@@ -83,5 +88,15 @@
         text-align: left;
         max-width: unset;
         margin-right: 0px;
+    }
+    #settingsContainer {
+        position: block!important;
+        top: 0px!important;
+        transform: translateY(0px)!important;
+    }
+    #highScoresContainer {
+        position: block!important;
+        top: 0px!important;
+        transform: translateY(0px)!important;
     }
 }

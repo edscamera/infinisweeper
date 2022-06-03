@@ -104,18 +104,5 @@ button:only-of-type {
         font-size: 1.5em;
         width: 10em;
     }
-    #settingsContainer {
-        width: calc(100% - 60px)!important;
-        max-width: unset!important;
-        position: block!important;
-        top: 0px!important;
-        transform: translateY(0px)!important;
-    }
-    #highScoresContainer {
-        width: calc(100% - 60px)!important;
-        position: block!important;
-        top: 0px!important;
-        transform: translateY(0px)!important;
-    }
     #nameChangeContainer { width: calc(100% - 60px)!important; }
 }
