@@ -16,6 +16,8 @@ class Settings {
         "muted": false,
         "autoSave": true,
         "autoSave_t": .25,
+
+        "dingDang": false,
     }
     static dictionary = {
         "animateFallingTiles": {
@@ -76,7 +78,12 @@ class Settings {
             "display": "Auto Save Interval (Minutes)",
             "desc": "Controls how often the game will be automatically saved (minutes).",
             "type": "number",
-        }
+        },
+        "dingDang": {
+            "display": "Ding Dang Mode",
+            "desc": "Ding ding dang woo! Ding and a ding dong.",
+            "type": "checkbox",
+        },
     }
     static settings = Settings.defaultSettings;
     static initialize() {
@@ -96,7 +103,7 @@ class Settings {
         }
         $("#settingsSubcontainer").innerHTML = "";
         Object.keys(Settings.settings).forEach(key => {
-            if (!["animateTileReveal_t"].includes(key)) {
+            if (!["animateTileReveal_t"].includes(key) && Settings.dictionary.hasOwnProperty(key)) {
                 const div = document.createElement("div");
                 div.classList.add("settings_entry", `_${key}`);
                 try {

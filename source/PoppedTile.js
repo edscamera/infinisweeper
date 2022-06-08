@@ -1,4 +1,5 @@
 import { Image } from "./Util.js";
+import Settings from "./Settings.js";
 
 class PoppedTile {
     static tiles = [];
@@ -31,6 +32,7 @@ class PoppedTile {
         );
         g.rotate(this.rotation);
         g.fillStyle = this.type % 2 === 0 ? "#AAD650" : "#A2D048";
+        if (Settings.settings.dingDang) g.fillStyle = this.type % 2 === 0 ? "#FD7905" : "#C44234";
         if ([0, 1].includes(this.type)) g.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
         if (this.type === 2) g.drawImage(Image.get("flag"), -this.size / 2, -this.size / 2, this.size, this.size);
         g.restore();

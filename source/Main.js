@@ -61,6 +61,13 @@ function main() {
     SoundEffect.add("flag_up", "./audio/flag_up.mp3");
     SoundEffect.add("reveal", "./audio/reveal.mp3");
 
+    SoundEffect.add("ding", "./audio/ding.mp3");
+    SoundEffect.add("dang", "./audio/dang.mp3");
+    SoundEffect.add("woo", "./audio/woo.mp3");
+    SoundEffect.add("woo_reverse", "./audio/woo_reverse.mp3");
+    SoundEffect.add("ilovedagirl", "./audio/ilovedagirl.mp3");
+    SoundEffect.add("dingdong", "./audio/dingdong.mp3");
+
     Input.initialize();
     camera.initializeControls(canvas.canvas);
     board.initializeControls(canvas.canvas);
@@ -117,13 +124,15 @@ function main() {
             }, 1000);
         });
     });
-    $("#mainMenuGame").addEventListener("click", () => window.location.reload());
+    $("#mainMenuGame").addEventListener("click", () => {
+        board.mines = [];
+        window.location.reload()
+    });
 
-    window.prng = prng;
     const newGame = (mode) => {
         GUI.set("game");
         camera = new Camera(false);
-        if (board) board.spreadParticles = false;
+        if (board) board.mines = [];
         board = new Board(10 + Math.random() * 5000 * Math.sign(Math.random() - 0.5), camera, true);
         board.mode = mode;
         if (!localStorage[`highScore_${board.mode}`]) localStorage[`highScore_${board.mode}`] = 0;
@@ -131,6 +140,7 @@ function main() {
         board.initializeControls(canvas.canvas);
     };
     const mainMenu = () => {
+        if (board) board.mines = [];
         GUI.set("title");
         camera = new Camera(false);
         board = new Board(0, camera, false);

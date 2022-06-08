@@ -20,10 +20,11 @@ class Board {
 
         this.leftToEmpty = [];
         this.colorCorrection = 0;
-        this.spreadParticles = false;
 
         this.score = 0;
         this.flags = 0;
+
+        this.mines = [];
 
         this.leftMost = null;
         this.rightMost = null;
@@ -62,27 +63,28 @@ class Board {
                 }
             }, Settings.settings.autoSave_t * 1000 * 60);
         }
-        window.setInterval(() => {
-            if (this.spreadParticles) {
-                for (let x = Math.floor(this.camera.position.x); x <= this.camera.position.x + window.innerWidth / this.camera.tilesize; x++) {
-                    for (let y = Math.floor(this.camera.position.y); y <= this.camera.position.y + window.innerHeight / this.camera.tilesize; y++) {
-                        if (this.get(x, y).value === -1 && this.get(x, y).covered) {
-                            this.set(x, y, {
-                                "covered": false,
-                            });
 
-                            const partialVal = (x - this.camera.position.x) * (y - this.camera.position.y);
-                            const totalVal = (window.innerWidth / this.camera.tilesize) * (window.innerHeight / this.camera.tilesize);
-                            const colorVal = `hsl(${partialVal / totalVal * 360},100%,50%)`;
-                            Particle.fullExplosion(
-                                this.camera,
-                                { "x": x + .5, "y": y + .5 },
-                                0.15,
-                                5, [colorVal], 0.5, 0.5);
-                            return;
-                        }
-                    }
+
+        window.setInterval(() => {
+            if (this.mines.length > 0) {
+                const x = parseInt(this.mines[0].split(",")[0]);
+                const y = parseInt(this.mines[0].split(",")[1]);
+                if (this.get(x, y).value === -1 && this.get(x, y).covered) {
+                    this.set(x, y, {
+                        "covered": false,
+                    });
+
+                    const partialVal = (x - this.camera.position.x) * (y - this.camera.position.y);
+                    const totalVal = (window.innerWidth / this.camera.tilesize) * (window.innerHeight / this.camera.tilesize);
+                    const colorVal = `hsl(${partialVal / totalVal * 360},100%,50%)`;
+                    Particle.fullExplosion(
+                        this.camera,
+                        { "x": x + .5, "y": y + .5 },
+                        0.15,
+                        5, [colorVal], 0.5, 0.5);
+                    return;
                 }
+                this.mines.splice(0, 1);
             }
         }, 50);
 
@@ -134,6 +136,7 @@ class Board {
                 const tile = this.get(x, y);
                 if (tile.covered) {
                     g.fillStyle = (x + y + this.colorCorrection) % 2 === 0 ? "#AAD650" : "#A2D048";
+                    if (Settings.settings.dingDang) g.fillStyle = (x + y + this.colorCorrection) % 2 === 0 ? "#FD7905" : "#C44234";
                     g.fillRect(
                         Math.round((x - camera.position.x) * camera.tilesize),
                         Math.round((y - camera.position.y) * camera.tilesize),
@@ -219,6 +222,7 @@ class Board {
                     }
                     if (Settings.settings.drawBorders) {
                         g.strokeStyle = g.fillStyle = "#86AE3A";
+                        if (Settings.settings.dingDang) g.strokeStyle = g.fillStyle = "#802A21";
                         g.lineWidth = camera.tilesize / (64 / 15) / 2;
                         g.beginPath();
                         const condition = (xx, yy) => this.get(x, y).value !== -1 && (this.get(xx, yy).covered || this.get(xx, yy).value === -1);
@@ -327,7 +331,11 @@ class Board {
     digQueuedTile(index) {
         const tileX = parseInt(this.leftToEmpty[index].split(",")[0]);
         const tileY = parseInt(this.leftToEmpty[index].split(",")[1]);
-        if (Settings.settings.animateTileReveal) SoundEffect.play(`blip_${this.get(tileX, tileY).value}`);
+        if (Settings.settings.animateTileReveal && this.get(tileX, tileY).value !== -1) {
+            if (Settings.settings.dingDang) SoundEffect.play(Math.round(Math.random()) === 0 ? "ding" : "dang");
+            else SoundEffect.play(`blip_${this.get(tileX, tileY).value}`);
+        }
+        
         let highestNumber = 1;
         for (let xx = tileX - 1; xx <= tileX + 1; xx++) {
             for (let yy = tileY - 1; yy <= tileY + 1; yy++) {
@@ -345,7 +353,8 @@ class Board {
         }, Math.abs((tileX + tileY) % 2));
         if (this.get(tileX, tileY).value > highestNumber) highestNumber = this.get(tileX, tileY).value;
         if (this.get(tileX, tileY).value === -1) {
-            SoundEffect.play("confetti");
+            if (!Settings.settings.dingDang) SoundEffect.play("confetti");
+            else SoundEffect.play("dingdong");
             const partialVal = (tileX - this.camera.position.x) * (tileY - this.camera.position.y);
             const totalVal = (window.innerWidth / this.camera.tilesize) * (window.innerHeight / this.camera.tilesize);
             const colorVal = `hsl(${partialVal / totalVal * 360},100%,50%)`;
@@ -374,7 +383,23 @@ class Board {
             this.camera.tilesize = Math.round(this.camera.tilesize);
         }
         const dig = (x, y) => {
-            if (!this.get(x, y).covered || this.get(x, y).flagState > 0) return;
+            if (this.get(x, y).flagState > 0) return;
+            if (!this.get(x, y).covered) {
+                let flagCount = 0;
+                for(let yy = y - 1; yy <= y + 1; yy++) {
+                    for(let xx = x - 1; xx <= x + 1; xx++) {
+                        if (this.get(xx, yy).flagState > 0) flagCount++;
+                    }
+                }
+                if (flagCount === this.get(x, y).value) {
+                    for(let yy = y - 1; yy <= y + 1; yy++) {
+                        for(let xx = x - 1; xx <= x + 1; xx++) {
+                            if (this.get(xx, yy).flagState <= 0 && this.get(xx, yy).covered) this.leftToEmpty.splice(0, 0, `${xx},${yy}`);
+                        }
+                    }
+                }
+                return;
+            }
             this.leftToEmpty.splice(0, 0, `${x},${y}`);
 
             let highestNumber = 0;
@@ -386,10 +411,14 @@ class Board {
                 if (num === -1) highestNumber = -1;
             }
             if (tilesDug > 20) {
-                SoundEffect.play("reveal");
+                if (!Settings.settings.dingDang) SoundEffect.play("reveal");
+                else SoundEffect.play("ilovedagirl");
                 this.camera.shake(0.3);
             }
-            else if (highestNumber !== -1) SoundEffect.play(`blip_${highestNumber}`);
+            else if (highestNumber !== -1) {
+                if (!Settings.settings.dingDang) SoundEffect.play(`blip_${highestNumber}`);
+                else SoundEffect.play(Math.round(Math.random()) === 0 ? "ding" : "dang");
+            }
         }
         const toggleFlag = (x, y) => {
             if (!this.get(x, y).covered) return;
@@ -402,7 +431,8 @@ class Board {
                 "y": y,
             }, 2);
             this.flags += this.get(x, y).flagState;
-            SoundEffect.play(this.get(x, y).flagState === 0 ? "flag_up" : "flag_down");
+            if (!Settings.settings.dingDang) SoundEffect.play(this.get(x, y).flagState === 0 ? "flag_up" : "flag_down");
+            else SoundEffect.play(this.get(x, y).flagState === 0 ? "woo_reverse" : "woo");
             this.updateScoreContainer();
         };
 
@@ -585,7 +615,11 @@ class Board {
         window.setTimeout(() => {
             document.querySelector("#gameGUI").setAttribute("hide", true);
             document.querySelector("#loseContainer").setAttribute("hide", false);
-            this.spreadParticles = true;
+            for (let x = Math.floor(this.camera.position.x); x <= this.camera.position.x + window.innerWidth / this.camera.tilesize; x++) {
+                for (let y = Math.floor(this.camera.position.y); y <= this.camera.position.y + window.innerHeight / this.camera.tilesize; y++) {
+                    if (this.get(x, y).value === -1 && this.get(x, y).covered) this.mines.push(`${x},${y}`);
+                }
+            }
         }, 2000);
     }
 

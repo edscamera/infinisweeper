@@ -1,4 +1,4 @@
-const cacheName = `infinisweeper-v2.1r6`;
+const cacheName = `infinisweeper-v2.2r4`;
 const filesToCache = [
     "./index.html",
     "./changelog.txt",
@@ -20,6 +20,13 @@ const filesToCache = [
     "./audio/flag_down.mp3",
     "./audio/reveal.mp3",
 
+    "./audio/ding.mp3",
+    "./audio/dang.mp3",
+    "./audio/dingdong.mp3",
+    "./audio/ilovedagirl.mp3",
+    "./audio/woo.mp3",
+    "./audio/woo_reverse.mp3",
+
     "./images/copy.ico",
     "./images/facebook.ico",
     "./images/twitter.ico",
@@ -37,6 +44,11 @@ const filesToCache = [
     "./source/Util.js",
 ];
 console.log(cacheName);
+caches.keys().then(keys => {
+    keys.forEach(key => {
+        if (cacheName !== key) caches.delete(key);
+    });
+});
 
 self.addEventListener("install", event => {
     event.waitUntil(
@@ -46,10 +58,9 @@ self.addEventListener("install", event => {
     );
 });
 self.addEventListener("fetch", event => {
-    console.log("event.request.url", event.request.url);
     event.respondWith(
         caches.match(event.request).then(response => {
             return response || fetch(event.request)
-        }).catch(err => console.log(err))
+        }).catch(err => console.log(err, event))
     );
 });

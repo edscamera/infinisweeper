@@ -1,3 +1,9 @@
+v2.2
+-Added Ding Dang mode
+-Added auto-dig around tile
+-Fixed bug where extra sounds are played on loss
+-Fixed bug where particles don't go away after game ends
+-Fixed cache issues
 v2.1
 -Improved loading time
 -Added new mobile menu
