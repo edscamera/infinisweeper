@@ -4,7 +4,7 @@ import Canvas from "./Canvas.js";
 import GUIManager from "./GUIManager.js";
 import PoppedTile from "./PoppedTile.js";
 import Settings from "./Settings.js";
-import { SoundEffect, Input, Image, prng, Particle, $, deviceType } from "./Util.js"
+import { SoundEffect, Input, Image, Particle, $, deviceType } from "./Util.js";
 
 /**
  * The main function
@@ -126,7 +126,7 @@ function main() {
     });
     $("#mainMenuGame").addEventListener("click", () => {
         board.mines = [];
-        window.location.reload()
+        window.location.reload();
     });
 
     const newGame = (mode) => {
@@ -315,11 +315,11 @@ function main() {
             if (data[lineNum].startsWith("-")) {
                 data[lineNum] = `<li>${data[lineNum].slice(1)}</li>`;
             } else {
-                data[lineNum] = `</ul><span>${data[lineNum]}</span><ul>`;
+                data[lineNum] = `</ul><span>${data[lineNum].split(",")[0]}</span><span style="float: right;">${data[lineNum].split(",")[1]}</span><ul>`;
             }
         };
         data[0] = data[0].slice(5);
-        data[data.length - 1] = data[data.length - 1].slice(0, -4);
+        data[data.length - 1] = data[data.length - 1].slice(0, -5);
         $("#fetchChangelog").innerHTML = data.join("");
         $("#versionText").innerText = `${$("#innerChangelog").querySelector("span").innerText} | `;
     });

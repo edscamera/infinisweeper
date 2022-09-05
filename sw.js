@@ -1,4 +1,4 @@
-const cacheName = `infinisweeper-v2.2r4`;
+const cacheName = `infinisweeper-v2.3a`;
 const filesToCache = [
     "./index.html",
     "./changelog.txt",

@@ -1,10 +1,15 @@
-v2.2
+v2.3,9/5/22
+-Camera is no longer restricted when a game is lost
+-Added dates to changelog
+-Fixed settings menu width bug
+-Fixed extra character bug in changelog
+v2.2,6/8/22
 -Added Ding Dang mode
 -Added auto-dig around tile
 -Fixed bug where extra sounds are played on loss
 -Fixed bug where particles don't go away after game ends
 -Fixed cache issues
-v2.1
+v2.1,6/1/22
 -Improved loading time
 -Added new mobile menu
 -Updated high score design
@@ -14,21 +19,21 @@ v2.1
 -Fixed bug where particles don't go away
 -Fixed infinite board chance
 -Fixed bug where some text was blue on iOS 15
-Hotfix v2.0.4
+Hotfix v2.0.4,5/31/22
 -Fixed critical bug where you can't dig on mobile
-v2.0.3
+v2.0.3,5/26/22
 -Fixed bug where dragging with mouse digs tile
 -Fixed bug where flags don't appear on continue
 -Fixed bug where display of loss screen was off-centered on mobile
 -Fixed bug where pinching to zoom on mobile sometimes triggered tile digging
 -Fixed bug where border radius of buttons were wrong sometimes
-v2.0.2
+v2.0.2,5/25/22
 -Reverted flag bonus to previous calculation
 -Fixed cache issues
-Hotfix v2.0.1
+Hotfix v2.0.1,5/24/22
 -Fixed images and sounds not loading
 -Fixed spelling mistakes
-v2.0
+v2.0,5/24/22
 -Completely new code base
 -Massive speed optimization everywhere
 -Added markers to show if an incorrect flag is placed
@@ -41,12 +46,12 @@ v2.0
 -Added some GUI animations
 -Added PWA Support
 -Added choose username screen
-v1.4.3
+v1.4.3,5/17/22
 -Added a loading display screen when continuing a game
-v1.4.2
+v1.4.2,5/16/22
 -Added a mute button
 -Fixed bug where first dig doesn't give a reveal on mobile
-v1.4.1
+v1.4.1,5/14/22
 -Added loading indicator to continue button
 -Online functionality loads asynchronously to avoid extra load time
 -Fixed bug where only one sound of a type could play at once
@@ -55,14 +60,14 @@ v1.4.1
 -Fixed bug where sometimes high scores won't sort correctly
 -Fixed bug where some high score names don't load
 -Fixed bug where rush mode goes insane
-v1.4
+v1.4,5/12/22
 -Added global score board
 -Added rush mode
 -Added loss text
 -George's scroll wheel now controls zoom level
 -Fixed bug where lose screen would overlap with score data
 -Fixed bug where you can still move and dig briefly after you lost
-v1.3.1
+v1.3.1,5/9/22
 -Zoom level now saves with saved games
 -Separated Play Again, Main Menu buttons
 -Continue Game no longer starts a new game if there is no game saved
@@ -70,16 +75,16 @@ v1.3.1
 -Fixed bug where removing flag on touchscreen sometimes registers as a dig
 -Fixed bug where dragging screen to move was too sensitive
 -Fixed bug where zooming does not zoom in to the correct position
-v1.3
+v1.3,5/6/22
 -Now can place flags using shift + click or ctrl + click. Hooray for mac users and orchestra teachers everywhere!
 -Added "How to Play" section
 -Added zoom in/out buttons
-v1.2
+v1.2,5/5/22
 -Added social buttons
 -Added play again button
-Hotfix v1.1.1
+Hotfix v1.1.1,5/4/22
 -Fixed scrolling slow-down glitch on mobile
-v1.1
+v1.1,5/4/22
 -Mobile support
 -Sound effects added
 -Changelog added

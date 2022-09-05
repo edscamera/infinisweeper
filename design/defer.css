@@ -51,11 +51,7 @@
 #highScoresContainer > table td:nth-child(2) { width: 100%; }
 
 #settingsContainer {
-    width: clamp(
-        100% - 60px,
-        calc(70% - 60px),
-        650px
-    );
+    width: fit-content;
     max-height: calc(100vh - 120px);
 
     margin: 15px auto;
@@ -90,6 +86,9 @@
         margin-right: 0px;
     }
     #settingsContainer {
+        width: clamp(100% - 60px,
+                calc(70% - 60px),
+                650px)!important;
         position: block!important;
         top: 0px!important;
         transform: translateY(0px)!important;

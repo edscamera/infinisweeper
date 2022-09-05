@@ -7,6 +7,8 @@ class Board {
     static bombChance = 0.2;
     constructor(seed, camera, boardControls) {
         /** @type {Object} */
+        this.gameLost = false;
+
         this.board = {};
         this.seed = seed ?? (Math.random() - 0.5) * 2500;
         this.initialTile = null;
@@ -289,6 +291,28 @@ class Board {
                         );
                     }
                 }
+                if (tile.value === -1 && this.gameLost && !this.mines.includes(`${x},${y}`)) {
+                    const partialVal = (x - camera.position.x) * (y - camera.position.y);
+                    const totalVal = (window.innerWidth / camera.tilesize) * (window.innerHeight / camera.tilesize);
+                    g.fillStyle = `hsl(${partialVal / totalVal * 360},100%,50%)`;
+                    g.fillRect(
+                        Math.round((x - camera.position.x) * camera.tilesize),
+                        Math.round((y - camera.position.y) * camera.tilesize),
+                        camera.tilesize, camera.tilesize
+                    );
+                    if (!tile.bombAnimation) this.set(x, y, { "bombAnimation": 255, });
+                    this.set(x, y, { "bombAnimation": this.get(x, y).bombAnimation - this.get(x, y).bombAnimation / 150, });
+                    g.fillStyle = `rgb(${(this.get(x, y).bombAnimation + ",").repeat(3).slice(0, -1)})`;
+                    g.beginPath();
+                    g.ellipse(
+                        (x - camera.position.x + 0.5) * camera.tilesize,
+                        (y - camera.position.y + 0.5) * camera.tilesize,
+                        camera.tilesize / 4,
+                        camera.tilesize / 4,
+                        0, 0, Math.PI * 2
+                    );
+                    g.fill();
+                }
             }
         }
         for (let _ = 0; _ < Settings.settings.animateTileReveal_t; _++) if (this.leftToEmpty.length > 0) {
@@ -523,9 +547,9 @@ class Board {
         if (this.mode === "normal") localStorage.saved_data = null;
 
         this.boardControls = false;
-        this.camera.cameraControls = false;
+        //this.camera.cameraControls = false;
 
-        window.setTimeout(() => this.zoomToFit(), 1000);
+        //window.setTimeout(() => this.zoomToFit(), 1000);
         window.clearInterval(this.secondsInterval);
 
         const flagBonus = Object.keys(this.board).filter(key => this.board[key].value === -1 && this.board[key].flagState).length * (this.mode === "rush" ? 5 : 1);
@@ -615,6 +639,7 @@ class Board {
         window.setTimeout(() => {
             document.querySelector("#gameGUI").setAttribute("hide", true);
             document.querySelector("#loseContainer").setAttribute("hide", false);
+            this.gameLost = true;
             for (let x = Math.floor(this.camera.position.x); x <= this.camera.position.x + window.innerWidth / this.camera.tilesize; x++) {
                 for (let y = Math.floor(this.camera.position.y); y <= this.camera.position.y + window.innerHeight / this.camera.tilesize; y++) {
                     if (this.get(x, y).value === -1 && this.get(x, y).covered) this.mines.push(`${x},${y}`);
