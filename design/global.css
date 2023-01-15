@@ -54,6 +54,7 @@ button:only-of-type {
 }
 
 .GUI {
+    display: none;
     width: 100%;
     position: absolute;
     top: 0px;

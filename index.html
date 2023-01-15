@@ -16,7 +16,13 @@
     <link defer rel="stylesheet" href="./design/defer.css" />
     <link rel="icon" type="image/x-icon" href="./images/flag.png" media="screen">
     <link rel="manifest" href="manifest.webmanifest">
-    <script type="module" src="source/Main.js?v=2.2"></script>
+    <script type="module" src="source/Main.js?v=2.4"></script>
+    <style>
+        body {
+            background: repeating-conic-gradient(#A2D048 0% 25%, #AAD650 0% 50%) 50% / 128px 128px;
+            background-position: 0 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -81,7 +87,7 @@
             <button id="submitName">Submit</button>
         </div>
     </div>
-    <div class="GUI" GUI="loading">
+    <div class="GUI" GUI="loading" style="display: block;">
         <h1 id="loadingDisplay">Loading</h1>
     </div>
     <div class="GUI" GUI="settings">

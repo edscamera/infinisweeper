@@ -1,3 +1,5 @@
+v2.4,1/15/23
+-Added initial loading screen before first game load
 v2.3,9/5/22
 -Camera is no longer restricted when a game is lost
 -Added dates to changelog

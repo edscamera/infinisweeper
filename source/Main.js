@@ -11,6 +11,7 @@ import { SoundEffect, Input, Image, Particle, $, deviceType } from "./Util.js";
  * @returns {Void}
  */
 function main() {
+    const GUI = new GUIManager("title");
     window.addEventListener("beforeinstallprompt", (event) => {
         event.preventDefault();
         window.deferredPrompt = event;
@@ -40,7 +41,6 @@ function main() {
         localStorage.removeItem("edwardscamera.infinisweeper.saveData");
     }
 
-    const GUI = new GUIManager("title");
     const canvas = new Canvas("infinisweeper");
     let camera = new Camera(false);
     let board = new Board(0, camera, false);
