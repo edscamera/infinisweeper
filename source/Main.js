@@ -100,7 +100,7 @@ function main() {
             case 8: return "8️⃣";
             case 9: return "9️⃣";
         }
-    }).join("")} in Infinisweeper${board.mode === "normal" ? "" : " " + board.mode.toUpperCase() + " MODE"}! 🚩\n\nhttps://edwardscamera.com/infinisweeper`;
+    }).join("")} in Infinisweeper${board.mode === "normal" ? "" : " " + board.mode.toUpperCase() + " MODE"}! 🚩\n\nhttps://edscamera.github.io/infinisweeper`;
     $("#share_copy").addEventListener("click", () => {
         if (navigator.clipboard) navigator.clipboard.writeText(getScoreText());
     });
@@ -108,7 +108,7 @@ function main() {
         window.open(`https://twitter.com/intent/tweet?text=${encodeURI(getScoreText())}`, "_blank");
     });
     $("#share_facebook").addEventListener("click", () => {
-        window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(getScoreText())}&p[url]=https://edwardscamera.com/infinisweeper`);
+        window.open(`http://www.facebook.com/sharer.php?s=100&p[title]=${encodeURI(getScoreText())}&p[url]=https://edscamera.github.io/infinisweeper`);
     });
     $("#saveGame").addEventListener("click", () => {
         if ($("#saveGame").disabled) return;
